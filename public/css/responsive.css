@@ -1,0 +1,312 @@
+
+/**
+ * Responsive CSS for Cappadocia Travel Agency
+ */
+
+/* Large Screens (up to 1200px) */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 992px;
+    }
+    
+    .main-nav ul {
+        gap: 1.5rem;
+    }
+    
+    .tours-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .destination-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .footer-widgets {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .tour-content-wrapper {
+        grid-template-columns: 3fr 2fr;
+    }
+    
+    .tour-gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Medium Screens (up to 992px) */
+@media (max-width: 992px) {
+    .container {
+        max-width: 768px;
+    }
+    
+    .header-wrapper {
+        position: relative;
+    }
+    
+    .main-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        padding: 1rem 0;
+        border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+        z-index: var(--z-index-dropdown);
+    }
+    
+    .main-nav.active {
+        display: block;
+    }
+    
+    .main-nav ul {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .main-nav ul li {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .main-nav ul li a {
+        display: block;
+        padding: 0.75rem 1rem;
+    }
+    
+    .mobile-toggle {
+        display: flex;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .destination-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer-widgets {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+    
+    .tour-content-wrapper {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+    
+    .tour-sidebar {
+        position: static;
+    }
+    
+    .contact-info-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .contact-form-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-map {
+        height: 400px;
+    }
+}
+
+/* Small Screens (up to 768px) */
+@media (max-width: 768px) {
+    .container {
+        max-width: 100%;
+        padding: 0 var(--spacing-md);
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    
+    .section {
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .section-header {
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .tours-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .destination-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .contact-info-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .tour-features-list {
+        flex-direction: column;
+    }
+    
+    .tour-feature {
+        flex: 1 0 100%;
+    }
+    
+    .tour-tabs-nav {
+        flex-wrap: wrap;
+    }
+    
+    .tour-tab-button {
+        flex: 1 0 auto;
+        text-align: center;
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+    
+    .tour-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tour-header {
+        height: 300px;
+    }
+    
+    .tour-header-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Extra Small Screens (up to 576px) */
+@media (max-width: 576px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-section {
+        min-height: 500px;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .footer-widgets {
+        grid-template-columns: 1fr;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .back-to-top {
+        bottom: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .pagination-item {
+        width: 35px;
+        height: 35px;
+    }
+}
+
+/* Landscape Orientation for Mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero-section {
+        height: auto;
+        min-height: 450px;
+        padding: 120px 0 60px;
+    }
+    
+    .hero-content {
+        padding: var(--spacing-lg) 0;
+    }
+}
+
+/* High Resolution Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Optimize images for high resolution displays */
+    .hero-section, .cta-section {
+        background-size: cover;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Adjust colors for dark mode if needed */
+        --light-color: #1a1a1a;
+        --white-color: #333;
+        --dark-color: #f0f0f0;
+        --glass-bg: rgba(30, 30, 30, 0.7);
+        --glass-border: rgba(60, 60, 60, 0.3);
+    }
+    
+    /* More dark mode specific styles can be added here */
+}
+
+/* Print Styles */
+@media print {
+    .site-header, .site-footer, .back-to-top, .cta-section, .tour-booking-form {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+        color: #000;
+        background: #fff;
+    }
+    
+    a {
+        color: #000;
+        text-decoration: underline;
+    }
+    
+    .tour-content-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .tour-sidebar {
+        display: none;
+    }
+    
+    @page {
+        margin: 2cm;
+    }
+}
