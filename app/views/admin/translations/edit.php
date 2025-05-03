@@ -45,13 +45,13 @@
                 </div>
             <?php else: ?>
                 <div class="translations-list">
-                    <?php foreach ($translations as $key): ?>
-                        <div class="translation-item" data-key="<?php echo htmlspecialchars($key['key_name']); ?>">
+                    <?php foreach ($translations as $keyId => $key): ?>
+                        <div class="translation-item" data-key="<?php echo htmlspecialchars($key['key_name'] ?? ''); ?>">
                             <div class="translation-key">
-                                <span class="key-name"><?php echo htmlspecialchars($key['key_name']); ?></span>
+                                <span class="key-name"><?php echo htmlspecialchars($key['key_name'] ?? ''); ?></span>
                             </div>
                             <div class="translation-value">
-                                <textarea name="translations[<?php echo $key['id']; ?>]" class="form-control" rows="3"><?php echo htmlspecialchars($key['value'] ?? ''); ?></textarea>
+                                <textarea name="translations[<?php echo $keyId; ?>]" class="form-control" rows="3"><?php echo htmlspecialchars($key['value'] ?? ''); ?></textarea>
                             </div>
                         </div>
                     <?php endforeach; ?>
