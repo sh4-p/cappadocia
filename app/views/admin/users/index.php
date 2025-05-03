@@ -71,7 +71,7 @@
                                         <?php echo $user['is_active'] ? __('active') : __('inactive'); ?>
                                     </span>
                                 </td>
-                                <td><?php echo $user['last_login'] ? date('d M Y, H:i', strtotime($user['last_login'])) : __('never'); ?></td>
+                                <td><?php echo isset($user['last_login']) && $user['last_login'] ? date('d M Y, H:i', strtotime($user['last_login'])) : __('never'); ?></td>
                                 <td>
                                     <div class="actions">
                                         <a href="<?php echo $adminUrl; ?>/users/edit/<?php echo $user['id']; ?>" class="action-btn" title="<?php _e('edit'); ?>">

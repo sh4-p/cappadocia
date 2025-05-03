@@ -48,8 +48,8 @@ class Translation extends Model
      */
     public function getAllTranslations()
     {
-        // Get languages
-        $languageModel = new Language($this->db);
+        // Get languages - Change this line
+        $languageModel = new LanguageModel($this->db);
         $languages = $languageModel->getAllLanguages();
         
         // Get translation keys

@@ -30,22 +30,29 @@ class Router
         $this->addRoute($this->adminPrefix . '/login', 'Admin', 'login');
         $this->addRoute($this->adminPrefix . '/logout', 'Admin', 'logout');
         $this->addRoute($this->adminPrefix . '/dashboard', 'Admin', 'dashboard');
+        $this->addRoute($this->adminPrefix . '/profile', 'Admin', 'profile');
         
         // Tours routes
         $this->addRoute('tours', 'Tours', 'index');
         $this->addRoute('tours/([a-zA-Z0-9-]+)', 'Tours', 'detail', ['slug']);
+        $this->addRoute('tours/search', 'Tours', 'search');
+        $this->addRoute('tours/ajax-search', 'Tours', 'ajaxSearch');
         
         // Admin tours routes
         $this->addRoute($this->adminPrefix . '/tours', 'Tours', 'index');
         $this->addRoute($this->adminPrefix . '/tours/create', 'Tours', 'create');
         $this->addRoute($this->adminPrefix . '/tours/edit/([0-9]+)', 'Tours', 'edit', ['id']);
         $this->addRoute($this->adminPrefix . '/tours/delete/([0-9]+)', 'Tours', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/toggle-status/([0-9]+)', 'Tours', 'toggleStatus', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/toggle-featured/([0-9]+)', 'Tours', 'toggleFeatured', ['id']);
         
         // Categories routes
         $this->addRoute($this->adminPrefix . '/categories', 'AdminCategories', 'index');
         $this->addRoute($this->adminPrefix . '/categories/create', 'AdminCategories', 'create');
         $this->addRoute($this->adminPrefix . '/categories/edit/([0-9]+)', 'AdminCategories', 'edit', ['id']);
         $this->addRoute($this->adminPrefix . '/categories/delete/([0-9]+)', 'AdminCategories', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/categories/toggle-status/([0-9]+)', 'AdminCategories', 'toggleStatus', ['id']);
+        $this->addRoute($this->adminPrefix . '/categories/update-order', 'AdminCategories', 'updateOrder');
         
         // Booking routes
         $this->addRoute('booking', 'Booking', 'index');
@@ -57,15 +64,19 @@ class Router
         $this->addRoute($this->adminPrefix . '/bookings', 'AdminBookings', 'index');
         $this->addRoute($this->adminPrefix . '/bookings/view/([0-9]+)', 'AdminBookings', 'view', ['id']);
         $this->addRoute($this->adminPrefix . '/bookings/status/([0-9]+)/([a-z]+)', 'AdminBookings', 'status', ['id', 'status']);
+        $this->addRoute($this->adminPrefix . '/bookings/export', 'AdminBookings', 'export');
         
         // Gallery routes
         $this->addRoute('gallery', 'Gallery', 'index');
+        $this->addRoute('gallery/tour/([0-9]+)', 'Gallery', 'tour', ['id']);
+        $this->addRoute('gallery/ajax-load', 'Gallery', 'ajaxLoad');
         
         // Admin gallery routes
         $this->addRoute($this->adminPrefix . '/gallery', 'AdminGallery', 'index');
         $this->addRoute($this->adminPrefix . '/gallery/create', 'AdminGallery', 'create');
         $this->addRoute($this->adminPrefix . '/gallery/edit/([0-9]+)', 'AdminGallery', 'edit', ['id']);
         $this->addRoute($this->adminPrefix . '/gallery/delete/([0-9]+)', 'AdminGallery', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/gallery/toggle-status/([0-9]+)', 'AdminGallery', 'toggleStatus', ['id']);
         
         // Contact route
         $this->addRoute('contact', 'Contact', 'index');
@@ -82,10 +93,16 @@ class Router
         $this->addRoute($this->adminPrefix . '/languages/create', 'AdminLanguages', 'create');
         $this->addRoute($this->adminPrefix . '/languages/edit/([0-9]+)', 'AdminLanguages', 'edit', ['id']);
         $this->addRoute($this->adminPrefix . '/languages/delete/([0-9]+)', 'AdminLanguages', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/languages/set-default/([0-9]+)', 'AdminLanguages', 'setDefault', ['id']);
+        $this->addRoute($this->adminPrefix . '/languages/toggle-status/([0-9]+)', 'AdminLanguages', 'toggleStatus', ['id']);
         
         // Translation routes
         $this->addRoute($this->adminPrefix . '/translations', 'AdminTranslations', 'index');
         $this->addRoute($this->adminPrefix . '/translations/edit/([a-z]+)', 'AdminTranslations', 'edit', ['lang']);
+        $this->addRoute($this->adminPrefix . '/translations/add-key', 'AdminTranslations', 'addKey');
+        $this->addRoute($this->adminPrefix . '/translations/delete-key/([0-9]+)', 'AdminTranslations', 'deleteKey', ['keyId']);
+        $this->addRoute($this->adminPrefix . '/translations/import', 'AdminTranslations', 'import');
+        $this->addRoute($this->adminPrefix . '/translations/export/([0-9]+)', 'AdminTranslations', 'export', ['languageId']);
         
         // Pages routes
         $this->addRoute('page/([a-zA-Z0-9-]+)', 'Page', 'show', ['slug']);
@@ -95,6 +112,30 @@ class Router
         $this->addRoute($this->adminPrefix . '/pages/create', 'AdminPages', 'create');
         $this->addRoute($this->adminPrefix . '/pages/edit/([0-9]+)', 'AdminPages', 'edit', ['id']);
         $this->addRoute($this->adminPrefix . '/pages/delete/([0-9]+)', 'AdminPages', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/pages/toggle-status/([0-9]+)', 'AdminPages', 'toggleStatus', ['id']);
+        $this->addRoute($this->adminPrefix . '/pages/update-order', 'AdminPages', 'updateOrder');
+
+        // Admin testimonials routes
+        $this->addRoute($this->adminPrefix . '/testimonials', 'AdminTestimonials', 'index');
+        $this->addRoute($this->adminPrefix . '/testimonials/create', 'AdminTestimonials', 'create');
+        $this->addRoute($this->adminPrefix . '/testimonials/edit/([0-9]+)', 'AdminTestimonials', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/testimonials/delete/([0-9]+)', 'AdminTestimonials', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/testimonials/toggle-status/([0-9]+)', 'AdminTestimonials', 'toggleStatus', ['id']);
+        
+        // Admin users routes
+        $this->addRoute($this->adminPrefix . '/users', 'AdminUsers', 'index');
+        $this->addRoute($this->adminPrefix . '/users/create', 'AdminUsers', 'create');
+        $this->addRoute($this->adminPrefix . '/users/edit/([0-9]+)', 'AdminUsers', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/users/delete/([0-9]+)', 'AdminUsers', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/users/toggle-status/([0-9]+)', 'AdminUsers', 'toggleStatus', ['id']);
+        $this->addRoute($this->adminPrefix . '/users/remove-avatar/([0-9]+)', 'AdminUsers', 'removeAvatar', ['id']);
+        
+        // Error routes
+        $this->addRoute('error', 'Error', 'index');
+        $this->addRoute('error/([0-9]+)', 'Error', 'index', ['code']);
+        
+        // Language switcher route
+        $this->addRoute('language/([a-z]+)', 'Home', 'switchLanguage', ['lang']);
     }
 
     /**

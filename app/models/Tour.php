@@ -49,18 +49,18 @@ class Tour extends Model
         
         $params = ['langId' => $language['id']];
         
-        // Add conditions - direct values for simple conditions
+        // Add conditions - handle numeric values directly in the SQL
         if (!empty($conditions)) {
             foreach ($conditions as $field => $value) {
                 // For numeric or boolean values, add them directly to SQL
                 if (is_int($value) || is_bool($value)) {
                     $sql .= " AND {$field} = " . intval($value);
                 } 
-                // For string values, use parameterized query to prevent SQL injection
+                // For string values, use parameterized query
                 else {
-                    $cleanField = preg_replace('/[^a-zA-Z0-9_]/', '_', $field);
-                    $sql .= " AND {$field} = :{$cleanField}";
-                    $params[$cleanField] = $value;
+                    $paramName = 'param_' . count($params);
+                    $sql .= " AND {$field} = :{$paramName}";
+                    $params[$paramName] = $value;
                 }
             }
         }
