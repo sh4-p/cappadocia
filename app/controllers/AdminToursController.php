@@ -210,6 +210,188 @@ class AdminToursController extends Controller
                 }
             }
             
+            // Create tour
+            $tourId = $tourModel->addWithDetails($tourData, $details);
+            
+            if ($tourId) {
+                // Handle gallery uploads
+                $galleryImages = $this->file('gallery_images');
+                
+                if ($galleryImages && $galleryImages['name'][0]) {
+                    $this->uploadGalleryImages($galleryImages, $tourId);
+                }
+                
+                $this->session->setFlash('success', __('tour_added'));
+                $this->redirect('admin/tours');
+            } else {
+                $this->session->setFlash('error', __('tour_add_failed'));
+            }
+        }
+        
+        // Render view
+        $this->render('admin/tours/create', [
+            'pageTitle' => __('add_tour'),
+            'languages' => $languages,
+            'categories' => $categories,
+            'currentLang' => $langCode
+        ], 'admin');
+    }
+    
+    /**
+     * Edit action - edit a tour
+     * 
+     * @param int $id Tour ID
+     */
+    public function edit($id)
+    {
+        // Get current language
+        $langCode = $this->language->getCurrentLanguage();
+        
+        // Load models
+        $tourModel = $this->loadModel('Tour');
+        $categoryModel = $this->loadModel('Category');
+        $languageModel = $this->loadModel('LanguageModel');
+        $galleryModel = $this->loadModel('Gallery');
+        
+        // Get tour
+        $tour = $tourModel->getWithDetails($id, $langCode);
+        
+        // Check if tour exists
+        if (!$tour) {
+            $this->session->setFlash('error', __('tour_not_found'));
+            $this->redirect('admin/tours');
+        }
+        
+        // Get categories
+        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'c.name ASC');
+        
+        // Get languages
+        $languages = $languageModel->getActiveLanguages();
+        
+        // Get gallery items
+        $galleryItems = $galleryModel->getByTour($id, $langCode);
+        
+        // Get tour details for all languages
+        $tourDetails = [];
+        
+        foreach ($languages as $lang) {
+            $langTour = $tourModel->getWithDetails($id, $lang['code']);
+            if ($langTour) {
+                $tourDetails[$lang['id']] = [
+                    'name' => $langTour['name'],
+                    'slug' => $langTour['slug'],
+                    'short_description' => $langTour['short_description'],
+                    'description' => $langTour['description'],
+                    'includes' => $langTour['includes'],
+                    'excludes' => $langTour['excludes'],
+                    'itinerary' => $langTour['itinerary'],
+                    'meta_title' => $langTour['meta_title'],
+                    'meta_description' => $langTour['meta_description']
+                ];
+            }
+        }
+        
+        // Check if request is POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Get form data
+            $categoryId = $this->post('category_id');
+            $price = $this->post('price');
+            $discountPrice = $this->post('discount_price');
+            $duration = $this->post('duration');
+            $isFeatured = $this->post('is_featured', 0);
+            $isActive = $this->post('is_active', 0);
+            $details = $this->post('details', []);
+            
+            // Handle featured image upload
+            $featuredImage = $this->file('featured_image');
+            $featuredImageName = $tour['featured_image'];
+            
+            if ($featuredImage && $featuredImage['error'] === UPLOAD_ERR_OK) {
+                $featuredImageName = $this->uploadImage($featuredImage, 'tours');
+                
+                if (!$featuredImageName) {
+                    $this->session->setFlash('error', __('image_upload_failed'));
+                    $this->redirect('admin/tours/edit/' . $id);
+                    return;
+                }
+                
+                // Delete old image if exists
+                if ($tour['featured_image']) {
+                    $oldImagePath = BASE_PATH . '/public/uploads/tours/' . $tour['featured_image'];
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+            }
+            
+            // Validate inputs
+            $errors = [];
+            
+            if (empty($price) || !is_numeric($price) || $price <= 0) {
+                $errors[] = __('valid_price_required');
+            }
+            
+            if (!empty($discountPrice) && (!is_numeric($discountPrice) || $discountPrice <= 0 || $discountPrice >= $price)) {
+                $errors[] = __('valid_discount_price_required');
+            }
+            
+            // Validate details for each language
+            foreach ($languages as $lang) {
+                if (empty($details[$lang['id']]['name'])) {
+                    $errors[] = sprintf(__('name_required_for_lang'), $lang['name']);
+                }
+                
+                if (empty($details[$lang['id']]['short_description'])) {
+                    $errors[] = sprintf(__('short_description_required_for_lang'), $lang['name']);
+                }
+                
+                if (empty($details[$lang['id']]['description'])) {
+                    $errors[] = sprintf(__('description_required_for_lang'), $lang['name']);
+                }
+            }
+            
+            // If there are errors, set error message and return
+            if (!empty($errors)) {
+                $this->session->setFlash('error', implode('<br>', $errors));
+                
+                // Update tour details with POST data
+                $tourDetails = $details;
+                
+                // Render view again
+                $this->render('admin/tours/edit', [
+                    'pageTitle' => __('edit_tour'),
+                    'tour' => $tour,
+                    'tourDetails' => $tourDetails,
+                    'languages' => $languages,
+                    'categories' => $categories,
+                    'galleryItems' => $galleryItems,
+                    'currentLang' => $langCode
+                ], 'admin');
+                
+                return;
+            }
+            
+            // Prepare tour data
+            $tourData = [
+                'category_id' => $categoryId ?: null,
+                'featured_image' => $featuredImageName,
+                'price' => $price,
+                'discount_price' => $discountPrice ?: null,
+                'duration' => $duration,
+                'is_featured' => $isFeatured ? 1 : 0,
+                'is_active' => $isActive ? 1 : 0
+            ];
+            
+            // Generate slugs if not provided
+            foreach ($details as $langId => &$langDetails) {
+                if (empty($langDetails['slug'])) {
+                    $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9-]/', '-', $langDetails['name'])));
+                    $slug = preg_replace('/-+/', '-', $slug);
+                    $slug = trim($slug, '-');
+                    $langDetails['slug'] = $slug;
+                }
+            }
+            
             // Update tour
             $result = $tourModel->updateWithDetails($id, $tourData, $details);
             
@@ -582,186 +764,4 @@ class AdminToursController extends Controller
             'query' => '%' . $query . '%'
         ]);
     }
-}]/', '-', $langDetails['name'])));
-                    $slug = preg_replace('/-+/', '-', $slug);
-                    $slug = trim($slug, '-');
-                    $langDetails['slug'] = $slug;
-                }
-            }
-            
-            // Create tour
-            $tourId = $tourModel->addWithDetails($tourData, $details);
-            
-            if ($tourId) {
-                // Handle gallery uploads
-                $galleryImages = $this->file('gallery_images');
-                
-                if ($galleryImages && $galleryImages['name'][0]) {
-                    $this->uploadGalleryImages($galleryImages, $tourId);
-                }
-                
-                $this->session->setFlash('success', __('tour_added'));
-                $this->redirect('admin/tours');
-            } else {
-                $this->session->setFlash('error', __('tour_add_failed'));
-            }
-        }
-        
-        // Render view
-        $this->render('admin/tours/create', [
-            'pageTitle' => __('add_tour'),
-            'languages' => $languages,
-            'categories' => $categories,
-            'currentLang' => $langCode
-        ], 'admin');
-    }
-    
-    /**
-     * Edit action - edit a tour
-     * 
-     * @param int $id Tour ID
-     */
-    public function edit($id)
-    {
-        // Get current language
-        $langCode = $this->language->getCurrentLanguage();
-        
-        // Load models
-        $tourModel = $this->loadModel('Tour');
-        $categoryModel = $this->loadModel('Category');
-        $languageModel = $this->loadModel('LanguageModel');
-        $galleryModel = $this->loadModel('Gallery');
-        
-        // Get tour
-        $tour = $tourModel->getWithDetails($id, $langCode);
-        
-        // Check if tour exists
-        if (!$tour) {
-            $this->session->setFlash('error', __('tour_not_found'));
-            $this->redirect('admin/tours');
-        }
-        
-        // Get categories
-        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'c.name ASC');
-        
-        // Get languages
-        $languages = $languageModel->getActiveLanguages();
-        
-        // Get gallery items
-        $galleryItems = $galleryModel->getByTour($id, $langCode);
-        
-        // Get tour details for all languages
-        $tourDetails = [];
-        
-        foreach ($languages as $lang) {
-            $langTour = $tourModel->getWithDetails($id, $lang['code']);
-            if ($langTour) {
-                $tourDetails[$lang['id']] = [
-                    'name' => $langTour['name'],
-                    'slug' => $langTour['slug'],
-                    'short_description' => $langTour['short_description'],
-                    'description' => $langTour['description'],
-                    'includes' => $langTour['includes'],
-                    'excludes' => $langTour['excludes'],
-                    'itinerary' => $langTour['itinerary'],
-                    'meta_title' => $langTour['meta_title'],
-                    'meta_description' => $langTour['meta_description']
-                ];
-            }
-        }
-        
-        // Check if request is POST
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Get form data
-            $categoryId = $this->post('category_id');
-            $price = $this->post('price');
-            $discountPrice = $this->post('discount_price');
-            $duration = $this->post('duration');
-            $isFeatured = $this->post('is_featured', 0);
-            $isActive = $this->post('is_active', 0);
-            $details = $this->post('details', []);
-            
-            // Handle featured image upload
-            $featuredImage = $this->file('featured_image');
-            $featuredImageName = $tour['featured_image'];
-            
-            if ($featuredImage && $featuredImage['error'] === UPLOAD_ERR_OK) {
-                $featuredImageName = $this->uploadImage($featuredImage, 'tours');
-                
-                if (!$featuredImageName) {
-                    $this->session->setFlash('error', __('image_upload_failed'));
-                    $this->redirect('admin/tours/edit/' . $id);
-                    return;
-                }
-                
-                // Delete old image if exists
-                if ($tour['featured_image']) {
-                    $oldImagePath = BASE_PATH . '/public/uploads/tours/' . $tour['featured_image'];
-                    if (file_exists($oldImagePath)) {
-                        unlink($oldImagePath);
-                    }
-                }
-            }
-            
-            // Validate inputs
-            $errors = [];
-            
-            if (empty($price) || !is_numeric($price) || $price <= 0) {
-                $errors[] = __('valid_price_required');
-            }
-            
-            if (!empty($discountPrice) && (!is_numeric($discountPrice) || $discountPrice <= 0 || $discountPrice >= $price)) {
-                $errors[] = __('valid_discount_price_required');
-            }
-            
-            // Validate details for each language
-            foreach ($languages as $lang) {
-                if (empty($details[$lang['id']]['name'])) {
-                    $errors[] = sprintf(__('name_required_for_lang'), $lang['name']);
-                }
-                
-                if (empty($details[$lang['id']]['short_description'])) {
-                    $errors[] = sprintf(__('short_description_required_for_lang'), $lang['name']);
-                }
-                
-                if (empty($details[$lang['id']]['description'])) {
-                    $errors[] = sprintf(__('description_required_for_lang'), $lang['name']);
-                }
-            }
-            
-            // If there are errors, set error message and return
-            if (!empty($errors)) {
-                $this->session->setFlash('error', implode('<br>', $errors));
-                
-                // Update tour details with POST data
-                $tourDetails = $details;
-                
-                // Render view again
-                $this->render('admin/tours/edit', [
-                    'pageTitle' => __('edit_tour'),
-                    'tour' => $tour,
-                    'tourDetails' => $tourDetails,
-                    'languages' => $languages,
-                    'categories' => $categories,
-                    'galleryItems' => $galleryItems,
-                    'currentLang' => $langCode
-                ], 'admin');
-                
-                return;
-            }
-            
-            // Prepare tour data
-            $tourData = [
-                'category_id' => $categoryId ?: null,
-                'featured_image' => $featuredImageName,
-                'price' => $price,
-                'discount_price' => $discountPrice ?: null,
-                'duration' => $duration,
-                'is_featured' => $isFeatured ? 1 : 0,
-                'is_active' => $isActive ? 1 : 0
-            ];
-            
-            // Generate slugs if not provided
-            foreach ($details as $langId => &$langDetails) {
-                if (empty($langDetails['slug'])) {
-                    $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9-
+}

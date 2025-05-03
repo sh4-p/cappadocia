@@ -39,12 +39,12 @@ class Router
         $this->addRoute('tours/ajax-search', 'Tours', 'ajaxSearch');
         
         // Admin tours routes
-        $this->addRoute($this->adminPrefix . '/tours', 'Tours', 'index');
-        $this->addRoute($this->adminPrefix . '/tours/create', 'Tours', 'create');
-        $this->addRoute($this->adminPrefix . '/tours/edit/([0-9]+)', 'Tours', 'edit', ['id']);
-        $this->addRoute($this->adminPrefix . '/tours/delete/([0-9]+)', 'Tours', 'delete', ['id']);
-        $this->addRoute($this->adminPrefix . '/tours/toggle-status/([0-9]+)', 'Tours', 'toggleStatus', ['id']);
-        $this->addRoute($this->adminPrefix . '/tours/toggle-featured/([0-9]+)', 'Tours', 'toggleFeatured', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours', 'AdminTours', 'index');
+        $this->addRoute($this->adminPrefix . '/tours/create', 'AdminTours', 'create');
+        $this->addRoute($this->adminPrefix . '/tours/edit/([0-9]+)', 'AdminTours', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/delete/([0-9]+)', 'AdminTours', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/toggle-status/([0-9]+)', 'AdminTours', 'toggleStatus', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/toggle-featured/([0-9]+)', 'AdminTours', 'toggleFeatured', ['id']);
         
         // Categories routes
         $this->addRoute($this->adminPrefix . '/categories', 'AdminCategories', 'index');
