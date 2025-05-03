@@ -30,7 +30,7 @@ class Tour extends Model
  */
     public function getAllWithDetails($langCode, $conditions = [], $orderBy = 't.id DESC', $limit = null, $offset = null)
     {
-        // Get language ID
+        // Get language model and language ID
         $languageModel = new LanguageModel($this->db);
         $language = $languageModel->getByCode($langCode);
         
@@ -38,30 +38,33 @@ class Tour extends Model
             return [];
         }
         
+        $langId = $language['id'];
+        
+        // Build a custom SQL query with the language ID directly in the SQL
+        // This avoids parameter binding issues
         $sql = "SELECT t.*, td.name, td.slug, td.short_description, td.description, 
                 td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
                 c.id as category_id, cd.name as category_name, cd.slug as category_slug
                 FROM tours t
                 JOIN tour_details td ON t.id = td.tour_id
                 LEFT JOIN categories c ON t.category_id = c.id
-                LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = :langId
-                WHERE td.language_id = :langId";
+                LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = {$langId}
+                WHERE td.language_id = {$langId}";
         
-        $params = ['langId' => $language['id']];
+        // Add conditions - handle t.is_active condition directly
+        if (isset($conditions['t.is_active'])) {
+            $isActive = (int)$conditions['t.is_active'];
+            $sql .= " AND t.is_active = {$isActive}";
+            unset($conditions['t.is_active']);
+        }
         
-        // Add conditions - handle numeric values directly in the SQL
-        if (!empty($conditions)) {
-            foreach ($conditions as $field => $value) {
-                // For numeric or boolean values, add them directly to SQL
-                if (is_int($value) || is_bool($value)) {
-                    $sql .= " AND {$field} = " . intval($value);
-                } 
-                // For string values, use parameterized query
-                else {
-                    $paramName = 'param_' . count($params);
-                    $sql .= " AND {$field} = :{$paramName}";
-                    $params[$paramName] = $value;
-                }
+        // Handle any remaining conditions
+        foreach ($conditions as $field => $value) {
+            if (is_numeric($value)) {
+                $sql .= " AND {$field} = {$value}";
+            } else {
+                $value = $this->db->pdo->quote($value);
+                $sql .= " AND {$field} = {$value}";
             }
         }
         
@@ -79,7 +82,8 @@ class Tour extends Model
             }
         }
         
-        return $this->db->getRows($sql, $params);
+        // Execute the query without parameters
+        return $this->query($sql);
     }
     
     /**
