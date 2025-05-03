@@ -481,110 +481,146 @@
 </form>
 
 <style>
-.nav-tabs-container {
-    background-color: var(--white-color);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: var(--spacing-lg);
-}
+    .nav-tabs-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
 
-.nav-tabs.vertical {
-    display: flex;
-    flex-direction: column;
-    border-bottom: none;
-}
+    .nav-tabs.vertical {
+        display: flex;
+        flex-direction: column;
+        border-bottom: none;
+    }
 
-.nav-tab {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    color: var(--gray-700);
-    border-left: 3px solid transparent;
-    transition: all var(--transition-fast);
-}
+    .nav-tab {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        color: #555;
+        border-left: 3px solid transparent;
+        transition: all 0.3s;
+        cursor: pointer;
+        text-decoration: none;
+    }
 
-.nav-tab:hover,
-.nav-tab.active {
-    background-color: var(--gray-100);
-    color: var(--primary-color);
-    border-left-color: var(--primary-color);
-}
+    .nav-tab:hover,
+    .nav-tab.active {
+        background-color: #f5f5f5;
+        color: #2196f3;
+        border-left-color: #2196f3;
+    }
 
-.nav-tab i {
-    font-size: 1.25rem;
-}
+    .nav-tab i {
+        font-size: 20px;
+    }
 
-.tab-content {
-    margin-bottom: var(--spacing-xl);
-}
+    .tab-content {
+        margin-bottom: 30px;
+    }
 
-.tab-pane {
-    display: none;
-}
+    /* CSS ekleyerek tab panellerini açıkça kontrol ediyoruz */
+    .tab-pane {
+        display: none; /* Varsayılan olarak gizli */
+    }
 
-.tab-pane.active {
-    display: block;
-}
+    .tab-pane.active {
+        display: block; /* Sadece aktif olan görünür */
+    }
 
-.image-preview {
-    width: 100%;
-    height: 150px;
-    background-color: var(--gray-100);
-    border-radius: var(--border-radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
+    .image-preview {
+        width: 100%;
+        height: 150px;
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
 
-.image-preview img {
-    max-width: 100%;
-    max-height: 100%;
-}
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+    }
 
-.form-switch {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
+    .form-switch {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
 
-.form-switch input {
-    margin-right: 0.5rem;
-    width: 3rem;
-    height: 1.5rem;
-}
+    .form-switch input {
+        margin-right: 8px;
+        width: 48px;
+        height: 24px;
+    }
 
-.form-actions {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-lg);
-}
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 24px;
+    }
 </style>
 
 <script>
+// Doğrudan DOM manipülasyonu ile çalışan basit bir tab sistemi
 document.addEventListener('DOMContentLoaded', function() {
-    // Tabs
-    const tabBtns = document.querySelectorAll('[data-toggle="tab"]');
-    const tabPanes = document.querySelectorAll('.tab-pane');
+    console.log('DOM loaded, initializing tabs'); // Debug için console log
     
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+    // Tab panellerini varsayılan olarak gizle, sadece ilkini göster
+    const allPanes = document.querySelectorAll('.tab-pane');
+    allPanes.forEach(function(pane, index) {
+        if (index === 0) {
+            pane.style.display = 'block'; // İlk tab görünür olsun
+        } else {
+            pane.style.display = 'none'; // Diğerleri gizli
+        }
+    });
+    
+    // Tab tıklama işlemlerini dinle
+    const tabLinks = document.querySelectorAll('.nav-tab');
+    tabLinks.forEach(function(tabLink) {
+        tabLink.addEventListener('click', function(e) {
             e.preventDefault();
+            console.log('Tab clicked:', this.getAttribute('href')); // Debug için console log
             
-            const target = this.getAttribute('href').substring(1);
+            // Tıklanan tab'ın hedefini al (#general, #website, vb.)
+            const targetId = this.getAttribute('href');
             
-            // Deactivate all tabs
-            tabBtns.forEach(btn => btn.classList.remove('active'));
-            tabPanes.forEach(pane => pane.classList.remove('active'));
+            // Tüm tabları deaktive et
+            tabLinks.forEach(function(link) {
+                link.classList.remove('active');
+            });
             
-            // Activate selected tab
+            // Tüm panel içeriklerini gizle
+            allPanes.forEach(function(pane) {
+                pane.style.display = 'none';
+            });
+            
+            // Seçilen tabı aktif et
             this.classList.add('active');
-            document.getElementById(target).classList.add('active');
+            
+            // Seçilen tab'ın içeriğini göster
+            const selectedPane = document.querySelector(targetId);
+            if (selectedPane) {
+                selectedPane.style.display = 'block';
+                console.log('Showing pane:', targetId); // Debug için console log
+            } else {
+                console.error('Target pane not found:', targetId); // Debug için console log
+            }
         });
     });
     
-    // Logo Preview
+    // Sayfa yüklendiğinde ilk tab'ı tıklanmış olarak işaretle
+    if (tabLinks.length > 0) {
+        console.log('Auto-clicking first tab'); // Debug için console log
+        tabLinks[0].click(); // İlk tab'ı otomatik tıkla
+    }
+    
+    // Logo Önizleme
     const logoInput = document.getElementById('logo');
     const logoPreview = document.getElementById('logo_preview');
     
@@ -602,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Favicon Preview
+    // Favicon Önizleme
     const faviconInput = document.getElementById('favicon');
     const faviconPreview = document.getElementById('favicon_preview');
     

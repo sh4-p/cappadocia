@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="<?php echo $currentLang; ?>">
 <head>
@@ -142,8 +141,20 @@
                         <!-- Language Switcher -->
                         <div class="dropdown">
                             <button class="dropdown-toggle">
-                                <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $currentLang; ?>.png" alt="<?php echo $currentLang; ?>">
-                                <span><?php echo $languages[$currentLang]['name']; ?></span>
+                                <?php if (file_exists(BASE_PATH . '/public/uploads/flags/' . $currentLang . '.png')): ?>
+                                    <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $currentLang; ?>.png" alt="<?php echo $currentLang; ?>">
+                                <?php endif; ?>
+                                <span><?php 
+                                    // Safely display the language name
+                                    $currentLangName = '';
+                                    foreach ($languages as $lang) {
+                                        if ($lang['code'] === $currentLang) {
+                                            $currentLangName = $lang['name'];
+                                            break;
+                                        }
+                                    }
+                                    echo $currentLangName;
+                                ?></span>
                                 <i class="material-icons">arrow_drop_down</i>
                             </button>
                             <ul class="dropdown-menu">
@@ -151,7 +162,9 @@
                                     <?php if ($lang['code'] != $currentLang): ?>
                                         <li>
                                             <a href="<?php echo $adminUrl . '?lang=' . $lang['code']; ?>">
-                                                <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $lang['code']; ?>.png" alt="<?php echo $lang['code']; ?>">
+                                                <?php if (file_exists(BASE_PATH . '/public/uploads/flags/' . $lang['code'] . '.png')): ?>
+                                                    <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $lang['code']; ?>.png" alt="<?php echo $lang['code']; ?>">
+                                                <?php endif; ?>
                                                 <span><?php echo $lang['name']; ?></span>
                                             </a>
                                         </li>
