@@ -30,11 +30,14 @@ class Gallery extends Model
         $sql = "SELECT g.*, gd.title, gd.description, 
                 t.id as tour_id, td.name as tour_name, td.slug as tour_slug
                 FROM gallery g
-                LEFT JOIN gallery_details gd ON g.id = gd.gallery_id AND gd.language_id = :langId
+                LEFT JOIN gallery_details gd ON g.id = gd.gallery_id AND gd.language_id = :gdLangId
                 LEFT JOIN tours t ON g.tour_id = t.id
-                LEFT JOIN tour_details td ON t.id = td.tour_id AND td.language_id = :langId";
+                LEFT JOIN tour_details td ON t.id = td.tour_id AND td.language_id = :tdLangId";
         
-        $params = ['langId' => $language['id']];
+        $params = [
+            'gdLangId' => $language['id'],
+            'tdLangId' => $language['id']
+        ];
         
         // Add where clause if conditions exist
         if (!empty($conditions)) {
@@ -102,15 +105,16 @@ class Gallery extends Model
         $sql = "SELECT g.*, gd.title, gd.description, 
                        t.id as tour_id, td.name as tour_name, td.slug as tour_slug
                 FROM {$this->table} g
-                LEFT JOIN gallery_details gd ON g.id = gd.gallery_id AND gd.language_id = :langId
+                LEFT JOIN gallery_details gd ON g.id = gd.gallery_id AND gd.language_id = :gdLangId
                 LEFT JOIN tours t ON g.tour_id = t.id
-                LEFT JOIN tour_details td ON t.id = td.tour_id AND td.language_id = :langId
+                LEFT JOIN tour_details td ON t.id = td.tour_id AND td.language_id = :tdLangId
                 WHERE g.id = :id";
         
         // Execute query
         return $this->db->getRow($sql, [
             'id' => $id,
-            'langId' => $langId
+            'gdLangId' => $langId,
+            'tdLangId' => $langId
         ]);
     }
     
@@ -153,10 +157,10 @@ class Gallery extends Model
         
         // Get category ID if slug
         if (!$isId) {
-            $sql = "SELECT category_id FROM category_details WHERE slug = :slug AND language_id = :langId";
+            $sql = "SELECT category_id FROM category_details WHERE slug = :slug AND language_id = :cdLangId";
             $categoryId = $this->db->getValue($sql, [
                 'slug' => $categoryIdOrSlug,
-                'langId' => $langId
+                'cdLangId' => $langId
             ]);
             
             if (!$categoryId) {
@@ -170,9 +174,9 @@ class Gallery extends Model
         $sql = "SELECT g.*, gd.title, gd.description, 
                        t.id as tour_id, td.name as tour_name, td.slug as tour_slug
                 FROM {$this->table} g
-                LEFT JOIN gallery_details gd ON g.id = gd.gallery_id AND gd.language_id = :langId
+                LEFT JOIN gallery_details gd ON g.id = gd.gallery_id AND gd.language_id = :gdLangId
                 LEFT JOIN tours t ON g.tour_id = t.id
-                LEFT JOIN tour_details td ON t.id = td.tour_id AND td.language_id = :langId
+                LEFT JOIN tour_details td ON t.id = td.tour_id AND td.language_id = :tdLangId
                 WHERE g.is_active = 1 AND t.category_id = :categoryId";
         
         // Add order by
@@ -189,7 +193,8 @@ class Gallery extends Model
         
         // Execute query
         return $this->db->getRows($sql, [
-            'langId' => $langId,
+            'gdLangId' => $langId,
+            'tdLangId' => $langId,
             'categoryId' => $categoryId
         ]);
     }
@@ -216,10 +221,10 @@ class Gallery extends Model
         
         // Get category ID if slug
         if (!$isId) {
-            $sql = "SELECT category_id FROM category_details WHERE slug = :slug AND language_id = :langId";
+            $sql = "SELECT category_id FROM category_details WHERE slug = :slug AND language_id = :cdLangId";
             $categoryId = $this->db->getValue($sql, [
                 'slug' => $categoryIdOrSlug,
-                'langId' => $langId
+                'cdLangId' => $langId
             ]);
             
             if (!$categoryId) {
@@ -363,10 +368,10 @@ class Gallery extends Model
             // Update details for each language
             foreach ($detailsData as $langId => $details) {
                 // Check if details exist
-                $sql = "SELECT id FROM gallery_details WHERE gallery_id = :galleryId AND language_id = :langId";
+                $sql = "SELECT id FROM gallery_details WHERE gallery_id = :galleryId AND language_id = :gdLangId";
                 $detailsId = $this->db->getValue($sql, [
                     'galleryId' => $galleryId,
-                    'langId' => $langId
+                    'gdLangId' => $langId
                 ]);
                 
                 if ($detailsId) {

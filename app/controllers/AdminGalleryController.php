@@ -100,10 +100,10 @@ class AdminGalleryController extends Controller
         }
         
         // Get all categories for filter
-        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'c.name ASC');
+        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'cd.name ASC');
         
         // Get tours for the create form
-        $tours = $tourModel->getAllWithDetails($langCode, ['t.is_active' => 1], 't.name ASC');
+        $tours = $tourModel->getAllWithDetails($langCode, ['t.is_active' => 1], 'td.name ASC');
         
         // Calculate pagination
         $totalPages = ceil($totalItems / $limit);
@@ -137,7 +137,7 @@ class AdminGalleryController extends Controller
         $languageModel = $this->loadModel('LanguageModel');
         
         // Get tours
-        $tours = $tourModel->getAllWithDetails($langCode, ['t.is_active' => 1], 't.name ASC');
+        $tours = $tourModel->getAllWithDetails($langCode, ['t.is_active' => 1], 'td.name ASC');
         
         // Get languages
         $languages = $languageModel->getActiveLanguages();
@@ -243,7 +243,7 @@ class AdminGalleryController extends Controller
         }
         
         // Get tours
-        $tours = $tourModel->getAllWithDetails($langCode, ['t.is_active' => 1], 't.name ASC');
+        $tours = $tourModel->getAllWithDetails($langCode, ['t.is_active' => 1], 'td.name ASC');
         
         // Get languages
         $languages = $languageModel->getActiveLanguages();

@@ -81,7 +81,7 @@ class AdminToursController extends Controller
             : $tourModel->getAllWithDetails($langCode, $conditions);
         
         // Get categories for filter
-        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'c.name ASC');
+        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'cd.name ASC');
         
         // Render view
         $this->render('admin/tours/index', [
@@ -107,7 +107,7 @@ class AdminToursController extends Controller
         $languageModel = $this->loadModel('LanguageModel');
         
         // Get categories
-        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'c.name ASC');
+        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'cd.name ASC');
         
         // Get languages
         $languages = $languageModel->getActiveLanguages();
@@ -263,7 +263,7 @@ class AdminToursController extends Controller
         }
         
         // Get categories
-        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'c.name ASC');
+        $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'cd.name ASC');
         
         // Get languages
         $languages = $languageModel->getActiveLanguages();
