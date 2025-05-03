@@ -110,6 +110,121 @@ class AdminPagesController extends Controller
             if (!empty($errors)) {
                 $this->session->setFlash('error', implode('<br>', $errors));
                 
+                // Return to create page
+                $this->render('admin/pages/create', [
+                    'pageTitle' => __('add_page'),
+                    'languages' => $languages,
+                    'templates' => $templates,
+                    'details' => $details
+                ], 'admin');
+                
+                return;
+            }
+            
+            // Generate slugs if not provided
+            foreach ($details as $langId => &$langDetails) {
+                if (empty($langDetails['slug'])) {
+                    $langDetails['slug'] = $pageModel->generateSlug($langDetails['title'], $langId);
+                }
+            }
+            
+            // Prepare page data
+            $pageData = [
+                'template' => $template,
+                'order_number' => $orderNumber,
+                'is_active' => $isActive
+            ];
+            
+            // Create page
+            $pageId = $pageModel->addWithDetails($pageData, $details);
+            
+            if ($pageId) {
+                $this->session->setFlash('success', __('page_added'));
+                
+                // Redirect to pages list
+                $this->redirect('admin/pages');
+            } else {
+                $this->session->setFlash('error', __('page_add_failed'));
+            }
+        }
+        
+        // Render view
+        $this->render('admin/pages/create', [
+            'pageTitle' => __('add_page'),
+            'languages' => $languages,
+            'templates' => $templates
+        ], 'admin');
+    }
+    
+    /**
+     * Edit action - edit a page
+     * 
+     * @param int $id Page ID
+     */
+    public function edit($id)
+    {
+        // Get current language
+        $langCode = $this->language->getCurrentLanguage();
+        
+        // Load page model
+        $pageModel = $this->loadModel('Page');
+        
+        // Load language model
+        $languageModel = $this->loadModel('LanguageModel');
+        
+        // Get page
+        $page = $pageModel->getWithDetails($id, $langCode);
+        
+        // Check if page exists
+        if (!$page) {
+            $this->session->setFlash('error', __('page_not_found'));
+            $this->redirect('admin/pages');
+        }
+        
+        // Get all languages
+        $languages = $languageModel->getActiveLanguages();
+        
+        // Get templates
+        $templates = $pageModel->getTemplates();
+        
+        // Get page details for all languages
+        $pageDetails = [];
+        
+        foreach ($languages as $lang) {
+            $langPage = $pageModel->getWithDetails($id, $lang['code']);
+            if ($langPage) {
+                $pageDetails[$lang['id']] = [
+                    'title' => $langPage['title'],
+                    'slug' => $langPage['slug'],
+                    'content' => $langPage['content'],
+                    'meta_title' => $langPage['meta_title'],
+                    'meta_description' => $langPage['meta_description']
+                ];
+            }
+        }
+        
+        // Check if request is POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Get form data
+            $template = $this->post('template');
+            $orderNumber = $this->post('order_number', 0);
+            $isActive = $this->post('is_active', 0);
+            $details = $this->post('details', []);
+            
+            // Validate inputs
+            $errors = [];
+            
+            // Validate details for each language
+            foreach ($languages as $lang) {
+                if (empty($details[$lang['id']]['title'])) {
+                    $errors[] = sprintf(__('title_required_for_lang'), $lang['name']);
+                }
+            }
+            
+            // If there are errors, set error message and return
+            if (!empty($errors)) {
+                $this->session->setFlash('error', implode('<br>', $errors));
+                
                 // Update page details with POST data
                 $pageDetails = $details;
                 
@@ -250,119 +365,4 @@ class AdminPagesController extends Controller
             'message' => $success ? __('order_updated') : __('order_update_failed')
         ]);
     }
-} sprintf(__('title_required_for_lang'), $lang['name']);
-                }
-            }
-            
-            // If there are errors, set error message and return
-            if (!empty($errors)) {
-                $this->session->setFlash('error', implode('<br>', $errors));
-                
-                // Return to create page
-                $this->render('admin/pages/create', [
-                    'pageTitle' => __('add_page'),
-                    'languages' => $languages,
-                    'templates' => $templates,
-                    'details' => $details
-                ], 'admin');
-                
-                return;
-            }
-            
-            // Generate slugs if not provided
-            foreach ($details as $langId => &$langDetails) {
-                if (empty($langDetails['slug'])) {
-                    $langDetails['slug'] = $pageModel->generateSlug($langDetails['title'], $langId);
-                }
-            }
-            
-            // Prepare page data
-            $pageData = [
-                'template' => $template,
-                'order_number' => $orderNumber,
-                'is_active' => $isActive
-            ];
-            
-            // Create page
-            $pageId = $pageModel->addWithDetails($pageData, $details);
-            
-            if ($pageId) {
-                $this->session->setFlash('success', __('page_added'));
-                
-                // Redirect to pages list
-                $this->redirect('admin/pages');
-            } else {
-                $this->session->setFlash('error', __('page_add_failed'));
-            }
-        }
-        
-        // Render view
-        $this->render('admin/pages/create', [
-            'pageTitle' => __('add_page'),
-            'languages' => $languages,
-            'templates' => $templates
-        ], 'admin');
-    }
-    
-    /**
-     * Edit action - edit a page
-     * 
-     * @param int $id Page ID
-     */
-    public function edit($id)
-    {
-        // Get current language
-        $langCode = $this->language->getCurrentLanguage();
-        
-        // Load page model
-        $pageModel = $this->loadModel('Page');
-        
-        // Load language model
-        $languageModel = $this->loadModel('LanguageModel');
-        
-        // Get page
-        $page = $pageModel->getWithDetails($id, $langCode);
-        
-        // Check if page exists
-        if (!$page) {
-            $this->session->setFlash('error', __('page_not_found'));
-            $this->redirect('admin/pages');
-        }
-        
-        // Get all languages
-        $languages = $languageModel->getActiveLanguages();
-        
-        // Get templates
-        $templates = $pageModel->getTemplates();
-        
-        // Get page details for all languages
-        $pageDetails = [];
-        
-        foreach ($languages as $lang) {
-            $langPage = $pageModel->getWithDetails($id, $lang['code']);
-            if ($langPage) {
-                $pageDetails[$lang['id']] = [
-                    'title' => $langPage['title'],
-                    'slug' => $langPage['slug'],
-                    'content' => $langPage['content'],
-                    'meta_title' => $langPage['meta_title'],
-                    'meta_description' => $langPage['meta_description']
-                ];
-            }
-        }
-        
-        // Check if request is POST
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Get form data
-            $template = $this->post('template');
-            $orderNumber = $this->post('order_number', 0);
-            $isActive = $this->post('is_active', 0);
-            $details = $this->post('details', []);
-            
-            // Validate inputs
-            $errors = [];
-            
-            // Validate details for each language
-            foreach ($languages as $lang) {
-                if (empty($details[$lang['id']]['title'])) {
-                    $errors[] =
+}

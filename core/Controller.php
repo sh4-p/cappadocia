@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Base Controller Class
@@ -204,5 +203,36 @@ class Controller
         if (!$this->isLoggedIn()) {
             $this->redirect('admin/login');
         }
+    }
+    
+    /**
+     * Get controller name
+     * 
+     * @return string Controller name
+     */
+    public function getControllerName()
+    {
+        $class = get_class($this);
+        return str_replace('Controller', '', $class);
+    }
+    
+    /**
+     * Get action name
+     * 
+     * @return string Action name
+     */
+    public function getActionName()
+    {
+        $action = '';
+        
+        if (isset($_GET['url'])) {
+            $url = explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
+            
+            if (count($url) >= 2) {
+                $action = $url[1];
+            }
+        }
+        
+        return $action ?: 'index';
     }
 }

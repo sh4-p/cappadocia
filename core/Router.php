@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Router Class
@@ -37,16 +36,16 @@ class Router
         $this->addRoute('tours/([a-zA-Z0-9-]+)', 'Tours', 'detail', ['slug']);
         
         // Admin tours routes
-        $this->addRoute($this->adminPrefix . '/tours', 'Admin/Tours', 'index');
-        $this->addRoute($this->adminPrefix . '/tours/create', 'Admin/Tours', 'create');
-        $this->addRoute($this->adminPrefix . '/tours/edit/([0-9]+)', 'Admin/Tours', 'edit', ['id']);
-        $this->addRoute($this->adminPrefix . '/tours/delete/([0-9]+)', 'Admin/Tours', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours', 'Tours', 'index');
+        $this->addRoute($this->adminPrefix . '/tours/create', 'Tours', 'create');
+        $this->addRoute($this->adminPrefix . '/tours/edit/([0-9]+)', 'Tours', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/delete/([0-9]+)', 'Tours', 'delete', ['id']);
         
         // Categories routes
-        $this->addRoute($this->adminPrefix . '/categories', 'Admin/Categories', 'index');
-        $this->addRoute($this->adminPrefix . '/categories/create', 'Admin/Categories', 'create');
-        $this->addRoute($this->adminPrefix . '/categories/edit/([0-9]+)', 'Admin/Categories', 'edit', ['id']);
-        $this->addRoute($this->adminPrefix . '/categories/delete/([0-9]+)', 'Admin/Categories', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/categories', 'AdminCategories', 'index');
+        $this->addRoute($this->adminPrefix . '/categories/create', 'AdminCategories', 'create');
+        $this->addRoute($this->adminPrefix . '/categories/edit/([0-9]+)', 'AdminCategories', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/categories/delete/([0-9]+)', 'AdminCategories', 'delete', ['id']);
         
         // Booking routes
         $this->addRoute('booking', 'Booking', 'index');
@@ -56,17 +55,17 @@ class Router
         
         // Admin booking routes
         $this->addRoute($this->adminPrefix . '/bookings', 'AdminBookings', 'index');
-        $this->addRoute($this->adminPrefix . '/bookings/view/([0-9]+)', 'Admin/Bookings', 'view', ['id']);
-        $this->addRoute($this->adminPrefix . '/bookings/status/([0-9]+)/([a-z]+)', 'Admin/Bookings', 'updateStatus', ['id', 'status']);
+        $this->addRoute($this->adminPrefix . '/bookings/view/([0-9]+)', 'AdminBookings', 'view', ['id']);
+        $this->addRoute($this->adminPrefix . '/bookings/status/([0-9]+)/([a-z]+)', 'AdminBookings', 'status', ['id', 'status']);
         
         // Gallery routes
         $this->addRoute('gallery', 'Gallery', 'index');
         
         // Admin gallery routes
-        $this->addRoute($this->adminPrefix . '/gallery', 'Admin/Gallery', 'index');
-        $this->addRoute($this->adminPrefix . '/gallery/create', 'Admin/Gallery', 'create');
-        $this->addRoute($this->adminPrefix . '/gallery/edit/([0-9]+)', 'Admin/Gallery', 'edit', ['id']);
-        $this->addRoute($this->adminPrefix . '/gallery/delete/([0-9]+)', 'Admin/Gallery', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/gallery', 'AdminGallery', 'index');
+        $this->addRoute($this->adminPrefix . '/gallery/create', 'AdminGallery', 'create');
+        $this->addRoute($this->adminPrefix . '/gallery/edit/([0-9]+)', 'AdminGallery', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/gallery/delete/([0-9]+)', 'AdminGallery', 'delete', ['id']);
         
         // Contact route
         $this->addRoute('contact', 'Contact', 'index');
@@ -75,27 +74,27 @@ class Router
         $this->addRoute('about', 'About', 'index');
         
         // Settings routes
-        $this->addRoute($this->adminPrefix . '/settings', 'Admin/Settings', 'index');
-        $this->addRoute($this->adminPrefix . '/settings/update', 'Admin/Settings', 'update');
+        $this->addRoute($this->adminPrefix . '/settings', 'AdminSettings', 'index');
+        $this->addRoute($this->adminPrefix . '/settings/update', 'AdminSettings', 'update');
         
         // Language routes
-        $this->addRoute($this->adminPrefix . '/languages', 'Admin/Languages', 'index');
-        $this->addRoute($this->adminPrefix . '/languages/create', 'Admin/Languages', 'create');
-        $this->addRoute($this->adminPrefix . '/languages/edit/([0-9]+)', 'Admin/Languages', 'edit', ['id']);
-        $this->addRoute($this->adminPrefix . '/languages/delete/([0-9]+)', 'Admin/Languages', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/languages', 'AdminLanguages', 'index');
+        $this->addRoute($this->adminPrefix . '/languages/create', 'AdminLanguages', 'create');
+        $this->addRoute($this->adminPrefix . '/languages/edit/([0-9]+)', 'AdminLanguages', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/languages/delete/([0-9]+)', 'AdminLanguages', 'delete', ['id']);
         
         // Translation routes
-        $this->addRoute($this->adminPrefix . '/translations', 'Admin/Translations', 'index');
-        $this->addRoute($this->adminPrefix . '/translations/edit/([a-z]+)', 'Admin/Translations', 'edit', ['lang']);
+        $this->addRoute($this->adminPrefix . '/translations', 'AdminTranslations', 'index');
+        $this->addRoute($this->adminPrefix . '/translations/edit/([a-z]+)', 'AdminTranslations', 'edit', ['lang']);
         
         // Pages routes
         $this->addRoute('page/([a-zA-Z0-9-]+)', 'Page', 'show', ['slug']);
         
         // Admin pages routes
-        $this->addRoute($this->adminPrefix . '/pages', 'Admin/Pages', 'index');
-        $this->addRoute($this->adminPrefix . '/pages/create', 'Admin/Pages', 'create');
-        $this->addRoute($this->adminPrefix . '/pages/edit/([0-9]+)', 'Admin/Pages', 'edit', ['id']);
-        $this->addRoute($this->adminPrefix . '/pages/delete/([0-9]+)', 'Admin/Pages', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/pages', 'AdminPages', 'index');
+        $this->addRoute($this->adminPrefix . '/pages/create', 'AdminPages', 'create');
+        $this->addRoute($this->adminPrefix . '/pages/edit/([0-9]+)', 'AdminPages', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/pages/delete/([0-9]+)', 'AdminPages', 'delete', ['id']);
     }
 
     /**
