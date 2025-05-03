@@ -13,32 +13,32 @@
         <!-- Settings Tabs -->
         <div class="col-md-3">
             <div class="nav-tabs-container">
-                <div class="nav-tabs vertical">
-                    <a href="#general" class="nav-tab active" data-toggle="tab">
+                <div class="settings-nav-tabs">
+                    <a href="#settings-general" class="settings-nav-tab active" data-tab="general">
                         <i class="material-icons">settings</i>
                         <span><?php _e('general'); ?></span>
                     </a>
-                    <a href="#website" class="nav-tab" data-toggle="tab">
+                    <a href="#settings-website" class="settings-nav-tab" data-tab="website">
                         <i class="material-icons">language</i>
                         <span><?php _e('website'); ?></span>
                     </a>
-                    <a href="#contact" class="nav-tab" data-toggle="tab">
+                    <a href="#settings-contact" class="settings-nav-tab" data-tab="contact">
                         <i class="material-icons">contact_mail</i>
                         <span><?php _e('contact'); ?></span>
                     </a>
-                    <a href="#social" class="nav-tab" data-toggle="tab">
+                    <a href="#settings-social" class="settings-nav-tab" data-tab="social">
                         <i class="material-icons">share</i>
                         <span><?php _e('social_media'); ?></span>
                     </a>
-                    <a href="#payments" class="nav-tab" data-toggle="tab">
+                    <a href="#settings-payments" class="settings-nav-tab" data-tab="payments">
                         <i class="material-icons">payment</i>
                         <span><?php _e('payments'); ?></span>
                     </a>
-                    <a href="#email" class="nav-tab" data-toggle="tab">
+                    <a href="#settings-email" class="settings-nav-tab" data-tab="email">
                         <i class="material-icons">email</i>
                         <span><?php _e('email'); ?></span>
                     </a>
-                    <a href="#advanced" class="nav-tab" data-toggle="tab">
+                    <a href="#settings-advanced" class="settings-nav-tab" data-tab="advanced">
                         <i class="material-icons">code</i>
                         <span><?php _e('advanced'); ?></span>
                     </a>
@@ -48,9 +48,9 @@
         
         <!-- Settings Content -->
         <div class="col-md-9">
-            <div class="tab-content">
+            <div class="settings-tab-content">
                 <!-- General Settings -->
-                <div id="general" class="tab-pane active">
+                <div id="settings-general" class="settings-tab-pane active">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('general_settings'); ?></h3>
@@ -122,7 +122,7 @@
                 </div>
                 
                 <!-- Website Settings -->
-                <div id="website" class="tab-pane">
+                <div id="settings-website" class="settings-tab-pane">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('website_settings'); ?></h3>
@@ -184,7 +184,7 @@
                 </div>
                 
                 <!-- Contact Settings -->
-                <div id="contact" class="tab-pane">
+                <div id="settings-contact" class="settings-tab-pane">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('contact_settings'); ?></h3>
@@ -225,7 +225,7 @@
                 </div>
                 
                 <!-- Social Media Settings -->
-                <div id="social" class="tab-pane">
+                <div id="settings-social" class="settings-tab-pane">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('social_media_settings'); ?></h3>
@@ -283,7 +283,7 @@
                 </div>
                 
                 <!-- Payment Settings -->
-                <div id="payments" class="tab-pane">
+                <div id="settings-payments" class="settings-tab-pane">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('payment_settings'); ?></h3>
@@ -351,7 +351,7 @@
                 </div>
                 
                 <!-- Email Settings -->
-                <div id="email" class="tab-pane">
+                <div id="settings-email" class="settings-tab-pane">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('email_settings'); ?></h3>
@@ -414,7 +414,7 @@
                 </div>
                 
                 <!-- Advanced Settings -->
-                <div id="advanced" class="tab-pane">
+                <div id="settings-advanced" class="settings-tab-pane">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('advanced_settings'); ?></h3>
@@ -481,20 +481,21 @@
 </form>
 
 <style>
-    .nav-tabs-container {
+    /* Settings tabs styles - using unique class names to avoid conflicts */
+    .settings-nav-tabs-container {
         background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         margin-bottom: 20px;
     }
 
-    .nav-tabs.vertical {
+    .settings-nav-tabs {
         display: flex;
         flex-direction: column;
         border-bottom: none;
     }
 
-    .nav-tab {
+    .settings-nav-tab {
         display: flex;
         align-items: center;
         gap: 12px;
@@ -506,28 +507,29 @@
         text-decoration: none;
     }
 
-    .nav-tab:hover,
-    .nav-tab.active {
+    .settings-nav-tab:hover,
+    .settings-nav-tab.active {
         background-color: #f5f5f5;
         color: #2196f3;
         border-left-color: #2196f3;
     }
 
-    .nav-tab i {
+    .settings-nav-tab i {
         font-size: 20px;
     }
 
-    .tab-content {
+    .settings-tab-content {
         margin-bottom: 30px;
     }
 
-    /* CSS ekleyerek tab panellerini açıkça kontrol ediyoruz */
-    .tab-pane {
-        display: none; /* Varsayılan olarak gizli */
+    /* Hide all tab panes by default */
+    .settings-tab-pane {
+        display: none;
     }
 
-    .tab-pane.active {
-        display: block; /* Sadece aktif olan görünür */
+    /* Show active tab pane */
+    .settings-tab-pane.active {
+        display: block;
     }
 
     .image-preview {
@@ -566,94 +568,97 @@
 </style>
 
 <script>
-// Doğrudan DOM manipülasyonu ile çalışan basit bir tab sistemi
+// Settings tabs manager with unique function name
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing tabs'); // Debug için console log
+    console.log('DOM loaded, initializing settings tabs');
     
-    // Tab panellerini varsayılan olarak gizle, sadece ilkini göster
-    const allPanes = document.querySelectorAll('.tab-pane');
-    allPanes.forEach(function(pane, index) {
-        if (index === 0) {
-            pane.style.display = 'block'; // İlk tab görünür olsun
-        } else {
-            pane.style.display = 'none'; // Diğerleri gizli
-        }
-    });
-    
-    // Tab tıklama işlemlerini dinle
-    const tabLinks = document.querySelectorAll('.nav-tab');
-    tabLinks.forEach(function(tabLink) {
-        tabLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Tab clicked:', this.getAttribute('href')); // Debug için console log
-            
-            // Tıklanan tab'ın hedefini al (#general, #website, vb.)
-            const targetId = this.getAttribute('href');
-            
-            // Tüm tabları deaktive et
-            tabLinks.forEach(function(link) {
-                link.classList.remove('active');
+    // Use a completely separate namespace for our tab management
+    const SettingsTabs = {
+        init: function() {
+            this.tabLinks = document.querySelectorAll('.settings-nav-tab');
+            this.tabPanes = document.querySelectorAll('.settings-tab-pane');
+            this.bindEvents();
+            this.activateFirstTab();
+            this.initImagePreviews();
+        },
+        
+        bindEvents: function() {
+            // Use arrow function to keep 'this' context
+            this.tabLinks.forEach(tabLink => {
+                tabLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.activateTab(tabLink);
+                });
             });
+        },
+        
+        activateTab: function(tabLink) {
+            console.log('Activating tab:', tabLink.getAttribute('data-tab'));
             
-            // Tüm panel içeriklerini gizle
-            allPanes.forEach(function(pane) {
-                pane.style.display = 'none';
-            });
+            // Remove active class from all tabs and panes
+            this.tabLinks.forEach(link => link.classList.remove('active'));
+            this.tabPanes.forEach(pane => pane.classList.remove('active'));
             
-            // Seçilen tabı aktif et
-            this.classList.add('active');
+            // Add active class to selected tab and its corresponding pane
+            tabLink.classList.add('active');
+            const tabId = 'settings-' + tabLink.getAttribute('data-tab');
+            const tabPane = document.getElementById(tabId);
             
-            // Seçilen tab'ın içeriğini göster
-            const selectedPane = document.querySelector(targetId);
-            if (selectedPane) {
-                selectedPane.style.display = 'block';
-                console.log('Showing pane:', targetId); // Debug için console log
+            if (tabPane) {
+                tabPane.classList.add('active');
+                console.log('Tab pane activated:', tabId);
             } else {
-                console.error('Target pane not found:', targetId); // Debug için console log
+                console.error('Tab pane not found:', tabId);
             }
-        });
-    });
-    
-    // Sayfa yüklendiğinde ilk tab'ı tıklanmış olarak işaretle
-    if (tabLinks.length > 0) {
-        console.log('Auto-clicking first tab'); // Debug için console log
-        tabLinks[0].click(); // İlk tab'ı otomatik tıkla
-    }
-    
-    // Logo Önizleme
-    const logoInput = document.getElementById('logo');
-    const logoPreview = document.getElementById('logo_preview');
-    
-    if (logoInput && logoPreview) {
-        logoInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    logoPreview.src = e.target.result;
-                }
-                
-                reader.readAsDataURL(this.files[0]);
+        },
+        
+        activateFirstTab: function() {
+            if (this.tabLinks.length > 0) {
+                console.log('Auto-activating first tab');
+                this.activateTab(this.tabLinks[0]);
             }
-        });
-    }
-    
-    // Favicon Önizleme
-    const faviconInput = document.getElementById('favicon');
-    const faviconPreview = document.getElementById('favicon_preview');
-    
-    if (faviconInput && faviconPreview) {
-        faviconInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    faviconPreview.src = e.target.result;
-                }
-                
-                reader.readAsDataURL(this.files[0]);
+        },
+        
+        initImagePreviews: function() {
+            // Logo Preview
+            const logoInput = document.getElementById('logo');
+            const logoPreview = document.getElementById('logo_preview');
+            
+            if (logoInput && logoPreview) {
+                logoInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            logoPreview.src = e.target.result;
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
             }
-        });
-    }
+            
+            // Favicon Preview
+            const faviconInput = document.getElementById('favicon');
+            const faviconPreview = document.getElementById('favicon_preview');
+            
+            if (faviconInput && faviconPreview) {
+                faviconInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            faviconPreview.src = e.target.result;
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        }
+    };
+    
+    // Initialize settings tabs
+    SettingsTabs.init();
 });
 </script>
