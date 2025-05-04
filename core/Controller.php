@@ -60,6 +60,10 @@ class Controller
         // Check if user is logged in for admin area
         $this->data['isLoggedIn'] = $this->session->get('user_id') ? true : false;
         
+        // Important: make language instance available globally for LanguageHelper
+        global $language;
+        $language = $this->language;
+        
         // Load translations for the current language
         $translationModel = $this->loadModel('Translation');
         $this->data['translations'] = $translationModel->getTranslationsForLanguage($langCode);

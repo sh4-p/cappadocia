@@ -51,6 +51,19 @@ class Language
     {
         return $this->currentLanguage;
     }
+    public function translate($key, $params = [])
+    {
+        $translation = isset($this->translations[$key]) ? $this->translations[$key] : $key;
+        
+        // Replace any parameters in the translation
+        if (!empty($params)) {
+            foreach ($params as $param => $value) {
+                $translation = str_replace(':' . $param, $value, $translation);
+            }
+        }
+        
+        return $translation;
+    }
     
     /**
      * Load translations for language
@@ -64,7 +77,14 @@ class Language
         $langId = $this->db->getValue($sql, ['code' => $langCode]);
         
         if (!$langId) {
-            return;
+            // If language not found in database, use default language
+            $langCode = DEFAULT_LANGUAGE;
+            $sql = "SELECT id FROM languages WHERE code = :code";
+            $langId = $this->db->getValue($sql, ['code' => $langCode]);
+            
+            if (!$langId) {
+                return; // Still no language ID, nothing to load
+            }
         }
         
         // Get translations
@@ -80,6 +100,9 @@ class Language
         foreach ($translations as $translation) {
             $this->translations[$translation['key_name']] = $translation['value'];
         }
+        
+        // Debug - log loaded translations count
+        error_log("Loaded " . count($this->translations) . " translations for language $langCode (ID: $langId)");
     }
     
     /**
@@ -91,6 +114,10 @@ class Language
      */
     public function get($key, $default = null)
     {
+        // Debug
+        error_log("Requesting translation for key: {$key}, has translation: " . 
+            (isset($this->translations[$key]) ? 'Yes' : 'No'));
+            
         return $this->translations[$key] ?? ($default ?? $key);
     }
     

@@ -40,8 +40,7 @@ class Tour extends Model
         
         $langId = $language['id'];
         
-        // Build a custom SQL query with the language ID directly in the SQL
-        // This avoids parameter binding issues
+        // Start building the SQL query
         $sql = "SELECT t.*, td.name, td.slug, td.short_description, td.description, 
                 td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
                 c.id as category_id, cd.name as category_name, cd.slug as category_slug
@@ -51,20 +50,33 @@ class Tour extends Model
                 LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = {$langId}
                 WHERE td.language_id = {$langId}";
         
-        // Add conditions - handle t.is_active condition directly
-        if (isset($conditions['t.is_active'])) {
-            $isActive = (int)$conditions['t.is_active'];
-            $sql .= " AND t.is_active = {$isActive}";
-            unset($conditions['t.is_active']);
-        }
-        
-        // Handle any remaining conditions
-        foreach ($conditions as $field => $value) {
-            if (is_numeric($value)) {
-                $sql .= " AND {$field} = {$value}";
-            } else {
-                $value = $this->db->pdo->quote($value);
-                $sql .= " AND {$field} = {$value}";
+        // Add conditions
+        if (!empty($conditions)) {
+            // Handle t.is_active condition directly
+            if (isset($conditions['t.is_active'])) {
+                $isActive = (int)$conditions['t.is_active'];
+                $sql .= " AND t.is_active = {$isActive}";
+                unset($conditions['t.is_active']);
+            }
+            
+            // Handle remaining conditions
+            foreach ($conditions as $field => $value) {
+                // Check if field contains a comparison operator (like !=)
+                if (strpos($field, '!=') !== false) {
+                    $fieldName = str_replace('!=', '', $field);
+                    $fieldName = trim($fieldName);
+                    $sql .= " AND {$fieldName} != " . (is_numeric($value) ? (int)$value : "'" . str_replace("'", "''", $value) . "'");
+                } 
+                else if (is_numeric($value)) {
+                    $sql .= " AND {$field} = {$value}";
+                } 
+                else if ($value === null) {
+                    $sql .= " AND {$field} IS NULL";
+                }
+                else {
+                    $safeValue = str_replace("'", "''", $value);
+                    $sql .= " AND {$field} = '{$safeValue}'";
+                }
             }
         }
         
@@ -82,7 +94,7 @@ class Tour extends Model
             }
         }
         
-        // Execute the query without parameters
+        // Execute the query
         return $this->query($sql);
     }
     
@@ -92,36 +104,50 @@ class Tour extends Model
      * @param int|string $idOrSlug Tour ID or slug
      * @param string $langCode Language code
      * @return array|false Tour
-     */
+     *///
     public function getWithDetails($idOrSlug, $langCode)
     {
         // Get language ID
-        $sql = "SELECT id FROM languages WHERE code = :code";
-        $langId = $this->db->getValue($sql, ['code' => $langCode]);
+        $languageModel = new LanguageModel($this->db);
+        $language = $languageModel->getByCode($langCode);
         
-        if (!$langId) {
+        if (!$language) {
             return false;
         }
+        
+        $langId = $language['id'];
         
         // Determine if ID or slug
         $isId = is_numeric($idOrSlug);
         
-        // Build SQL query
+        // Manually escape the slug to prevent SQL injection
+        if (!$isId) {
+            // Simple manual escaping - replace single quotes with two single quotes
+            $safeSlug = str_replace("'", "''", $idOrSlug);
+        }
+        
+        // Build and execute the query
         $sql = "SELECT t.*, td.name, td.slug, td.short_description, td.description, 
-                       td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
-                       c.id as category_id, cd.name as category_name, cd.slug as category_slug
+                td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
+                c.id as category_id, cd.name as category_name, cd.slug as category_slug
                 FROM tours t
                 JOIN tour_details td ON t.id = td.tour_id
                 LEFT JOIN categories c ON t.category_id = c.id
-                LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = :langId
-                WHERE td.language_id = :langId
-                AND " . ($isId ? "t.id = :id" : "td.slug = :slug");
+                LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = {$langId}
+                WHERE td.language_id = {$langId} AND ";
+                
+        // Add the condition based on ID or slug
+        if ($isId) {
+            $sql .= "t.id = " . (int)$idOrSlug;
+        } else {
+            $sql .= "td.slug = '{$safeSlug}'";
+        }
         
-        // Execute query
-        return $this->db->getRow($sql, [
-            'langId' => $langId,
-            ($isId ? 'id' : 'slug') => $idOrSlug
-        ]);
+        // Execute the query directly without parameter binding
+        $result = $this->query($sql);
+        
+        // Return the first result or false if no result found
+        return !empty($result) ? $result[0] : false;
     }
     
     /**

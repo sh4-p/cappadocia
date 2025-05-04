@@ -73,10 +73,26 @@ class App
         $url = $this->parseUrl();
         
         // Handle language code in URL if present
-        if (!empty($url) && array_key_exists($url[0], json_decode(AVAILABLE_LANGUAGES, true))) {
-            $this->language->setLanguage($url[0]);
-            $this->session->set('lang', $url[0]);
-            array_shift($url);
+        if (!empty($url)) {
+            $availableLanguages = json_decode(AVAILABLE_LANGUAGES, true);
+            if (isset($url[0]) && array_key_exists($url[0], $availableLanguages)) {
+                // Valid language in URL
+                $this->language->setLanguage($url[0]);
+                $this->session->set('lang', $url[0]);
+                array_shift($url);
+            } else {
+                // No valid language in URL, add language and redirect
+                $lang = $this->session->get('lang') ?: $this->detectBrowserLanguage();
+                $this->language->setLanguage($lang);
+                
+                // Only redirect if not in admin area
+                if ($url[0] !== 'admin') {
+                    $requestUri = $_SERVER['REQUEST_URI'];
+                    $redirectUrl = rtrim(APP_URL, '/') . '/' . $lang . $requestUri;
+                    header('Location: ' . $redirectUrl);
+                    exit;
+                }
+            }
         }
         
         // Route the request

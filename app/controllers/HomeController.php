@@ -98,31 +98,35 @@ class HomeController extends Controller
         // Set language in session
         $this->session->set('lang', $lang);
         
-        // Redirect to referer or homepage
-        $referer = $_SERVER['HTTP_REFERER'] ?? null;
+        // Get referer URL
+        $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
         
-        if ($referer) {
-            // Extract current language from URL if exists
-            $currentLang = $this->language->getCurrentLanguage();
-            $refererParts = parse_url($referer);
-            $path = $refererParts['path'] ?? '';
-            $pathParts = explode('/', trim($path, '/'));
+        if (!empty($referer)) {
+            // Parse URL
+            $parts = parse_url($referer);
+            $path = isset($parts['path']) ? $parts['path'] : '';
             
-            // Check if first part is a language code
-            $availableLanguages = $this->language->getAvailableLanguages();
-            if (!empty($pathParts) && array_key_exists($pathParts[0], $availableLanguages)) {
-                // Replace language code in URL
-                $pathParts[0] = $lang;
-                $newPath = '/' . implode('/', $pathParts);
+            // Get current language
+            $currentLang = $this->language->getCurrentLanguage();
+            
+            // Get base URL path
+            $basePath = parse_url(APP_URL, PHP_URL_PATH) ?: '';
+            $langPrefix = $basePath . '/' . $currentLang;
+            
+            // Check if path starts with language code
+            if (strpos($path, $langPrefix) === 0) {
+                // Replace language code in path
+                $newPath = $basePath . '/' . $lang . substr($path, strlen($langPrefix));
                 
-                // Rebuild URL
-                $newUrl = $refererParts['scheme'] . '://' . $refererParts['host'];
-                if (isset($refererParts['port'])) {
-                    $newUrl .= ':' . $refererParts['port'];
+                // Build new URL
+                $newUrl = isset($parts['scheme']) ? $parts['scheme'] . '://' : '';
+                $newUrl .= isset($parts['host']) ? $parts['host'] : '';
+                if (isset($parts['port'])) {
+                    $newUrl .= ':' . $parts['port'];
                 }
                 $newUrl .= $newPath;
-                if (isset($refererParts['query'])) {
-                    $newUrl .= '?' . $refererParts['query'];
+                if (isset($parts['query'])) {
+                    $newUrl .= '?' . $parts['query'];
                 }
                 
                 // Redirect to new URL
@@ -131,7 +135,7 @@ class HomeController extends Controller
             }
         }
         
-        // If no referer or language not found in URL, redirect to homepage with new language
+        // Default: redirect to homepage with new language
         $this->redirect($lang);
     }
 }

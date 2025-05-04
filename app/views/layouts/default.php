@@ -1,4 +1,9 @@
-
+<div style="position:fixed; top:0; left:0; z-index:9999; background:rgba(0,0,0,0.7); color:white; padding:5px; font-size:10px;">
+    Lang: <?php echo $currentLang; ?> |
+    URL: <?php echo $_SERVER['REQUEST_URI']; ?> |
+    Translations: <?php echo count($translations ?? []); ?> |
+    Example: <?php echo __('home'); ?>
+</div>
 <!DOCTYPE html>
 <html lang="<?php echo $currentLang; ?>">
 <head>
@@ -79,11 +84,28 @@
                             <i class="material-icons">arrow_drop_down</i>
                         </button>
                         <ul class="dropdown-menu">
-                            <?php foreach ($languages as $lang): ?>
-                                <?php if ($lang['code'] != $currentLang): ?>
+                            <?php foreach ($languages as $code => $lang): ?>
+                                <?php if ($code != $currentLang): ?>
                                     <li>
-                                        <a href="<?php echo $appUrl . '/' . $lang['code'] . ($_SERVER['REQUEST_URI'] ? substr($_SERVER['REQUEST_URI'], strlen('/' . $currentLang)) : ''); ?>">
-                                            <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $lang['code']; ?>.png" alt="<?php echo $lang['code']; ?>">
+                                        <?php
+                                        // Get current path
+                                        $currentPath = $_SERVER['REQUEST_URI'];
+                                        // Remove base path and current language
+                                        $basePath = parse_url(APP_URL, PHP_URL_PATH) ?: '';
+                                        $langPath = $basePath . '/' . $currentLang;
+                                        
+                                        // Remove language prefix if present
+                                        if (strpos($currentPath, $langPath) === 0) {
+                                            $path = substr($currentPath, strlen($langPath));
+                                        } else {
+                                            $path = $currentPath;
+                                        }
+                                        
+                                        // Construct new URL with correct language code
+                                        $newUrl = APP_URL . '/' . $code . $path;
+                                        ?>
+                                        <a href="<?php echo $newUrl; ?>">
+                                            <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $code; ?>.png" alt="<?php echo $code; ?>">
                                             <span><?php echo $lang['name']; ?></span>
                                         </a>
                                     </li>

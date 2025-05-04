@@ -38,9 +38,14 @@ class Category extends Model
         // Add conditions
         if (!empty($conditions)) {
             foreach ($conditions as $field => $value) {
-                // Handle special IS NULL/IS NOT NULL conditions
-                if ($field === 'c.image IS NOT NULL') {
-                    $sql .= " AND c.image IS NOT NULL";
+                // Check if the field contains a comparison operator
+                if (strpos($field, '!=') !== false) {
+                    // Handle not equal condition
+                    $fieldName = str_replace('!=', '', $field);
+                    $fieldName = trim($fieldName);
+                    $paramName = 'param_' . str_replace(['.', ' ', '-', '!', '='], '_', $fieldName);
+                    $sql .= " AND {$fieldName} != :{$paramName}";
+                    $params[$paramName] = $value;
                 }
                 // Handle IS NULL condition
                 else if ($value === null) {
@@ -48,7 +53,7 @@ class Category extends Model
                 }
                 // Handle regular conditions
                 else {
-                    // Create a safe parameter name (replace dots and other special chars)
+                    // Create a safe parameter name
                     $paramName = 'param_' . str_replace(['.', ' ', '-'], '_', $field);
                     $sql .= " AND {$field} = :{$paramName}";
                     $params[$paramName] = $value;
