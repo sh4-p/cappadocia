@@ -2388,118 +2388,517 @@
 
     <!-- JavaScript -->
     <script>
+    // Gallery Slider Functionality
     document.addEventListener('DOMContentLoaded', function() {
-        // Gallery Slider Functionality
-        const galleryMain = document.querySelectorAll('.gallery-main-slide');
-        const galleryThumbs = document.querySelectorAll('.gallery-thumb');
-        const galleryPrev = document.querySelector('.gallery-nav.prev');
-        const galleryNext = document.querySelector('.gallery-nav.next');
+    // Gallery Slider Functionality
+    const galleryMain = document.querySelectorAll('.gallery-main-slide');
+    const galleryThumbs = document.querySelectorAll('.gallery-thumb');
+    const galleryPrev = document.querySelector('.gallery-nav.prev');
+    const galleryNext = document.querySelector('.gallery-nav.next');
+    
+    let currentSlide = 0;
+    const totalSlides = galleryMain.length;
+    
+    // Show slide function
+    function showSlide(index) {
+        galleryMain.forEach(slide => slide.classList.remove('active'));
+        galleryThumbs.forEach(thumb => thumb.classList.remove('active'));
         
-        let currentSlide = 0;
-        const totalSlides = galleryMain.length;
-        
-        // Show slide function
-        function showSlide(index) {
-            // Hide all slides
-            galleryMain.forEach(slide => {
-                slide.classList.remove('active');
-            });
-            
-            // Remove active class from all thumbs
-            galleryThumbs.forEach(thumb => {
-                thumb.classList.remove('active');
-            });
-            
-            // Show current slide
-            galleryMain[index].classList.add('active');
-            
-            // Add active class to current thumb
-            if (galleryThumbs.length > 0) {
-                galleryThumbs[index].classList.add('active');
-            }
-            
-            // Update current slide index
-            currentSlide = index;
+        galleryMain[index].classList.add('active');
+        if (galleryThumbs.length > 0) {
+            galleryThumbs[index].classList.add('active');
         }
         
-        // Initialize first slide
-        if (totalSlides > 0) {
-            showSlide(0);
-        }
-        
-        // Add click event to thumbs
-        galleryThumbs.forEach((thumb, index) => {
-            thumb.addEventListener('click', () => {
-                showSlide(index);
-            });
+        currentSlide = index;
+    }
+    
+    // Initialize first slide
+    if (totalSlides > 0) {
+        showSlide(0);
+    }
+    
+    // Add click event to thumbs
+    galleryThumbs.forEach((thumb, index) => {
+        thumb.addEventListener('click', () => {
+            showSlide(index);
+        });
+    });
+    
+    // Add click event to prev/next buttons
+    if (galleryPrev && galleryNext && totalSlides > 1) {
+        galleryPrev.addEventListener('click', () => {
+            let prevSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(prevSlide);
         });
         
-        // Add click event to prev/next buttons
-        if (galleryPrev && galleryNext && totalSlides > 1) {
-            galleryPrev.addEventListener('click', () => {
-                let prevSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                showSlide(prevSlide);
+        galleryNext.addEventListener('click', () => {
+            let nextSlide = (currentSlide + 1) % totalSlides;
+            showSlide(nextSlide);
+        });
+    }
+    
+    // Tabs Functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target');
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById(target).classList.add('active');
+            
+            // Initialize map if location tab
+            if (target === 'location' && window.google && window.google.maps) {
+                initMap();
+            }
+        });
+    });
+    
+    // Initialize Map
+    function initMap() {
+        const mapElement = document.querySelector('.location-map');
+        
+        if (mapElement && window.google && window.google.maps) {
+            const lat = parseFloat(mapElement.getAttribute('data-lat'));
+            const lng = parseFloat(mapElement.getAttribute('data-lng'));
+            const zoom = parseInt(mapElement.getAttribute('data-zoom'));
+            const title = mapElement.getAttribute('data-title');
+            
+            const map = new google.maps.Map(mapElement, {
+                center: { lat, lng },
+                zoom: zoom,
+                mapTypeControl: false
             });
             
-            galleryNext.addEventListener('click', () => {
-                let nextSlide = (currentSlide + 1) % totalSlides;
-                showSlide(nextSlide);
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: title
             });
         }
+    }
+    
+    // Initialize date picker for booking
+    if (document.getElementById('booking_date')) {
+        let datePicker;
         
-        // Tabs Functionality
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const target = button.getAttribute('data-target');
-                
-                // Remove active class from all buttons
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                // Add active class to clicked button
-                button.classList.add('active');
-                
-                // Hide all contents
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                });
-                
-                // Show target content
-                document.getElementById(target).classList.add('active');
-                
-                // Initialize map if location tab
-                if (target === 'location' && window.google && window.google.maps) {
-                    initMap();
+        // Check if flatpickr is available
+        if (typeof flatpickr === 'function') {
+            datePicker = flatpickr('#booking_date', {
+                minDate: 'today',
+                dateFormat: 'Y-m-d',
+                onChange: function(selectedDates, dateStr) {
+                    updateBookingSummary();
                 }
             });
-        });
-        
-        // Initialize Map
-        function initMap() {
-            const mapElement = document.querySelector('.location-map');
+        } else {
+            // Fallback to browser native date picker
+            const dateInput = document.getElementById('booking_date');
+            dateInput.type = 'date';
             
-            if (mapElement && window.google && window.google.maps) {
-                const lat = parseFloat(mapElement.getAttribute('data-lat'));
-                const lng = parseFloat(mapElement.getAttribute('data-lng'));
-                const zoom = parseInt(mapElement.getAttribute('data-zoom'));
-                const title = mapElement.getAttribute('data-title');
+            // Set min date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            dateInput.min = formattedDate;
+            
+            dateInput.addEventListener('change', updateBookingSummary);
+        }
+    }
+    
+    // Guest counter functionality
+    const decreaseButtons = document.querySelectorAll('.counter-btn.decrease');
+    const increaseButtons = document.querySelectorAll('.counter-btn.increase');
+    
+    decreaseButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const input = button.nextElementSibling;
+            const currentValue = parseInt(input.value);
+            
+            if (currentValue > parseInt(input.min)) {
+                input.value = currentValue - 1;
                 
-                const map = new google.maps.Map(mapElement, {
-                    center: { lat, lng },
-                    zoom: zoom,
-                    mapTypeControl: false
-                });
+                // Disable button if minimum reached
+                if (parseInt(input.value) === parseInt(input.min)) {
+                    button.disabled = true;
+                }
                 
-                const marker = new google.maps.Marker({
-                    position: { lat, lng },
-                    map: map,
-                    title: title,
-                })
+                // Update booking summary
+                updateBookingSummary();
+            }
+        });
+    });
+    
+    increaseButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const input = button.previousElementSibling;
+            const currentValue = parseInt(input.value);
+            
+            if (currentValue < parseInt(input.max)) {
+                input.value = currentValue + 1;
+                
+                // Enable decrease button
+                const decreaseBtn = input.previousElementSibling;
+                decreaseBtn.disabled = false;
+                
+                // Disable button if maximum reached
+                if (parseInt(input.value) === parseInt(input.max)) {
+                    button.disabled = true;
+                }
+                
+                // Update booking summary
+                updateBookingSummary();
+            }
+        });
+    });
+    
+    // Initialize guest counter state
+    document.querySelectorAll('.guest-counter input').forEach(input => {
+        // Disable decrease button if at minimum
+        if (parseInt(input.value) === parseInt(input.min)) {
+            input.previousElementSibling.disabled = true;
+        }
+        
+        // Disable increase button if at maximum
+        if (parseInt(input.value) === parseInt(input.max)) {
+            input.nextElementSibling.disabled = true;
+        }
+        
+        // Add change event listener
+        input.addEventListener('change', () => {
+            // Validate input value
+            let value = parseInt(input.value);
+            
+            if (isNaN(value)) {
+                value = parseInt(input.min);
+            }
+            
+            // Clamp value between min and max
+            value = Math.max(parseInt(input.min), Math.min(parseInt(input.max), value));
+            input.value = value;
+            
+            // Update buttons state
+            input.previousElementSibling.disabled = value === parseInt(input.min);
+            input.nextElementSibling.disabled = value === parseInt(input.max);
+            
+            // Update booking summary
+            updateBookingSummary();
+        });
+    });
+    
+    // Booking summary calculation
+    function updateBookingSummary() {
+        // Get form values
+        const adultsInput = document.getElementById('booking_adults');
+        const childrenInput = document.getElementById('booking_children');
+        
+        if (!adultsInput) return;
+        
+        const adults = parseInt(adultsInput.value);
+        const children = childrenInput ? parseInt(childrenInput.value) : 0;
+        
+        // Get price info
+        const basePrice = parseFloat(document.getElementById('booking_base_price').value);
+        const discountPrice = parseFloat(document.getElementById('booking_discount_price').value);
+        const currencySymbol = document.getElementById('currency_symbol').value;
+        
+        // Calculate price per person
+        const pricePerAdult = discountPrice > 0 ? discountPrice : basePrice;
+        const pricePerChild = pricePerAdult * 0.5; // 50% discount for children
+        
+        // Calculate totals
+        const adultsTotal = adults * pricePerAdult;
+        const childrenTotal = children * pricePerChild;
+        const grandTotal = adultsTotal + childrenTotal;
+        
+        // Update summary display
+        document.getElementById('summary_adults').textContent = adults;
+        
+        // Handle children row visibility
+        const childrenRow = document.getElementById('children_row');
+        if (childrenRow) {
+            if (children > 0) {
+                childrenRow.style.display = 'flex';
+                document.getElementById('summary_children').textContent = children;
+            } else {
+                childrenRow.style.display = 'none';
             }
         }
-
+        
+        // Update total
+        document.getElementById('summary_total').textContent = currencySymbol + grandTotal.toFixed(2);
     }
+    
+    // Initialize booking summary
+    updateBookingSummary();
+    
+    // Share buttons functionality
+    const shareButtons = document.querySelectorAll('.share-button');
+    
+    shareButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            const pageUrl = encodeURIComponent(window.location.href);
+            const pageTitle = encodeURIComponent(document.title);
+            const shareType = button.getAttribute('data-type');
+            
+            let shareUrl = '';
+            
+            switch (shareType) {
+                case 'facebook':
+                    shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + pageUrl;
+                    break;
+                case 'twitter':
+                    shareUrl = 'https://twitter.com/intent/tweet?url=' + pageUrl + '&text=' + pageTitle;
+                    break;
+                case 'whatsapp':
+                    shareUrl = 'https://api.whatsapp.com/send?text=' + pageTitle + '%20' + pageUrl;
+                    break;
+                case 'pinterest':
+                    const imageUrl = encodeURIComponent(button.getAttribute('data-image'));
+                    shareUrl = 'https://pinterest.com/pin/create/button/?url=' + pageUrl + '&media=' + imageUrl + '&description=' + pageTitle;
+                    break;
+                case 'email':
+                    shareUrl = 'mailto:?subject=' + pageTitle + '&body=Check out this tour: ' + pageUrl;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=500');
+            }
+        });
+    });
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const headerOffset = 100; // Adjust based on fixed header height
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // Mobile booking bar behavior
+    const mobileBookingBar = document.querySelector('.mobile-booking-bar');
+    const bookingFormCard = document.querySelector('.booking-form-card');
+    
+    if (mobileBookingBar && bookingFormCard) {
+        const mobileBookingBarHeight = mobileBookingBar.offsetHeight;
+        
+        // Hide booking bar when near the booking form
+        window.addEventListener('scroll', () => {
+            const bookingFormRect = bookingFormCard.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            
+            // Show bar when booking form is not visible in viewport
+            if (bookingFormRect.top > windowHeight || bookingFormRect.bottom < 0) {
+                mobileBookingBar.style.transform = 'translateY(0)';
+                mobileBookingBar.style.opacity = '1';
+            } else {
+                mobileBookingBar.style.transform = 'translateY(' + mobileBookingBarHeight + 'px)';
+                mobileBookingBar.style.opacity = '0';
+            }
+        });
+    }
+    
+    // Initialize AOS (Animate on Scroll) if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            offset: 50,
+            once: true
+        });
+    }
+    
+    // Load more reviews button
+    const loadMoreReviewsBtn = document.querySelector('.load-more-reviews');
+    if (loadMoreReviewsBtn) {
+        loadMoreReviewsBtn.addEventListener('click', function() {
+            // Simulate loading with button state change
+            this.disabled = true;
+            this.innerHTML = '<i class="material-icons rotating">refresh</i> Loading...';
+            
+            // Simulate AJAX request with setTimeout
+            setTimeout(() => {
+                // Reset the button
+                this.disabled = false;
+                this.innerHTML = '<i class="material-icons">refresh</i> Load More Reviews';
+                
+                // Show message for no more reviews
+                const reviewsList = document.querySelector('.reviews-list');
+                const noMoreReviews = document.createElement('div');
+                noMoreReviews.className = 'no-more-reviews';
+                noMoreReviews.textContent = 'No more reviews to load.';
+                reviewsList.insertBefore(noMoreReviews, this.parentElement);
+                
+                // Hide button
+                this.style.display = 'none';
+            }, 1500);
+        });
+    }
+    
+    // Write review button
+    const writeReviewBtn = document.querySelector('.write-review');
+    if (writeReviewBtn) {
+        writeReviewBtn.addEventListener('click', function() {
+            // Check if review form already exists
+            let reviewForm = document.querySelector('.review-form');
+            
+            if (!reviewForm) {
+                // Create review form
+                reviewForm = document.createElement('div');
+                reviewForm.className = 'review-form';
+                
+                // Build the form HTML
+                const formHTML = '<h3>Write a Review</h3>' +
+                    '<form>' +
+                    '    <div class="form-group">' +
+                    '        <label for="review_rating">Rating</label>' +
+                    '        <div class="rating-selector">' +
+                    '            <div class="rating-stars">' +
+                    '                <i class="material-icons" data-rating="1">star_border</i>' +
+                    '                <i class="material-icons" data-rating="2">star_border</i>' +
+                    '                <i class="material-icons" data-rating="3">star_border</i>' +
+                    '                <i class="material-icons" data-rating="4">star_border</i>' +
+                    '                <i class="material-icons" data-rating="5">star_border</i>' +
+                    '            </div>' +
+                    '            <input type="hidden" id="review_rating" name="rating" value="0">' +
+                    '        </div>' +
+                    '    </div>' +
+                    '    <div class="form-group">' +
+                    '        <label for="review_title">Title</label>' +
+                    '        <input type="text" id="review_title" name="title" class="form-control" placeholder="Summarize your experience" required>' +
+                    '    </div>' +
+                    '    <div class="form-group">' +
+                    '        <label for="review_content">Review</label>' +
+                    '        <textarea id="review_content" name="content" class="form-control" rows="4" placeholder="Tell others about your experience" required></textarea>' +
+                    '    </div>' +
+                    '    <div class="form-actions">' +
+                    '        <button type="button" class="btn btn-outline cancel-review">Cancel</button>' +
+                    '        <button type="submit" class="btn btn-primary submit-review">Submit Review</button>' +
+                    '    </div>' +
+                    '</form>';
+                
+                reviewForm.innerHTML = formHTML;
+                
+                // Add to reviews list
+                const reviewsActions = document.querySelector('.reviews-actions');
+                reviewsActions.parentNode.insertBefore(reviewForm, reviewsActions);
+                
+                // Initialize rating stars
+                const ratingStars = reviewForm.querySelectorAll('.rating-stars i');
+                const ratingInput = reviewForm.querySelector('#review_rating');
+                
+                ratingStars.forEach(star => {
+                    star.addEventListener('click', () => {
+                        const rating = parseInt(star.getAttribute('data-rating'));
+                        ratingInput.value = rating;
+                        
+                        // Update stars display
+                        ratingStars.forEach((s, index) => {
+                            s.textContent = index < rating ? 'star' : 'star_border';
+                        });
+                    });
+                    
+                    // Hover effect
+                    star.addEventListener('mouseenter', () => {
+                        const rating = parseInt(star.getAttribute('data-rating'));
+                        
+                        ratingStars.forEach((s, index) => {
+                            s.textContent = index < rating ? 'star' : 'star_border';
+                        });
+                    });
+                });
+                
+                // Reset on mouse leave
+                reviewForm.querySelector('.rating-stars').addEventListener('mouseleave', () => {
+                    const rating = parseInt(ratingInput.value);
+                    
+                    ratingStars.forEach((s, index) => {
+                        s.textContent = index < rating ? 'star' : 'star_border';
+                    });
+                });
+                
+                // Cancel button
+                reviewForm.querySelector('.cancel-review').addEventListener('click', () => {
+                    reviewForm.remove();
+                });
+                
+                // Submit button
+                reviewForm.querySelector('form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    // Show success message
+                    reviewForm.innerHTML = 
+                        '<div class="review-success">' +
+                        '    <i class="material-icons">check_circle</i>' +
+                        '    <h3>Thank you for your review!</h3>' +
+                        '    <p>Your review has been submitted and will be published after moderation.</p>' +
+                        '</div>';
+                    
+                    // Remove after delay
+                    setTimeout(() => {
+                        reviewForm.remove();
+                    }, 3000);
+                });
+            } else {
+                // Remove form if it already exists
+                reviewForm.remove();
+            }
+        });
+    }
+    
+    // Form validation for booking form
+    const bookingForm = document.querySelector('.booking-form');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', function(e) {
+            let valid = true;
+            const dateInput = document.getElementById('booking_date');
+            
+            // Check if date is selected
+            if (!dateInput.value) {
+                valid = false;
+                // Add error class
+                dateInput.classList.add('is-invalid');
+                
+                // Create error message if not exists
+                let errorMsg = dateInput.parentElement.querySelector('.error-message');
+                if (!errorMsg) {
+                    errorMsg = document.createElement('div');
+                    errorMsg.className = 'error-message';
+                    errorMsg.textContent = 'Please select a date';
+                    dateInput.parentElement.appendChild(errorMsg);
+                }
+            } else {
+                // Remove error class and message
+                dateInput.classList.remove('is-invalid');
+                const errorMsg = dateInput.parentElement.querySelector('.error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+            
+            // Prevent form submission if not valid
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>

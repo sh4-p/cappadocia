@@ -22,21 +22,23 @@
                 </a>
             </div>
             
-            <!-- Quick Booking Form -->
+            <!-- Quick Booking Form with AJAX search -->
             <div class="hero-booking-form glass-card">
                 <h3><?php _e('quick_booking'); ?></h3>
-                <form action="<?php echo $appUrl . '/' . $currentLang; ?>/tours" method="get" class="quick-booking-form">
+                <form id="quick-booking-form" class="quick-booking-form">
                     <div class="form-row">
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="material-icons">search</i>
-                                <input type="text" name="keyword" placeholder="<?php _e('search_by_keywords'); ?>" class="form-control">
+                                <input type="text" name="keyword" id="quick_booking_keyword" placeholder="<?php _e('search_by_keywords'); ?>" class="form-control">
                             </div>
+                            <!-- Add results container for AJAX search -->
+                            <div id="quick-search-results" class="quick-search-results"></div>
                         </div>
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="material-icons">event</i>
-                                <input type="text" name="date" id="quick_booking_date" placeholder="<?php _e('select_date'); ?>" class="form-control datepicker">
+                                <input type="text" name="date" id="quick_booking_date" placeholder="<?php _e('select_date'); ?>" class="form-control datepicker" autocomplete="off">
                             </div>
                         </div>
                         <div class="form-group">
@@ -157,8 +159,8 @@
     </div>
 </section>
 
-<!-- Stats Section - New Visual Element -->
-<section class="section stats-section" style="background-image: url('<?php echo $imgUrl; ?>/stats-bg.jpg');">
+<!-- Stats Section - Fixed z-index and positioning -->
+<section class="section stats-section" style="background-image: url('<?php echo $imgUrl; ?>/stats-bg.jpg'); position: relative; z-index: 1;">
     <div class="container">
         <div class="stats-grid" data-aos="fade-up">
             <div class="stat-item">
@@ -204,8 +206,8 @@
     </div>
 </section>
 
-<!-- About Cappadocia Section - Enhanced Visual Design -->
-<section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/about-bg.jpg');">
+<!-- About Cappadocia Section - Fixed positioning and spacing -->
+<section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/about-bg.jpg'); position: relative; z-index: 1; margin-top: 2rem;">
     <div class="container">
         <div class="row">
             <div class="col-md-6" data-aos="fade-right">
@@ -270,7 +272,7 @@
 </section>
 
 <!-- Why Choose Us Section - Enhanced Visual Design -->
-<section class="section why-choose-us">
+<section class="section why-choose-us" style="background-color: var(--light-color); position: relative; z-index: 1;">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
             <h2 class="section-title"><?php _e('why_choose_us'); ?></h2>
@@ -711,6 +713,136 @@
         justify-content: center;
     }
     
+    /* Quick Search Results styling */
+    .quick-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        display: none;
+    }
+    
+    .quick-search-result {
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .quick-search-result:last-child {
+        border-bottom: none;
+    }
+    
+    .quick-search-result a {
+        display: flex;
+        padding: var(--spacing-md);
+        color: var(--dark-color);
+        transition: background-color var(--transition-fast);
+    }
+    
+    .quick-search-result a:hover {
+        background-color: var(--gray-100);
+    }
+    
+    .result-image {
+        width: 60px;
+        height: 60px;
+        border-radius: var(--border-radius-sm);
+        overflow: hidden;
+        margin-right: var(--spacing-md);
+    }
+    
+    .result-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .result-content {
+        flex: 1;
+    }
+    
+    .result-content h4 {
+        margin-bottom: 4px;
+        font-size: var(--font-size-md);
+    }
+    
+    .result-price {
+        font-weight: var(--font-weight-medium);
+        color: var(--primary-color);
+    }
+    
+    .result-price del {
+        color: var(--gray-600);
+        margin-right: 5px;
+    }
+    
+    .search-loading, .no-results, .search-error {
+        padding: var(--spacing-md);
+        text-align: center;
+        color: var(--gray-600);
+    }
+    
+    .search-loading .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--gray-300);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    /* Features grid enhancement */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-xl);
+    }
+    
+    .feature-card {
+        text-align: center;
+        padding: var(--spacing-lg);
+        transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background-color: rgba(255, 107, 53, 0.1);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--spacing-md);
+        color: var(--primary-color);
+        font-size: 2rem;
+    }
+    
+    .feature-title {
+        margin-bottom: var(--spacing-sm);
+        font-size: var(--font-size-lg);
+    }
+    
+    .feature-text {
+        color: var(--gray-600);
+        margin-bottom: 0;
+    }
+    
+    /* Fix for datepicker */
+    .flatpickr-calendar.quick-booking-calendar {
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-lg);
+        border: none;
+    }
+    
     /* Responsive styles - will be overridden by responsive.css */
     @media (max-width: 992px) {
         .form-row {
@@ -718,6 +850,10 @@
         }
         
         .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .features-grid {
             grid-template-columns: repeat(2, 1fr);
         }
     }
@@ -748,20 +884,54 @@
         .cta-buttons {
             flex-direction: column;
         }
+        
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hero-section {
+            min-height: 700px;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
     }
 </style>
 
 <!-- Initialize quick booking form -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize datepicker
+    // Improved datepicker initialization
     const dateInput = document.getElementById('quick_booking_date');
-    if (dateInput && typeof flatpickr !== 'undefined') {
-        flatpickr(dateInput, {
-            minDate: 'today',
-            dateFormat: 'Y-m-d',
-            disableMobile: true
-        });
+    if (dateInput) {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr(dateInput, {
+                minDate: 'today',
+                dateFormat: 'Y-m-d',
+                disableMobile: true,
+                altInput: true,
+                altFormat: "F j, Y",
+                onOpen: function() {
+                    // Add custom class to the calendar for styling
+                    setTimeout(function() {
+                        const calendar = document.querySelector('.flatpickr-calendar');
+                        if (calendar) calendar.classList.add('quick-booking-calendar');
+                    }, 0);
+                }
+            });
+        } else {
+            // Fallback if flatpickr is not available
+            dateInput.type = 'date';
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+        }
     }
     
     // Favorites button
@@ -795,6 +965,104 @@ document.addEventListener('DOMContentLoaded', function() {
                     behavior: 'smooth'
                 });
             }
+        });
+    }
+    
+    // AJAX Quick Search
+    const quickSearchForm = document.getElementById('quick-booking-form');
+    const searchInput = document.getElementById('quick_booking_keyword');
+    const resultsContainer = document.getElementById('quick-search-results');
+    
+    if (quickSearchForm && searchInput && resultsContainer) {
+        let searchTimeout;
+        
+        // Search input event listener
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Hide results if query is empty
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Set timeout to prevent excessive requests
+            searchTimeout = setTimeout(function() {
+                // Show loading indicator
+                resultsContainer.innerHTML = '<div class="search-loading"><div class="spinner"></div></div>';
+                resultsContainer.style.display = 'block';
+                
+                // Get current language from HTML tag
+                const lang = document.documentElement.lang || 'en';
+                
+                // Make AJAX request
+                fetch(`${window.location.origin}/${lang}/tours/ajax-search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            // Build results
+                            let html = '';
+                            
+                            data.forEach(function(tour) {
+                                html += `
+                                    <div class="quick-search-result">
+                                        <a href="${tour.url}">
+                                            <div class="result-image">
+                                                <img src="${tour.image}" alt="${tour.name}">
+                                            </div>
+                                            <div class="result-content">
+                                                <h4>${tour.name}</h4>
+                                                <div class="result-price">
+                                                    ${tour.discount_price ? 
+                                                        `<del>${tour.price}</del> ${tour.discount_price}` : 
+                                                        tour.price}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                `;
+                            });
+                            
+                            resultsContainer.innerHTML = html;
+                        } else {
+                            resultsContainer.innerHTML = '<div class="no-results">No tours found matching your search.</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        resultsContainer.innerHTML = '<div class="search-error">An error occurred. Please try again.</div>';
+                    });
+            }, 300);
+        });
+        
+        // Close results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
+        
+        // Form submission
+        quickSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const keywordValue = searchInput.value.trim();
+            const dateValue = document.getElementById('quick_booking_date').value;
+            const guestsValue = this.querySelector('select[name="guests"]').value;
+            
+            // Redirect to tours page with parameters
+            const lang = document.documentElement.lang || 'en';
+            let url = `${window.location.origin}/${lang}/tours?`;
+            
+            if (keywordValue) url += `keyword=${encodeURIComponent(keywordValue)}&`;
+            if (dateValue) url += `date=${encodeURIComponent(dateValue)}&`;
+            if (guestsValue) url += `guests=${encodeURIComponent(guestsValue)}`;
+            
+            window.location.href = url;
         });
     }
 });
