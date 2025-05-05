@@ -1,32 +1,82 @@
-
 /**
- * Responsive CSS for Cappadocia Travel Agency
+ * Cappadocia Travel Agency - Modern Redesign
+ * Responsive CSS file
+ * 
+ * Complete mobile optimization with a mobile-first approach
  */
 
-/* Large Screens (up to 1200px) */
-@media (max-width: 1200px) {
+/* X-Large devices (large desktops, 1400px and up) */
+@media (min-width: 1400px) {
     .container {
-        max-width: 992px;
+        max-width: 1320px;
     }
     
-    .main-nav ul {
-        gap: 1.5rem;
+    .hero-title {
+        font-size: 3.5rem;
+    }
+    
+    .hero-content {
+        max-width: 700px;
+    }
+}
+
+/* Large devices (desktops, 1200px to 1399px) */
+@media (max-width: 1399px) {
+    .container {
+        max-width: 1140px;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+    }
+    
+    .tours-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .destination-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .team-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Medium devices (tablets, 992px to 1199px) */
+@media (max-width: 1199px) {
+    .container {
+        max-width: 960px;
+    }
+    
+    .hero-title {
+        font-size: 2.75rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.125rem;
     }
     
     .tours-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
     }
     
     .destination-grid {
         grid-template-columns: repeat(3, 1fr);
     }
     
-    .footer-widgets {
+    .gallery-grid {
         grid-template-columns: repeat(3, 1fr);
     }
     
-    .gallery-grid {
+    .team-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .footer-widgets {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-xl);
     }
     
     .tour-content-wrapper {
@@ -36,12 +86,23 @@
     .tour-gallery-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    
+    .tour-features-list, 
+    .tour-excludes-list {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Medium Screens (up to 992px) */
-@media (max-width: 992px) {
+/* Small devices (landscape phones, 768px to 991px) */
+@media (max-width: 991px) {
+    :root {
+        --font-size-3xl: 1.75rem;
+        --font-size-4xl: 2rem;
+        --font-size-5xl: 2.5rem;
+    }
+    
     .container {
-        max-width: 768px;
+        max-width: 720px;
     }
     
     .header-wrapper {
@@ -49,39 +110,7 @@
     }
     
     .main-nav {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: var(--glass-bg);
-        backdrop-filter: blur(10px);
-        padding: 1rem 0;
-        border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
-        z-index: var(--z-index-dropdown);
-    }
-    
-    .main-nav.active {
-        display: block;
-    }
-    
-    .main-nav ul {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .main-nav ul li {
-        width: 100%;
         text-align: center;
-    }
-    
-    .main-nav ul li a {
-        display: block;
-        padding: 0.75rem 1rem;
-    }
-    
-    .mobile-toggle {
-        display: flex;
     }
     
     .hero-title {
@@ -89,16 +118,31 @@
     }
     
     .hero-subtitle {
-        font-size: 1.1rem;
+        font-size: 1rem;
+    }
+    
+    .section {
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .section-header {
+        margin-bottom: var(--spacing-xl);
+    }
+    
+    .tours-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .destination-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .footer-widgets {
+    .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-lg);
+    }
+    
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .tour-content-wrapper {
@@ -108,6 +152,48 @@
     
     .tour-sidebar {
         position: static;
+    }
+    
+    .tours-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .tour-filters {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 320px;
+        height: 100vh;
+        z-index: var(--z-index-modal);
+        transition: left var(--transition-medium);
+        overflow-y: auto;
+    }
+    
+    .tour-filters.filters-open {
+        left: 0;
+    }
+    
+    .filter-mobile-toggle {
+        display: flex;
+    }
+    
+    .filter-close-mobile {
+        display: block;
+    }
+    
+    body.filters-opened {
+        overflow: hidden;
+    }
+    
+    body.filters-opened::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: var(--z-index-modal-backdrop);
     }
     
     .contact-info-cards {
@@ -121,13 +207,28 @@
     .contact-map {
         height: 400px;
     }
+    
+    .about-content .row {
+        display: flex;
+        flex-direction: column-reverse;
+    }
+    
+    .about-image {
+        margin-top: var(--spacing-xl);
+    }
 }
 
-/* Small Screens (up to 768px) */
-@media (max-width: 768px) {
+/* Extra small devices (phones, less than 768px) */
+@media (max-width: 767px) {
+    :root {
+        --font-size-3xl: 1.625rem;
+        --font-size-4xl: 1.875rem;
+        --font-size-5xl: 2.25rem;
+    }
+    
     .container {
         max-width: 100%;
-        padding: 0 var(--spacing-md);
+        padding: 0 var(--spacing-lg);
     }
     
     .btn-lg {
@@ -135,18 +236,30 @@
         font-size: 1rem;
     }
     
+    .hero-section {
+        min-height: 600px;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
     .hero-buttons {
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
         align-items: flex-start;
     }
     
     .section {
-        padding: var(--spacing-xl) 0;
+        padding: var(--spacing-lg) 0;
     }
     
     .section-header {
-        margin-bottom: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
     }
     
     .tours-grid {
@@ -161,25 +274,49 @@
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .contact-info-cards {
+    .team-grid {
         grid-template-columns: 1fr;
     }
     
-    .tour-features-list {
+    .tours-header {
         flex-direction: column;
+        align-items: flex-start;
     }
     
-    .tour-feature {
-        flex: 1 0 100%;
+    .tours-count {
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .tour-search {
+        width: 100%;
+    }
+    
+    .tour-search-input {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    .tour-header {
+        height: 350px;
+    }
+    
+    .tour-title {
+        font-size: var(--font-size-3xl);
+    }
+    
+    .tour-meta {
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
     
     .tour-tabs-nav {
-        flex-wrap: wrap;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: var(--spacing-sm);
     }
     
     .tour-tab-button {
-        flex: 1 0 auto;
-        text-align: center;
         padding: var(--spacing-sm) var(--spacing-md);
     }
     
@@ -187,28 +324,45 @@
         grid-template-columns: 1fr;
     }
     
-    .tour-header {
+    .share-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .page-header {
         height: 300px;
     }
     
-    .tour-header-meta {
-        flex-direction: column;
-        gap: 0.5rem;
+    .page-title {
+        font-size: var(--font-size-3xl);
+    }
+    
+    .contact-info-cards {
+        grid-template-columns: 1fr;
     }
 }
 
-/* Extra Small Screens (up to 576px) */
-@media (max-width: 576px) {
-    h1 {
-        font-size: 2rem;
+/* Very small devices (small phones, less than 576px) */
+@media (max-width: 575px) {
+    :root {
+        --font-size-3xl: 1.5rem;
+        --font-size-4xl: 1.75rem;
+        --font-size-5xl: 2rem;
     }
     
-    h2 {
-        font-size: 1.75rem;
+    .container {
+        padding: 0 var(--spacing-md);
     }
     
-    h3 {
-        font-size: 1.5rem;
+    .site-header {
+        padding: 1rem 0;
+    }
+    
+    .logo img {
+        height: 40px;
+    }
+    
+    .scrolled .logo img {
+        height: 35px;
     }
     
     .hero-section {
@@ -216,74 +370,83 @@
     }
     
     .hero-title {
-        font-size: 2rem;
+        font-size: 1.75rem;
     }
     
-    .footer-widgets {
-        grid-template-columns: 1fr;
+    .hero-subtitle {
+        font-size: 0.9375rem;
     }
     
     .gallery-grid {
         grid-template-columns: 1fr;
     }
     
-    .back-to-top {
-        bottom: 1rem;
-        right: 1rem;
-        width: 40px;
-        height: 40px;
+    .testimonial-image {
+        width: 80px;
+        height: 80px;
     }
     
-    .pagination-item {
-        width: 35px;
-        height: 35px;
+    .testimonial-quote {
+        font-size: 1rem;
+    }
+    
+    .filter-categories {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: var(--spacing-sm);
+        display: flex;
+        flex-wrap: nowrap;
+    }
+    
+    .filter-category {
+        flex: 0 0 auto;
+    }
+    
+    .lightbox-image {
+        max-width: 90%;
+    }
+    
+    .lightbox-close, 
+    .lightbox-prev, 
+    .lightbox-next {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .lightbox-prev {
+        left: 10px;
+    }
+    
+    .lightbox-next {
+        right: 10px;
+    }
+    
+    .faq-question h3 {
+        font-size: 0.9375rem;
     }
 }
 
-/* Landscape Orientation for Mobile */
-@media (max-height: 500px) and (orientation: landscape) {
+/* For devices with height less than 600px */
+@media (max-height: 600px) {
     .hero-section {
-        height: auto;
         min-height: 450px;
-        padding: 120px 0 60px;
-    }
-    
-    .hero-content {
-        padding: var(--spacing-lg) 0;
     }
 }
 
-/* High Resolution Displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    /* Optimize images for high resolution displays */
-    .hero-section, .cta-section {
-        background-size: cover;
-    }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        /* Adjust colors for dark mode if needed */
-        --light-color: #1a1a1a;
-        --white-color: #333;
-        --dark-color: #f0f0f0;
-        --glass-bg: rgba(30, 30, 30, 0.7);
-        --glass-border: rgba(60, 60, 60, 0.3);
-    }
-    
-    /* More dark mode specific styles can be added here */
-}
-
-/* Print Styles */
+/* For print */
 @media print {
-    .site-header, .site-footer, .back-to-top, .cta-section, .tour-booking-form {
+    .site-header,
+    .site-footer,
+    .tour-booking-widget,
+    .back-to-top,
+    .cta-section {
         display: none !important;
     }
     
     .container {
         max-width: 100%;
         width: 100%;
+        padding: 0 1cm;
     }
     
     body {
@@ -302,11 +465,12 @@
         grid-template-columns: 1fr;
     }
     
-    .tour-sidebar {
-        display: none;
-    }
-    
     @page {
         margin: 2cm;
     }
+}
+
+/* Dark mode support - if user has dark mode preference */
+@media (prefers-color-scheme: dark) {
+    /* We can skip this for now and implement if specifically requested */
 }

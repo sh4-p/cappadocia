@@ -1,9 +1,3 @@
-<div style="position:fixed; top:0; left:0; z-index:9999; background:rgba(0,0,0,0.7); color:white; padding:5px; font-size:10px;">
-    Lang: <?php echo $currentLang; ?> |
-    URL: <?php echo $_SERVER['REQUEST_URI']; ?> |
-    Translations: <?php echo count($translations ?? []); ?> |
-    Example: <?php echo __('home'); ?>
-</div>
 <!DOCTYPE html>
 <html lang="<?php echo $currentLang; ?>">
 <head>
@@ -24,6 +18,8 @@
     
     <!-- CSS Files -->
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/style.css">
+    <link rel="stylesheet" href="<?php echo $cssUrl; ?>/respoim.css">
+    <link rel="stylesheet" href="<?php echo $cssUrl; ?>/header.css">
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/responsive.css">
     
     <!-- Add any additional CSS files -->

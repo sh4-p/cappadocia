@@ -134,7 +134,6 @@
                     </div>
                 </form>
             </div>
-            
             <!-- Tours Content -->
             <div class="tours-content">
                 <!-- Tours Header -->

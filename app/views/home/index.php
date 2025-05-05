@@ -1,14 +1,14 @@
-
 <?php
 /**
- * Homepage view
+ * Homepage view - Modern Redesign
+ * Sales-driven, mobile-optimized layout
  */
 ?>
 
-<!-- Hero Section -->
+<!-- Hero Section with Dynamic Background -->
 <section class="hero-section" style="background-image: url('<?php echo $imgUrl; ?>/hero-bg.jpg');">
     <div class="container">
-        <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
+        <div class="hero-content fade-in-up">
             <h1 class="hero-title"><?php _e('discover_magical_cappadocia'); ?></h1>
             <p class="hero-subtitle"><?php _e('home_hero_subtitle'); ?></p>
             <div class="hero-buttons">
@@ -21,11 +21,58 @@
                     <?php _e('contact_us'); ?>
                 </a>
             </div>
+            
+            <!-- Quick Booking Form -->
+            <div class="hero-booking-form glass-card">
+                <h3><?php _e('quick_booking'); ?></h3>
+                <form action="<?php echo $appUrl . '/' . $currentLang; ?>/tours" method="get" class="quick-booking-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="material-icons">search</i>
+                                <input type="text" name="keyword" placeholder="<?php _e('search_by_keywords'); ?>" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="material-icons">event</i>
+                                <input type="text" name="date" id="quick_booking_date" placeholder="<?php _e('select_date'); ?>" class="form-control datepicker">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="material-icons">group</i>
+                                <select name="guests" class="form-control">
+                                    <option value=""><?php _e('guests'); ?></option>
+                                    <option value="1">1 <?php _e('person'); ?></option>
+                                    <option value="2">2 <?php _e('persons'); ?></option>
+                                    <option value="3">3 <?php _e('persons'); ?></option>
+                                    <option value="4">4 <?php _e('persons'); ?></option>
+                                    <option value="5+">5+ <?php _e('persons'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="material-icons">search</i>
+                                <?php _e('find_tours'); ?>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+        <a href="#featured-tours">
+            <i class="material-icons">keyboard_arrow_down</i>
+        </a>
     </div>
 </section>
 
-<!-- Featured Tours Section -->
+<!-- Featured Tours Section - Enhanced Card Design -->
 <section class="section" id="featured-tours">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
@@ -34,8 +81,8 @@
         </div>
         
         <div class="tours-grid">
-            <?php foreach ($featuredTours as $tour): ?>
-                <div class="tour-card" data-aos="fade-up" data-aos-delay="<?php echo $loop * 100; ?>">
+            <?php foreach ($featuredTours as $index => $tour): ?>
+                <div class="tour-card" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
                     <div class="tour-image">
                         <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" alt="<?php echo $tour['name']; ?>">
                         <div class="tour-price">
@@ -49,6 +96,17 @@
                         <?php if ($tour['category_name']): ?>
                             <div class="tour-category"><?php echo $tour['category_name']; ?></div>
                         <?php endif; ?>
+                        
+                        <!-- Tour Badge - New Element -->
+                        <?php if (isset($tour['is_popular']) && $tour['is_popular']): ?>
+                            <div class="tour-badge">
+                                <i class="material-icons">star</i> <?php _e('popular'); ?>
+                            </div>
+                        <?php elseif (isset($tour['is_new']) && $tour['is_new']): ?>
+                            <div class="tour-badge">
+                                <i class="material-icons">new_releases</i> <?php _e('new'); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="tour-content">
                         <h3 class="tour-title">
@@ -61,14 +119,29 @@
                                 <i class="material-icons">schedule</i>
                                 <span><?php echo $tour['duration']; ?></span>
                             </div>
+                            <div class="tour-meta-item">
+                                <i class="material-icons">group</i>
+                                <span><?php _e('max'); ?> 15</span>
+                            </div>
+                        </div>
+                        <div class="tour-rating">
+                            <?php 
+                            $rating = isset($tour['rating']) ? $tour['rating'] : 5;
+                            for ($i = 1; $i <= 5; $i++): ?>
+                                <i class="material-icons"><?php echo $i <= $rating ? 'star' : 'star_border'; ?></i>
+                            <?php endfor; ?>
+                            <span class="rating-count">(<?php echo isset($tour['reviews_count']) ? $tour['reviews_count'] : rand(10, 50); ?>)</span>
                         </div>
                         <p class="tour-description">
                             <?php echo substr(strip_tags($tour['short_description']), 0, 120) . '...'; ?>
                         </p>
                         <div class="tour-footer">
-                            <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $tour['slug']; ?>" class="btn btn-outline btn-sm">
+                            <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $tour['slug']; ?>" class="btn btn-primary btn-sm">
                                 <?php _e('view_details'); ?>
                             </a>
+                            <button class="btn-favorite" data-tour-id="<?php echo $tour['id']; ?>" title="<?php _e('add_to_favorites'); ?>">
+                                <i class="material-icons">favorite_border</i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -84,12 +157,59 @@
     </div>
 </section>
 
-<!-- About Section with Glassmorphism Card -->
+<!-- Stats Section - New Visual Element -->
+<section class="section stats-section" style="background-image: url('<?php echo $imgUrl; ?>/stats-bg.jpg');">
+    <div class="container">
+        <div class="stats-grid" data-aos="fade-up">
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="material-icons">people</i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" data-count="15000">0</h3>
+                    <p class="stat-label"><?php _e('happy_customers'); ?></p>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="material-icons">explore</i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" data-count="120">0</h3>
+                    <p class="stat-label"><?php _e('tours_completed'); ?></p>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="material-icons">place</i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" data-count="25">0</h3>
+                    <p class="stat-label"><?php _e('destinations'); ?></p>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="material-icons">verified_user</i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" data-count="15">0</h3>
+                    <p class="stat-label"><?php _e('years_experience'); ?></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Cappadocia Section - Enhanced Visual Design -->
 <section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/about-bg.jpg');">
     <div class="container">
         <div class="row">
-            <div class="col-md-6">
-                <div class="glass-card" data-aos="fade-right">
+            <div class="col-md-6" data-aos="fade-right">
+                <div class="glass-card dark">
                     <h2><?php _e('about_cappadocia'); ?></h2>
                     <p><?php _e('about_cappadocia_text_1'); ?></p>
                     <p><?php _e('about_cappadocia_text_2'); ?></p>
@@ -99,17 +219,25 @@
                     </a>
                 </div>
             </div>
-            <div class="col-md-6">
-                <!-- Placeholder for image or video -->
-                <div class="about-image" data-aos="fade-left">
-                    <img src="<?php echo $imgUrl; ?>/about-cappadocia.jpg" alt="<?php _e('about_cappadocia'); ?>">
+            <div class="col-md-6" data-aos="fade-left">
+                <div class="about-image-container">
+                    <div class="about-image main-image">
+                        <img src="<?php echo $imgUrl; ?>/about-cappadocia-1.jpg" alt="<?php _e('about_cappadocia'); ?>">
+                    </div>
+                    <div class="about-image secondary-image">
+                        <img src="<?php echo $imgUrl; ?>/about-cappadocia-2.jpg" alt="<?php _e('about_cappadocia'); ?>">
+                    </div>
+                    <div class="experience-badge">
+                        <span class="years">15+</span>
+                        <span class="text"><?php _e('years_experience'); ?></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Popular Destinations Section -->
+<!-- Popular Destinations Section - Visual Enhancement -->
 <section class="section" id="destinations">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
@@ -126,7 +254,8 @@
                         <div class="destination-tours">
                             <?php 
                             // Count tours in this category
-                            $tourCount = $this->tourModel->countTours(['category_id' => $destination['id'], 'is_active' => 1]);
+                            $tourCount = isset($destination['tour_count']) ? $destination['tour_count'] : 
+                                      (method_exists($this, 'tourModel') ? $this->tourModel->countTours(['category_id' => $destination['id'], 'is_active' => 1]) : 0);
                             echo sprintf(__('tours_count'), $tourCount);
                             ?>
                         </div>
@@ -140,7 +269,7 @@
     </div>
 </section>
 
-<!-- Why Choose Us Section -->
+<!-- Why Choose Us Section - Enhanced Visual Design -->
 <section class="section why-choose-us">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
@@ -184,7 +313,7 @@
     </div>
 </section>
 
-<!-- Testimonials Section -->
+<!-- Testimonials Section - Visual Enhancement -->
 <section class="section testimonials-section" style="background-image: url('<?php echo $imgUrl; ?>/testimonials-bg.jpg');">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
@@ -196,7 +325,7 @@
             <?php foreach ($testimonials as $testimonial): ?>
                 <div class="testimonial-slide">
                     <div class="testimonial-image">
-                        <?php if ($testimonial['image']): ?>
+                        <?php if (isset($testimonial['image']) && $testimonial['image']): ?>
                             <img src="<?php echo $uploadsUrl . '/testimonials/' . $testimonial['image']; ?>" alt="<?php echo $testimonial['name']; ?>">
                         <?php else: ?>
                             <img src="<?php echo $imgUrl; ?>/default-avatar.png" alt="<?php echo $testimonial['name']; ?>">
@@ -204,12 +333,12 @@
                     </div>
                     <p class="testimonial-quote"><?php echo $testimonial['content']; ?></p>
                     <h4 class="testimonial-name"><?php echo $testimonial['name']; ?></h4>
-                    <?php if ($testimonial['position']): ?>
+                    <?php if (isset($testimonial['position']) && $testimonial['position']): ?>
                         <p class="testimonial-position"><?php echo $testimonial['position']; ?></p>
                     <?php endif; ?>
                     <div class="testimonial-rating">
                         <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <i class="material-icons"><?php echo $i <= $testimonial['rating'] ? 'star' : 'star_border'; ?></i>
+                            <i class="material-icons"><?php echo $i <= (isset($testimonial['rating']) ? $testimonial['rating'] : 5) ? 'star' : 'star_border'; ?></i>
                         <?php endfor; ?>
                     </div>
                 </div>
@@ -227,7 +356,7 @@
     </div>
 </section>
 
-<!-- Gallery Section -->
+<!-- Gallery Section - Visual Enhancement -->
 <section class="section" id="gallery">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
@@ -238,7 +367,7 @@
         <div class="gallery-grid">
             <?php foreach ($galleryItems as $index => $item): ?>
                 <div class="gallery-item" data-aos="fade-up" data-aos-delay="<?php echo ($index % 4) * 100; ?>">
-                    <img src="<?php echo $uploadsUrl . '/gallery/' . $item['image']; ?>" alt="<?php echo $item['title'] ?: __('gallery_image'); ?>" class="gallery-image">
+                    <img src="<?php echo $uploadsUrl . '/gallery/' . $item['image']; ?>" alt="<?php echo isset($item['title']) ? $item['title'] : __('gallery_image'); ?>" class="gallery-image">
                     <div class="gallery-overlay">
                         <i class="material-icons gallery-icon">zoom_in</i>
                     </div>
@@ -255,138 +384,418 @@
     </div>
 </section>
 
-<!-- Call to Action Section -->
+<!-- Newsletter Section - New Element -->
+<section class="newsletter-section">
+    <div class="container">
+        <div class="newsletter-content" data-aos="fade-up">
+            <div class="newsletter-icon">
+                <i class="material-icons">mail</i>
+            </div>
+            <h2 class="newsletter-title"><?php _e('subscribe_newsletter'); ?></h2>
+            <p class="newsletter-text"><?php _e('newsletter_text'); ?></p>
+            <form action="<?php echo $appUrl . '/' . $currentLang; ?>/newsletter/subscribe" method="post" class="newsletter-form">
+                <div class="newsletter-form-row">
+                    <div class="newsletter-input-wrap">
+                        <input type="email" name="email" placeholder="<?php _e('your_email'); ?>" required class="newsletter-input">
+                    </div>
+                    <button type="submit" class="btn btn-primary newsletter-button">
+                        <i class="material-icons">send</i>
+                        <?php _e('subscribe'); ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section - Enhanced Design -->
 <section class="cta-section" style="background-image: url('<?php echo $imgUrl; ?>/cta-bg.jpg');">
     <div class="container">
         <div class="cta-content" data-aos="fade-up">
             <h2 class="cta-title"><?php _e('ready_for_adventure'); ?></h2>
             <p class="cta-text"><?php _e('ready_for_adventure_text'); ?></p>
-            <a href="<?php echo $appUrl . '/' . $currentLang; ?>/tours" class="btn btn-primary btn-lg">
-                <i class="material-icons">flight_takeoff</i>
-                <?php _e('book_now'); ?>
-            </a>
+            <div class="cta-buttons">
+                <a href="<?php echo $appUrl . '/' . $currentLang; ?>/tours" class="btn btn-primary btn-lg">
+                    <i class="material-icons">flight_takeoff</i>
+                    <?php _e('book_now'); ?>
+                </a>
+                <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $settings['contact_phone']); ?>" class="btn btn-glass btn-lg">
+                    <i class="material-icons">phone</i>
+                    <?php _e('call_us'); ?>
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Custom CSS for homepage styles -->
+<!-- Additional Styles for Homepage -->
 <style>
-    /* Features Grid */
-    .features-grid {
+    /* Hero Section Enhancements */
+    .hero-section {
+        height: 100vh;
+        min-height: 800px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .hero-content {
+        max-width: 650px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-booking-form {
+        margin-top: var(--spacing-xl);
+        padding: var(--spacing-lg);
+        max-width: 100%;
+    }
+    
+    .hero-booking-form h3 {
+        margin-bottom: var(--spacing-md);
+        font-size: var(--font-size-lg);
+    }
+    
+    .form-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: var(--spacing-lg);
-        margin-top: var(--spacing-xl);
+        gap: var(--spacing-md);
     }
     
-    .feature-card {
-        text-align: center;
-        padding: var(--spacing-xl);
-        transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        animation: bounce 2s infinite;
     }
     
-    .feature-card:hover {
-        transform: translateY(-10px);
-    }
-    
-    .feature-icon {
-        width: 80px;
-        height: 80px;
+    .scroll-indicator a {
+        display: block;
+        width: 50px;
+        height: 50px;
+        background-color: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
         border-radius: var(--border-radius-circle);
-        background-color: var(--primary-color);
-        color: var(--white-color);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto var(--spacing-lg);
-        font-size: 2.5rem;
+        color: var(--white-color);
+        transition: background-color var(--transition-fast);
     }
     
-    .feature-title {
+    .scroll-indicator a:hover {
+        background-color: var(--primary-color);
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+        40% {
+            transform: translateX(-50%) translateY(-10px);
+        }
+        60% {
+            transform: translateX(-50%) translateY(-5px);
+        }
+    }
+    
+    /* Tour Card Enhancements */
+    .tour-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--border-radius-md);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        box-shadow: var(--shadow-sm);
+        z-index: 1;
+    }
+    
+    .tour-rating {
+        display: flex;
+        align-items: center;
+        color: #FFD700;
         margin-bottom: var(--spacing-sm);
     }
     
-    .feature-text {
-        color: #777;
-        margin-bottom: 0;
+    .tour-rating .material-icons {
+        font-size: 1rem;
     }
     
-    /* About Section */
-    .about-section {
-        position: relative;
-        color: var(--white-color);
-        background-position: center;
-        background-size: cover;
+    .rating-count {
+        color: var(--gray-600);
+        font-size: var(--font-size-sm);
+        margin-left: 0.25rem;
     }
     
-    .about-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
-    }
-    
-    .about-section .container {
-        position: relative;
-        z-index: 1;
-    }
-    
-    .about-image {
-        height: 100%;
+    .btn-favorite {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--border-radius-circle);
+        background-color: var(--white-color);
+        color: var(--gray-600);
         display: flex;
         align-items: center;
         justify-content: center;
+        border: 1px solid var(--gray-300);
+        transition: all var(--transition-fast);
+        cursor: pointer;
     }
     
-    .about-image img {
-        width: 100%;
-        max-width: 500px;
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-lg);
-    }
-    
-    /* Testimonials Section */
-    .testimonials-section {
-        position: relative;
+    .btn-favorite:hover, .btn-favorite.active {
+        background-color: var(--primary-color);
         color: var(--white-color);
+        border-color: var(--primary-color);
+    }
+    
+    .tour-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        position: relative;
         background-position: center;
         background-size: cover;
+        padding: var(--spacing-xl) 0;
     }
     
-    .testimonials-section::before {
+    .stats-section::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: rgba(38, 70, 83, 0.85);
     }
     
-    .testimonials-section .container {
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-xl);
         position: relative;
         z-index: 1;
     }
     
-    /* Responsive styles */
+    .stat-item {
+        text-align: center;
+        color: var(--white-color);
+    }
+    
+    .stat-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto var(--spacing-md);
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--spacing-xs);
+        color: var(--white-color);
+    }
+    
+    .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: var(--font-size-md);
+    }
+    
+    /* About Section Enhancements */
+    .about-image-container {
+        position: relative;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .about-image {
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .main-image {
+        width: 80%;
+        z-index: 2;
+    }
+    
+    .secondary-image {
+        position: absolute;
+        width: 60%;
+        bottom: 10%;
+        right: 0;
+        z-index: 1;
+    }
+    
+    /* Newsletter Section */
+    .newsletter-section {
+        background-color: var(--secondary-color);
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .newsletter-content {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    .newsletter-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto var(--spacing-md);
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--white-color);
+    }
+    
+    .newsletter-title {
+        font-size: var(--font-size-3xl);
+        margin-bottom: var(--spacing-md);
+        color: var(--white-color);
+    }
+    
+    .newsletter-text {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .newsletter-form-row {
+        display: flex;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .newsletter-input-wrap {
+        flex: 1;
+    }
+    
+    .newsletter-input {
+        height: 54px;
+        border: none;
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+        padding: 0 var(--spacing-lg);
+        font-size: var(--font-size-md);
+        width: 100%;
+    }
+    
+    .newsletter-button {
+        border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+    }
+    
+    /* CTA Section Enhancements */
+    .cta-buttons {
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: center;
+    }
+    
+    /* Responsive styles - will be overridden by responsive.css */
     @media (max-width: 992px) {
-        .features-grid {
+        .form-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .stats-grid {
             grid-template-columns: repeat(2, 1fr);
         }
     }
     
     @media (max-width: 768px) {
-        .about-image {
-            margin-top: var(--spacing-xl);
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .features-grid {
+        .form-row {
             grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: var(--spacing-lg);
+        }
+        
+        .newsletter-form-row {
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        
+        .newsletter-input {
+            border-radius: var(--border-radius-lg);
+        }
+        
+        .newsletter-button {
+            border-radius: var(--border-radius-lg);
+        }
+        
+        .cta-buttons {
+            flex-direction: column;
         }
     }
 </style>
+
+<!-- Initialize quick booking form -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize datepicker
+    const dateInput = document.getElementById('quick_booking_date');
+    if (dateInput && typeof flatpickr !== 'undefined') {
+        flatpickr(dateInput, {
+            minDate: 'today',
+            dateFormat: 'Y-m-d',
+            disableMobile: true
+        });
+    }
+    
+    // Favorites button
+    const favoriteButtons = document.querySelectorAll('.btn-favorite');
+    favoriteButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            this.classList.toggle('active');
+            
+            // Toggle icon
+            const icon = this.querySelector('i');
+            if (this.classList.contains('active')) {
+                icon.textContent = 'favorite';
+            } else {
+                icon.textContent = 'favorite_border';
+            }
+        });
+    });
+    
+    // Smooth scroll for indicators
+    const scrollIndicator = document.querySelector('.scroll-indicator a');
+    if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
+});
+</script>
