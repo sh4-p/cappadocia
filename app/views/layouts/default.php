@@ -18,8 +18,6 @@
     
     <!-- CSS Files -->
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/style.css">
-    <link rel="stylesheet" href="<?php echo $cssUrl; ?>/respoim.css">
-    <link rel="stylesheet" href="<?php echo $cssUrl; ?>/header.css">
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/responsive.css">
     
     <!-- Add any additional CSS files -->
