@@ -226,7 +226,7 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
 </section>
 
 <!-- About Cappadocia Section - Fixed positioning and spacing -->
-<section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $aboutBgImage; ?>'); position: relative; z-index: 1; margin-top: 2rem;">
+<section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $aboutBgImage; ?>'); position: relative; z-index: 1;">
     <div class="container">
         <div class="row">
             <div class="col-md-6" data-aos="fade-right">
