@@ -191,10 +191,10 @@ class ToursController extends Controller
      */
     public function ajaxSearch()
     {
-        // Check if request is Ajax
-        if (!$this->isAjax()) {
-            $this->redirect('tours');
-        }
+        // Remove the AJAX check since it might be causing issues with fetch
+        // if (!$this->isAjax()) {
+        //     $this->redirect('tours');
+        // }
         
         // Get search query
         $query = $this->get('q');
@@ -205,22 +205,38 @@ class ToursController extends Controller
         // Search tours (limit to 5)
         $tours = $this->tourModel->search($query, $langCode, 5);
         
+        // Load settings model for currency
+        $settingsModel = $this->loadModel('Settings');
+        $settings = $settingsModel->getAllSettings();
+        $currencySymbol = isset($settings['currency_symbol']) ? $settings['currency_symbol'] : '€';
+        
         // Format results for JSON response
         $results = [];
         
         foreach ($tours as $tour) {
+            // Format prices with currency symbol
+            $price = $currencySymbol . number_format($tour['price'], 2);
+            $discountPrice = $tour['discount_price'] ? $currencySymbol . number_format($tour['discount_price'], 2) : null;
+            
+            // Build full image URL
+            $imageUrl = APP_URL . '/uploads/tours/' . $tour['featured_image'];
+            
             $results[] = [
                 'id' => $tour['id'],
                 'name' => $tour['name'],
                 'slug' => $tour['slug'],
-                'price' => $tour['price'],
-                'discount_price' => $tour['discount_price'],
-                'image' => $tour['featured_image'],
+                'price' => $price,
+                'discount_price' => $discountPrice,
+                'image' => $imageUrl,
                 'url' => APP_URL . '/' . $langCode . '/tours/' . $tour['slug']
             ];
         }
         
+        // Set header for JSON response
+        header('Content-Type: application/json');
+        
         // Return JSON response
-        $this->json($results);
+        echo json_encode($results);
+        exit;
     }
 }

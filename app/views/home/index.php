@@ -796,6 +796,10 @@
         margin: 0 auto;
     }
     
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
     /* Features grid enhancement */
     .features-grid {
         display: grid;
@@ -968,7 +972,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // AJAX Quick Search
+    // AJAX Quick Search - Fixed version
     const quickSearchForm = document.getElementById('quick-booking-form');
     const searchInput = document.getElementById('quick_booking_keyword');
     const resultsContainer = document.getElementById('quick-search-results');
@@ -996,46 +1000,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 resultsContainer.innerHTML = '<div class="search-loading"><div class="spinner"></div></div>';
                 resultsContainer.style.display = 'block';
                 
-                // Get current language from HTML tag
-                const lang = document.documentElement.lang || 'en';
+                // Get current language from URL or HTML tag
+                const pathParts = window.location.pathname.split('/');
+                const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 
+                                  (document.documentElement.lang || 'en');
                 
                 // Make AJAX request
-                fetch(`${window.location.origin}/${lang}/tours/ajax-search?q=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.length > 0) {
-                            // Build results
-                            let html = '';
-                            
-                            data.forEach(function(tour) {
-                                html += `
-                                    <div class="quick-search-result">
-                                        <a href="${tour.url}">
-                                            <div class="result-image">
-                                                <img src="${tour.image}" alt="${tour.name}">
+                fetch(`${window.location.origin}/${currentLang}/tours/ajax-search?q=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.length > 0) {
+                        // Build results
+                        let html = '';
+                        
+                        data.forEach(function(tour) {
+                            html += `
+                                <div class="quick-search-result">
+                                    <a href="${tour.url}">
+                                        <div class="result-image">
+                                            <img src="${tour.image}" alt="${tour.name}">
+                                        </div>
+                                        <div class="result-content">
+                                            <h4>${tour.name}</h4>
+                                            <div class="result-price">
+                                                ${tour.discount_price ? 
+                                                    `<del>${tour.price}</del> ${tour.discount_price}` : 
+                                                    tour.price}
                                             </div>
-                                            <div class="result-content">
-                                                <h4>${tour.name}</h4>
-                                                <div class="result-price">
-                                                    ${tour.discount_price ? 
-                                                        `<del>${tour.price}</del> ${tour.discount_price}` : 
-                                                        tour.price}
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                `;
-                            });
-                            
-                            resultsContainer.innerHTML = html;
-                        } else {
-                            resultsContainer.innerHTML = '<div class="no-results">No tours found matching your search.</div>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Search error:', error);
-                        resultsContainer.innerHTML = '<div class="search-error">An error occurred. Please try again.</div>';
-                    });
+                                        </div>
+                                    </a>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsContainer.innerHTML = html;
+                        resultsContainer.style.display = 'block';
+                    } else {
+                        resultsContainer.innerHTML = '<div class="no-results">No tours found matching your search.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    resultsContainer.innerHTML = '<div class="search-error">An error occurred. Please try again.</div>';
+                });
             }, 300);
         });
         
@@ -1055,8 +1071,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const guestsValue = this.querySelector('select[name="guests"]').value;
             
             // Redirect to tours page with parameters
-            const lang = document.documentElement.lang || 'en';
-            let url = `${window.location.origin}/${lang}/tours?`;
+            const pathParts = window.location.pathname.split('/');
+            const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 'en';
+            
+            let url = `${window.location.origin}/${currentLang}/tours?`;
             
             if (keywordValue) url += `keyword=${encodeURIComponent(keywordValue)}&`;
             if (dateValue) url += `date=${encodeURIComponent(dateValue)}&`;
