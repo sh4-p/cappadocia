@@ -18,6 +18,10 @@
                         <i class="material-icons">settings</i>
                         <span><?php _e('general'); ?></span>
                     </a>
+                    <a href="#settings-homepage" class="settings-nav-tab" data-tab="homepage">
+                        <i class="material-icons">image</i>
+                        <span><?php _e('homepage_images'); ?></span>
+                    </a>
                     <a href="#settings-website" class="settings-nav-tab" data-tab="website">
                         <i class="material-icons">language</i>
                         <span><?php _e('website'); ?></span>
@@ -116,6 +120,122 @@
                             <div class="form-group">
                                 <label for="currency_symbol" class="form-label"><?php _e('currency_symbol'); ?></label>
                                 <input type="text" id="currency_symbol" name="settings[currency_symbol]" class="form-control" value="<?php echo htmlspecialchars($settings['currency_symbol'] ?? '$'); ?>">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Homepage Images Settings -->
+                <div id="settings-homepage" class="settings-tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><?php _e('homepage_images'); ?></h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Hero Background Image -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="hero_bg" class="form-label"><?php _e('hero_bg_image'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['hero_bg'] ?? 'hero-bg.jpg'); ?>" alt="<?php _e('hero_bg_image'); ?>" id="hero_bg_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="hero_bg" name="homepage_images[hero_bg]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 1920x1080px</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- About Section Background -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="about_bg" class="form-label"><?php _e('about_bg_image'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['about_bg'] ?? 'about-bg.jpg'); ?>" alt="<?php _e('about_bg_image'); ?>" id="about_bg_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="about_bg" name="homepage_images[about_bg]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 1920x1200px</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <!-- Stats Background Image -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="stats_bg" class="form-label"><?php _e('stats_bg_image'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['stats_bg'] ?? 'stats-bg.jpg'); ?>" alt="<?php _e('stats_bg_image'); ?>" id="stats_bg_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="stats_bg" name="homepage_images[stats_bg]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 1920x800px</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Testimonials Background -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="testimonials_bg" class="form-label"><?php _e('testimonials_bg_image'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['testimonials_bg'] ?? 'testimonials-bg.jpg'); ?>" alt="<?php _e('testimonials_bg_image'); ?>" id="testimonials_bg_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="testimonials_bg" name="homepage_images[testimonials_bg]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 1920x1000px</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <!-- CTA Background Image -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="cta_bg" class="form-label"><?php _e('cta_bg_image'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['cta_bg'] ?? 'cta-bg.jpg'); ?>" alt="<?php _e('cta_bg_image'); ?>" id="cta_bg_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="cta_bg" name="homepage_images[cta_bg]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 1920x900px</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- About Section Images -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="about_image1" class="form-label"><?php _e('about_image_1'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['about_image1'] ?? 'about-cappadocia-1.jpg'); ?>" alt="<?php _e('about_image_1'); ?>" id="about_image1_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="about_image1" name="homepage_images[about_image1]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 600x800px</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <!-- About Image 2 -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="about_image2" class="form-label"><?php _e('about_image_2'); ?></label>
+                                        <div class="image-preview">
+                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['about_image2'] ?? 'about-cappadocia-2.jpg'); ?>" alt="<?php _e('about_image_2'); ?>" id="about_image2_preview">
+                                        </div>
+                                        <div class="mt-3">
+                                            <input type="file" id="about_image2" name="homepage_images[about_image2]" class="form-control" accept="image/*">
+                                            <small class="form-text"><?php _e('recommended_size'); ?>: 500x700px</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -620,44 +740,68 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         
         initImagePreviews: function() {
-            // Logo Preview
-            const logoInput = document.getElementById('logo');
-            const logoPreview = document.getElementById('logo_preview');
-            
-            if (logoInput && logoPreview) {
-                logoInput.addEventListener('change', function() {
-                    if (this.files && this.files[0]) {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            logoPreview.src = e.target.result;
-                        }
-                        
-                        reader.readAsDataURL(this.files[0]);
+        // Logo Preview
+        const logoInput = document.getElementById('logo');
+        const logoPreview = document.getElementById('logo_preview');
+        
+        if (logoInput && logoPreview) {
+            logoInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        logoPreview.src = e.target.result;
                     }
-                });
-            }
-            
-            // Favicon Preview
-            const faviconInput = document.getElementById('favicon');
-            const faviconPreview = document.getElementById('favicon_preview');
-            
-            if (faviconInput && faviconPreview) {
-                faviconInput.addEventListener('change', function() {
-                    if (this.files && this.files[0]) {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            faviconPreview.src = e.target.result;
-                        }
-                        
-                        reader.readAsDataURL(this.files[0]);
-                    }
-                });
-            }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
         }
-    };
-    
+        
+        // Favicon Preview
+        const faviconInput = document.getElementById('favicon');
+        const faviconPreview = document.getElementById('favicon_preview');
+        
+        if (faviconInput && faviconPreview) {
+            faviconInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        faviconPreview.src = e.target.result;
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Homepage Images Previews
+        const homepageImageInputs = [
+            'hero_bg', 'about_bg', 'stats_bg', 'testimonials_bg', 
+            'cta_bg', 'about_image1', 'about_image2'
+        ];
+        
+        homepageImageInputs.forEach(function(id) {
+            const input = document.getElementById(id);
+            const preview = document.getElementById(id + '_preview');
+            
+            if (input && preview) {
+                input.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        });
+    }
+}
     // Initialize settings tabs
     SettingsTabs.init();
 });

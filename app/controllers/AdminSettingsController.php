@@ -86,7 +86,7 @@ class AdminSettingsController extends Controller
         // Get form data
         $settings = $this->post('settings', []);
         
-        // Handle file uploads
+        // Handle regular file uploads
         $uploadedFiles = [
             'logo' => $this->file('logo'),
             'favicon' => $this->file('favicon')
@@ -101,6 +101,25 @@ class AdminSettingsController extends Controller
                 // Upload file
                 if (move_uploaded_file($file['tmp_name'], $uploadDir . $fileName)) {
                     $settings[$key] = $fileName;
+                }
+            }
+        }
+        
+        // Handle homepage images
+        if (isset($_FILES['homepage_images'])) {
+            $homepageImages = $_FILES['homepage_images'];
+            
+            // Process each homepage image
+            foreach ($homepageImages['name'] as $key => $name) {
+                if ($homepageImages['error'][$key] === UPLOAD_ERR_OK) {
+                    $uploadDir = BASE_PATH . '/public/img/';
+                    $fileExtension = pathinfo($name, PATHINFO_EXTENSION);
+                    $fileName = $key . '.' . $fileExtension;
+                    
+                    // Upload file
+                    if (move_uploaded_file($homepageImages['tmp_name'][$key], $uploadDir . $fileName)) {
+                        $settings[$key] = $fileName;
+                    }
                 }
             }
         }

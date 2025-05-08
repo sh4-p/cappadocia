@@ -3,10 +3,29 @@
  * Homepage view - Modern Redesign
  * Sales-driven, mobile-optimized layout
  */
+
+ // Hero background image
+$heroBgImage = isset($settings['hero_bg']) ? $settings['hero_bg'] : 'hero-bg.jpg';
+
+// Stats background image
+$statsBgImage = isset($settings['stats_bg']) ? $settings['stats_bg'] : 'stats-bg.jpg';
+
+// About section background image
+$aboutBgImage = isset($settings['about_bg']) ? $settings['about_bg'] : 'about-bg.jpg';
+
+// About section images
+$aboutImage1 = isset($settings['about_image1']) ? $settings['about_image1'] : 'about-cappadocia-1.jpg';
+$aboutImage2 = isset($settings['about_image2']) ? $settings['about_image2'] : 'about-cappadocia-2.jpg';
+
+// Testimonials background image
+$testimonialsBgImage = isset($settings['testimonials_bg']) ? $settings['testimonials_bg'] : 'testimonials-bg.jpg';
+
+// Call-to-action background image
+$ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
 ?>
 
 <!-- Hero Section with Dynamic Background -->
-<section class="hero-section" style="background-image: url('<?php echo $imgUrl; ?>/hero-bg.jpg');">
+<section class="hero-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $heroBgImage; ?>');">
     <div class="container">
         <div class="hero-content fade-in-up">
             <h1 class="hero-title"><?php _e('discover_magical_cappadocia'); ?></h1>
@@ -25,12 +44,12 @@
             <!-- Quick Booking Form with AJAX search -->
             <div class="hero-booking-form glass-card">
                 <h3><?php _e('quick_booking'); ?></h3>
-                <form id="quick-booking-form" class="quick-booking-form">
+                <form id="quick-booking-form" class="quick-booking-form" data-app-url="<?php echo $appUrl; ?>">
                     <div class="form-row">
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="material-icons">search</i>
-                                <input type="text" name="keyword" id="quick_booking_keyword" placeholder="<?php _e('search_by_keywords'); ?>" class="form-control">
+                                <input type="text" name="keyword" id="quick_booking_keyword" placeholder="<?php _e('search_by_keywords'); ?>" class="form-control" autocomplete="off">
                             </div>
                             <!-- Add results container for AJAX search -->
                             <div id="quick-search-results" class="quick-search-results"></div>
@@ -160,7 +179,7 @@
 </section>
 
 <!-- Stats Section - Fixed z-index and positioning -->
-<section class="section stats-section" style="background-image: url('<?php echo $imgUrl; ?>/stats-bg.jpg'); position: relative; z-index: 1;">
+<section class="section stats-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $statsBgImage; ?>'); position: relative; z-index: 1;">
     <div class="container">
         <div class="stats-grid" data-aos="fade-up">
             <div class="stat-item">
@@ -207,7 +226,7 @@
 </section>
 
 <!-- About Cappadocia Section - Fixed positioning and spacing -->
-<section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/about-bg.jpg'); position: relative; z-index: 1; margin-top: 2rem;">
+<section class="section about-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $aboutBgImage; ?>'); position: relative; z-index: 1; margin-top: 2rem;">
     <div class="container">
         <div class="row">
             <div class="col-md-6" data-aos="fade-right">
@@ -224,10 +243,10 @@
             <div class="col-md-6" data-aos="fade-left">
                 <div class="about-image-container">
                     <div class="about-image main-image">
-                        <img src="<?php echo $imgUrl; ?>/about-cappadocia-1.jpg" alt="<?php _e('about_cappadocia'); ?>">
+                        <img src="<?php echo $imgUrl; ?>/<?php echo $aboutImage1; ?>" alt="<?php _e('about_cappadocia'); ?>">
                     </div>
                     <div class="about-image secondary-image">
-                        <img src="<?php echo $imgUrl; ?>/about-cappadocia-2.jpg" alt="<?php _e('about_cappadocia'); ?>">
+                        <img src="<?php echo $imgUrl; ?>/<?php echo $aboutImage2; ?>" alt="<?php _e('about_cappadocia'); ?>">
                     </div>
                     <div class="experience-badge">
                         <span class="years">15+</span>
@@ -316,7 +335,7 @@
 </section>
 
 <!-- Testimonials Section - Visual Enhancement -->
-<section class="section testimonials-section" style="background-image: url('<?php echo $imgUrl; ?>/testimonials-bg.jpg');">
+<section class="section testimonials-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $testimonialsBgImage; ?>');">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
             <h2 class="section-title" style="color: var(--white-color);"><?php _e('testimonials'); ?></h2>
@@ -411,7 +430,7 @@
 </section>
 
 <!-- Call to Action Section - Enhanced Design -->
-<section class="cta-section" style="background-image: url('<?php echo $imgUrl; ?>/cta-bg.jpg');">
+<section class="cta-section" style="background-image: url('<?php echo $imgUrl; ?>/<?php echo $ctaBgImage; ?>');">
     <div class="container">
         <div class="cta-content" data-aos="fade-up">
             <h2 class="cta-title"><?php _e('ready_for_adventure'); ?></h2>
@@ -726,6 +745,7 @@
         box-shadow: var(--shadow-lg);
         z-index: 1000;
         display: none;
+        margin-top: 5px;
     }
     
     .quick-search-result {
@@ -741,6 +761,7 @@
         padding: var(--spacing-md);
         color: var(--dark-color);
         transition: background-color var(--transition-fast);
+        text-decoration: none;
     }
     
     .quick-search-result a:hover {
@@ -753,6 +774,7 @@
         border-radius: var(--border-radius-sm);
         overflow: hidden;
         margin-right: var(--spacing-md);
+        flex-shrink: 0;
     }
     
     .result-image img {
@@ -763,11 +785,15 @@
     
     .result-content {
         flex: 1;
+        min-width: 0; /* Prevent overflow in flexbox */
     }
     
     .result-content h4 {
         margin-bottom: 4px;
         font-size: var(--font-size-md);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .result-price {
@@ -892,6 +918,16 @@
         .features-grid {
             grid-template-columns: 1fr;
         }
+        
+        .quick-search-results {
+            position: fixed;
+            top: auto;
+            left: 10px;
+            right: 10px;
+            width: auto;
+            max-height: 60vh;
+            z-index: 1005;
+        }
     }
     
     @media (max-width: 576px) {
@@ -912,6 +948,138 @@
 <!-- Initialize quick booking form -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize quick booking form with autocomplete
+    const quickSearchForm = document.getElementById('quick-booking-form');
+    const searchInput = document.getElementById('quick_booking_keyword');
+    const resultsContainer = document.getElementById('quick-search-results');
+    
+    if (quickSearchForm && searchInput && resultsContainer) {
+        let searchTimeout;
+        
+        // Get app base URL from data attribute
+        const appBaseUrl = quickSearchForm.getAttribute('data-app-url') || '';
+        
+        // Search input event listener
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Hide results if query is empty
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Set timeout to prevent excessive requests
+            searchTimeout = setTimeout(function() {
+                // Show loading indicator
+                resultsContainer.innerHTML = '<div class="search-loading"><div class="spinner"></div></div>';
+                resultsContainer.style.display = 'block';
+                
+                // Get current language from URL or HTML tag
+                const pathParts = window.location.pathname.split('/');
+                const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 
+                                  (document.documentElement.lang || 'en');
+                
+                // Make AJAX request with correct URL
+                fetch(`${appBaseUrl}/${currentLang}/tours/ajax-search?q=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.length > 0) {
+                        // Build results
+                        let html = '';
+                        
+                        data.forEach(function(tour) {
+                            // Ensure image URL has correct base path
+                            let imageUrl = tour.image;
+                            if (imageUrl && !imageUrl.startsWith('http')) {
+                                imageUrl = `${appBaseUrl}${imageUrl}`;
+                            }
+                            
+                            html += `
+                                <div class="quick-search-result">
+                                    <a href="${tour.url}">
+                                        <div class="result-image">
+                                            <img src="${imageUrl}" alt="${tour.name}">
+                                        </div>
+                                        <div class="result-content">
+                                            <h4>${tour.name}</h4>
+                                            <div class="result-price">
+                                                ${tour.discount_price ? 
+                                                    `<del>${tour.price}</del> ${tour.discount_price}` : 
+                                                    tour.price}
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsContainer.innerHTML = html;
+                        resultsContainer.style.display = 'block';
+                    } else {
+                        resultsContainer.innerHTML = '<div class="no-results">Arama kriterlerinize uygun tur bulunamadı.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    resultsContainer.innerHTML = '<div class="search-error">Bir hata oluştu. Lütfen tekrar deneyin.</div>';
+                });
+            }, 300);
+        });
+        
+        // Close results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
+        
+        // Handle result click
+        resultsContainer.addEventListener('click', function(e) {
+            const resultItem = e.target.closest('.quick-search-result a');
+            if (resultItem) {
+                e.preventDefault();
+                window.location.href = resultItem.getAttribute('href');
+            }
+        });
+        
+        // Form submission
+        quickSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const keywordValue = searchInput.value.trim();
+            const dateValue = document.getElementById('quick_booking_date').value;
+            const guestsValue = this.querySelector('select[name="guests"]').value;
+            
+            // Get current language
+            const pathParts = window.location.pathname.split('/');
+            const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 
+                              (document.documentElement.lang || 'en');
+            
+            // Create URL with correct base path
+            let url = `${appBaseUrl}/${currentLang}/tours?`;
+            
+            if (keywordValue) url += `keyword=${encodeURIComponent(keywordValue)}&`;
+            if (dateValue) url += `date=${encodeURIComponent(dateValue)}&`;
+            if (guestsValue) url += `guests=${encodeURIComponent(guestsValue)}`;
+            
+            window.location.href = url;
+        });
+    }
+    
     // Improved datepicker initialization
     const dateInput = document.getElementById('quick_booking_date');
     if (dateInput) {
@@ -969,118 +1137,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     behavior: 'smooth'
                 });
             }
-        });
-    }
-    
-    // AJAX Quick Search - Fixed version
-    const quickSearchForm = document.getElementById('quick-booking-form');
-    const searchInput = document.getElementById('quick_booking_keyword');
-    const resultsContainer = document.getElementById('quick-search-results');
-    
-    if (quickSearchForm && searchInput && resultsContainer) {
-        let searchTimeout;
-        
-        // Search input event listener
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            
-            // Clear previous timeout
-            clearTimeout(searchTimeout);
-            
-            // Hide results if query is empty
-            if (query.length < 2) {
-                resultsContainer.innerHTML = '';
-                resultsContainer.style.display = 'none';
-                return;
-            }
-            
-            // Set timeout to prevent excessive requests
-            searchTimeout = setTimeout(function() {
-                // Show loading indicator
-                resultsContainer.innerHTML = '<div class="search-loading"><div class="spinner"></div></div>';
-                resultsContainer.style.display = 'block';
-                
-                // Get current language from URL or HTML tag
-                const pathParts = window.location.pathname.split('/');
-                const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 
-                                  (document.documentElement.lang || 'en');
-                
-                // Make AJAX request
-                fetch(`${window.location.origin}/${currentLang}/tours/ajax-search?q=${encodeURIComponent(query)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.length > 0) {
-                        // Build results
-                        let html = '';
-                        
-                        data.forEach(function(tour) {
-                            html += `
-                                <div class="quick-search-result">
-                                    <a href="${tour.url}">
-                                        <div class="result-image">
-                                            <img src="${tour.image}" alt="${tour.name}">
-                                        </div>
-                                        <div class="result-content">
-                                            <h4>${tour.name}</h4>
-                                            <div class="result-price">
-                                                ${tour.discount_price ? 
-                                                    `<del>${tour.price}</del> ${tour.discount_price}` : 
-                                                    tour.price}
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                            `;
-                        });
-                        
-                        resultsContainer.innerHTML = html;
-                        resultsContainer.style.display = 'block';
-                    } else {
-                        resultsContainer.innerHTML = '<div class="no-results">No tours found matching your search.</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Search error:', error);
-                    resultsContainer.innerHTML = '<div class="search-error">An error occurred. Please try again.</div>';
-                });
-            }, 300);
-        });
-        
-        // Close results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
-                resultsContainer.style.display = 'none';
-            }
-        });
-        
-        // Form submission
-        quickSearchForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const keywordValue = searchInput.value.trim();
-            const dateValue = document.getElementById('quick_booking_date').value;
-            const guestsValue = this.querySelector('select[name="guests"]').value;
-            
-            // Redirect to tours page with parameters
-            const pathParts = window.location.pathname.split('/');
-            const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 'en';
-            
-            let url = `<?php echo $appUrl; ?>/${currentLang}/tours?`;
-            
-            if (keywordValue) url += `keyword=${encodeURIComponent(keywordValue)}&`;
-            if (dateValue) url += `date=${encodeURIComponent(dateValue)}&`;
-            if (guestsValue) url += `guests=${encodeURIComponent(guestsValue)}`;
-            
-            window.location.href = url;
         });
     }
 });

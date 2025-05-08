@@ -192,8 +192,11 @@ function searchInit() {
                     // Get current language
                     const lang = document.documentElement.lang || 'en';
                     
+                    // Get base URL from data attribute or DOM
+                    const appBaseUrl = document.body.dataset.appUrl || '';
+                    
                     // Make AJAX request
-                    fetch(`${window.location.origin}/${lang}/tours/ajax-search?q=${encodeURIComponent(query)}`)
+                    fetch(`${appBaseUrl}/${lang}/tours/ajax-search?q=${encodeURIComponent(query)}`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.length > 0) {
@@ -228,6 +231,171 @@ function searchInit() {
     }
 }
 
+/**
+ * Initialize quick booking form
+ */
+function quickBookingInit() {
+    const quickSearchForm = document.getElementById('quick-booking-form');
+    const searchInput = document.getElementById('quick_booking_keyword');
+    const resultsContainer = document.getElementById('quick-search-results');
+    
+    if (quickSearchForm && searchInput && resultsContainer) {
+        let searchTimeout;
+        
+        // Get app base URL from data attribute
+        const appBaseUrl = quickSearchForm.getAttribute('data-app-url') || '';
+        
+        // Search input event listener
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Hide results if query is empty
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Set timeout to prevent excessive requests
+            searchTimeout = setTimeout(function() {
+                // Show loading indicator
+                resultsContainer.innerHTML = '<div class="search-loading"><div class="spinner"></div></div>';
+                resultsContainer.style.display = 'block';
+                
+                // Get current language from URL or HTML tag
+                const pathParts = window.location.pathname.split('/');
+                const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 
+                                  (document.documentElement.lang || 'en');
+                
+                // Make AJAX request
+                fetch(`${appBaseUrl}/${currentLang}/tours/ajax-search?q=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.length > 0) {
+                        // Build results
+                        let html = '';
+                        
+                        data.forEach(function(tour) {
+                            // Ensure image URL has correct base path
+                            let imageUrl = tour.image;
+                            if (imageUrl && !imageUrl.startsWith('http')) {
+                                imageUrl = `${appBaseUrl}${imageUrl}`;
+                            }
+                            
+                            html += `
+                                <div class="quick-search-result">
+                                    <a href="${tour.url}">
+                                        <div class="result-image">
+                                            <img src="${imageUrl}" alt="${tour.name}">
+                                        </div>
+                                        <div class="result-content">
+                                            <h4>${tour.name}</h4>
+                                            <div class="result-price">
+                                                ${tour.discount_price ? 
+                                                    `<del>${tour.price}</del> ${tour.discount_price}` : 
+                                                    tour.price}
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsContainer.innerHTML = html;
+                        resultsContainer.style.display = 'block';
+                    } else {
+                        resultsContainer.innerHTML = '<div class="no-results">Arama kriterlerinize uygun tur bulunamadı.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    resultsContainer.innerHTML = '<div class="search-error">Bir hata oluştu. Lütfen tekrar deneyin.</div>';
+                });
+            }, 300);
+        });
+        
+        // Close results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
+        
+        // Handle result click
+        resultsContainer.addEventListener('click', function(e) {
+            const resultItem = e.target.closest('.quick-search-result a');
+            if (resultItem) {
+                e.preventDefault();
+                window.location.href = resultItem.getAttribute('href');
+            }
+        });
+        
+        // Form submission
+        quickSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const keywordValue = searchInput.value.trim();
+            const dateValue = document.getElementById('quick_booking_date').value;
+            const guestsValue = this.querySelector('select[name="guests"]').value;
+            
+            // Get current language
+            const pathParts = window.location.pathname.split('/');
+            const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 
+                              (document.documentElement.lang || 'en');
+            
+            // Create URL with correct base path
+            let url = `${appBaseUrl}/${currentLang}/tours?`;
+            
+            if (keywordValue) url += `keyword=${encodeURIComponent(keywordValue)}&`;
+            if (dateValue) url += `date=${encodeURIComponent(dateValue)}&`;
+            if (guestsValue) url += `guests=${encodeURIComponent(guestsValue)}`;
+            
+            window.location.href = url;
+        });
+    }
+}
+
+// Update the main initialization function to include our new function
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    
+    // Initialize all components
+    preloaderInit();
+    headerInit();
+    searchInit();
+    quickBookingInit(); // Add the new function
+    backToTopInit();
+    sliderInit();
+    galleryInit();
+    dropdownInit();
+    alertInit();
+    tourTabsInit();
+    countUpInit();
+    bookingFormInit();
+    
+    // Call AOS (Animate On Scroll) if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out',
+            once: true,
+            offset: 50,
+            delay: 50
+        });
+    }
+});
 /**
  * Initialize back to top button with smooth scroll
  */

@@ -191,11 +191,6 @@ class ToursController extends Controller
      */
     public function ajaxSearch()
     {
-        // Remove the AJAX check since it might be causing issues with fetch
-        // if (!$this->isAjax()) {
-        //     $this->redirect('tours');
-        // }
-        
         // Get search query
         $query = $this->get('q');
         
@@ -218,8 +213,8 @@ class ToursController extends Controller
             $price = $currencySymbol . number_format($tour['price'], 2);
             $discountPrice = $tour['discount_price'] ? $currencySymbol . number_format($tour['discount_price'], 2) : null;
             
-            // Build full image URL
-            $imageUrl = APP_URL . '/uploads/tours/' . $tour['featured_image'];
+            // Build full URLs with correct APP_URL
+            $imageUrl = '/uploads/tours/' . $tour['featured_image']; // Relative path for JS to fix
             
             $results[] = [
                 'id' => $tour['id'],
