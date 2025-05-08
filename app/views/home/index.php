@@ -1074,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const pathParts = window.location.pathname.split('/');
             const currentLang = pathParts[1] && pathParts[1].length === 2 ? pathParts[1] : 'en';
             
-            let url = `${window.location.origin}/${currentLang}/tours?`;
+            let url = `<?php echo $appUrl; ?>/${currentLang}/tours?`;
             
             if (keywordValue) url += `keyword=${encodeURIComponent(keywordValue)}&`;
             if (dateValue) url += `date=${encodeURIComponent(dateValue)}&`;
