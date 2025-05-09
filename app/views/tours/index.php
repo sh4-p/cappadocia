@@ -207,7 +207,7 @@
                                         <?php echo substr(strip_tags($tour['short_description']), 0, 120) . '...'; ?>
                                     </p>
                                     <div class="tour-footer">
-                                        <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $tour['slug']; ?>" class="btn btn-outline btn-sm">
+                                        <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $tour['slug']; ?>" class="btn btn-outline btn-view-details">
                                             <?php _e('view_details'); ?>
                                         </a>
                                     </div>
@@ -257,3 +257,395 @@
         </div>
     </div>
 </section>
+<style>
+    /* ========== IMPROVED TOUR CARDS ========== */
+.tours-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.tour-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #ffffff;
+}
+
+.tour-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.tour-image {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+}
+
+.tour-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.tour-card:hover .tour-image img {
+    transform: scale(1.1);
+}
+
+.tour-price {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #FF6B35;
+    color: #ffffff;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+    font-size: 14px;
+}
+
+.tour-price del {
+    font-size: 13px;
+    font-weight: 400;
+    margin-right: 6px;
+    opacity: 0.8;
+}
+
+.tour-category {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+    font-weight: 500;
+}
+
+.tour-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.tour-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.tour-title a {
+    color: #264653;
+    transition: color 0.2s ease;
+}
+
+.tour-title a:hover {
+    color: #FF6B35;
+}
+
+.tour-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.tour-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tour-meta-item i {
+    font-size: 18px;
+    color: #2A9D8F;
+}
+
+.tour-description {
+    margin-bottom: 20px;
+    color: #495057;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+.tour-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #f1f1f1;
+}
+
+.btn-view-details {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    background-color: transparent;
+    border: 2px solid #FF6B35;
+    color: #FF6B35;
+}
+
+.btn-view-details:hover {
+    background-color: #FF6B35;
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ========== RESPONSIVE STYLES ========== */
+@media (max-width: 1200px) {
+    .tours-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tours-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .tours-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .tour-search {
+        width: 100%;
+    }
+    
+    .tours-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .tour-filters {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85%;
+        height: 100vh;
+        z-index: 1050;
+        background-color: #ffffff;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .tour-filters.filters-open {
+        left: 0;
+    }
+    
+    .filter-mobile-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background-color: #ffffff;
+        color: #264653;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        margin-bottom: 20px;
+        cursor: pointer;
+    }
+    
+    .filter-close-mobile {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6c757d;
+    }
+    
+    .tour-card {
+        max-width: 100%;
+    }
+    
+    .tour-image {
+        height: 220px;
+    }
+    
+    .tour-content {
+        padding: 20px;
+    }
+    
+    .tour-title {
+        font-size: 18px;
+    }
+    
+    .tour-meta {
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    .tour-description {
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    
+    .tour-footer {
+        padding-top: 12px;
+    }
+    
+    .btn-view-details {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tour-image {
+        height: 180px;
+    }
+    
+    .tour-price {
+        top: 10px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .tour-category {
+        bottom: 10px;
+        left: 10px;
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+    
+    .tour-content {
+        padding: 16px;
+    }
+    
+    .tour-title {
+        font-size: 16px;
+    }
+    
+    .tour-meta-item i {
+        font-size: 16px;
+    }
+    
+    .tour-meta-item span {
+        font-size: 12px;
+    }
+}
+
+/* Menu backdrop for mobile filters */
+.menu-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+
+.menu-backdrop.active {
+    display: block;
+}
+
+/* Add this class to body when filters are open */
+body.filters-opened {
+    overflow: hidden;
+}
+</style>
+<script>
+    // Mobile filters toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const filterToggle = document.querySelector('.filter-mobile-toggle');
+    const filterClose = document.querySelector('.filter-close-mobile');
+    const filterPanel = document.querySelector('.tour-filters');
+    const body = document.body;
+    
+    // Create backdrop element if it doesn't exist
+    let backdrop = document.querySelector('.menu-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'menu-backdrop';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (filterToggle) {
+        filterToggle.addEventListener('click', function() {
+            filterPanel.classList.add('filters-open');
+            body.classList.add('filters-opened');
+            backdrop.classList.add('active');
+        });
+    }
+    
+    if (filterClose) {
+        filterClose.addEventListener('click', function() {
+            filterPanel.classList.remove('filters-open');
+            body.classList.remove('filters-opened');
+            backdrop.classList.remove('active');
+        });
+    }
+    
+    // Close filters when clicking on backdrop
+    if (backdrop) {
+        backdrop.addEventListener('click', function() {
+            filterPanel.classList.remove('filters-open');
+            body.classList.remove('filters-opened');
+            backdrop.classList.remove('active');
+        });
+    }
+    
+    // Ensure cards have equal height
+    const equalizeCardHeights = function() {
+        const cards = document.querySelectorAll('.tour-card');
+        if (!cards.length) return;
+        
+        // Reset heights first
+        cards.forEach(card => {
+            card.style.height = 'auto';
+        });
+        
+        // Only equalize on desktop
+        if (window.innerWidth >= 768) {
+            // Get max card height
+            let maxHeight = 0;
+            cards.forEach(card => {
+                if (card.offsetHeight > maxHeight) {
+                    maxHeight = card.offsetHeight;
+                }
+            });
+            
+            // Apply max height to all cards
+            cards.forEach(card => {
+                card.style.height = maxHeight + 'px';
+            });
+        }
+    };
+    
+    // Run on page load and window resize
+    equalizeCardHeights();
+    window.addEventListener('resize', equalizeCardHeights);
+    window.addEventListener('load', equalizeCardHeights);
+});
+</script>
