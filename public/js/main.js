@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
     countUpInit();
     bookingFormInit();
     
+    // Initialize new tour filter functionality
+    tourFilterInit();
+    
     // Call AOS (Animate On Scroll) if available
     if (typeof AOS !== 'undefined') {
         AOS.init({
@@ -33,6 +36,301 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+/**
+ * Initialize tour filters functionality
+ */
+function tourFilterInit() {
+    // Initialize filter toggle functionality
+    initFilterToggle();
+    
+    // Initialize price range slider
+    initPriceRangeSlider();
+    
+    // Initialize filter form auto submit
+    initFilterAutoSubmit();
+    
+    // Initialize mobile filter handling
+    initMobileFilters();
+    
+    // Initialize filter reset
+    initFilterReset();
+    
+    // Equalize card heights
+    equalizeCardHeights();
+}
+
+/**
+ * Function to initialize filter toggle
+ */
+function initFilterToggle() {
+    const filterHeaders = document.querySelectorAll('.filter-header');
+    
+    filterHeaders.forEach(header => {
+        header.addEventListener('click', function(e) {
+            // Önemli: Form gönderimini engelle
+            e.preventDefault();
+            
+            const filterGroup = this.closest('.filter-group');
+            
+            // Toggle open class
+            filterGroup.classList.toggle('open');
+            
+            // Find filter body
+            const filterBody = filterGroup.querySelector('.filter-body');
+            
+            // Toggle display
+            if (filterGroup.classList.contains('open')) {
+                filterBody.style.display = 'block';
+            } else {
+                filterBody.style.display = 'none';
+            }
+            
+            // Event'in form'a yayılmasını engelle
+            e.stopPropagation();
+            
+            return false;
+        });
+    });
+    
+    // Ek olarak, filter-toggle butonlarına tıklamaları da ele alalım
+    const filterToggles = document.querySelectorAll('.filter-toggle');
+    
+    filterToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Önemli: Form gönderimini engelle
+            e.preventDefault();
+            
+            // Event'in aşağıya yayılmasını engelle (parent'a tıklama da tetiklenir normalde)
+            e.stopPropagation();
+            
+            // Filtergroup'u bul
+            const filterGroup = this.closest('.filter-group');
+            
+            // Toggle open class
+            filterGroup.classList.toggle('open');
+            
+            // Find filter body
+            const filterBody = filterGroup.querySelector('.filter-body');
+            
+            // Toggle display
+            if (filterGroup.classList.contains('open')) {
+                filterBody.style.display = 'block';
+            } else {
+                filterBody.style.display = 'none';
+            }
+            
+            return false;
+        });
+    });
+}
+
+/**
+ * Function to initialize price range slider
+ */
+function initPriceRangeSlider() {
+    const priceRangeSlider = document.querySelector('.price-range-slider');
+    
+    if (priceRangeSlider && typeof jQuery !== 'undefined' && jQuery.ui) {
+        const minDisplay = document.querySelector('.price-min-display');
+        const maxDisplay = document.querySelector('.price-max-display');
+        const minInput = document.getElementById('price_min');
+        const maxInput = document.getElementById('price_max');
+        
+        // Get min/max values from data attributes
+        const minValue = parseInt(priceRangeSlider.dataset.min || 0);
+        const maxValue = parseInt(priceRangeSlider.dataset.max || 1000);
+        const currencySymbol = priceRangeSlider.dataset.currency || '$';
+        
+        // Initialize jQuery UI slider
+        jQuery(priceRangeSlider).slider({
+            range: true,
+            min: minValue,
+            max: maxValue,
+            values: [minValue, maxValue],
+            slide: function(event, ui) {
+                // Update displays
+                minDisplay.textContent = currencySymbol + ui.values[0];
+                maxDisplay.textContent = currencySymbol + ui.values[1];
+                
+                // Update hidden inputs
+                minInput.value = ui.values[0];
+                maxInput.value = ui.values[1];
+            },
+            change: function(event, ui) {
+                // Trigger form submit if auto-submit enabled
+                const form = priceRangeSlider.closest('form');
+                if (form && form.dataset.autoSubmit === 'true') {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+        
+        // Set initial values for display
+        minDisplay.textContent = currencySymbol + jQuery(priceRangeSlider).slider('values', 0);
+        maxDisplay.textContent = currencySymbol + jQuery(priceRangeSlider).slider('values', 1);
+        
+        // Set initial values for hidden inputs
+        minInput.value = jQuery(priceRangeSlider).slider('values', 0);
+        maxInput.value = jQuery(priceRangeSlider).slider('values', 1);
+    } else {
+        // Fallback for when jQuery UI is not available
+        console.warn('jQuery UI not available for price range slider');
+        
+        // Hide price range filter
+        const priceRangeGroup = priceRangeSlider?.closest('.filter-group');
+        if (priceRangeGroup) {
+            priceRangeGroup.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Function to initialize filter form auto submit
+ */
+function initFilterAutoSubmit() {
+    const filterForm = document.querySelector('.tour-filters form');
+    
+    if (filterForm && filterForm.dataset.autoSubmit === 'true') {
+        // Listen for changes on checkboxes and radio buttons
+        const formInputs = filterForm.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+        
+        formInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // For category checkboxes, we need special handling (single selection)
+                if (this.name === 'category') {
+                    // Uncheck all other category checkboxes
+                    const categoryCheckboxes = filterForm.querySelectorAll('input[name="category"]');
+                    categoryCheckboxes.forEach(checkbox => {
+                        if (checkbox !== this) {
+                            checkbox.checked = false;
+                        }
+                    });
+                }
+                
+                // Submit the form
+                filterForm.submit();
+            });
+        });
+    }
+}
+
+/**
+ * Function to initialize mobile filter handling
+ */
+function initMobileFilters() {
+    const filterToggle = document.querySelector('.filter-mobile-toggle');
+    const filterClose = document.querySelector('.filter-close-mobile');
+    const filterPanel = document.querySelector('.tour-filters');
+    const body = document.body;
+    
+    // Create backdrop element if it doesn't exist
+    let backdrop = document.querySelector('.menu-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'menu-backdrop';
+        document.body.appendChild(backdrop);
+    }
+    
+    if (filterToggle) {
+        filterToggle.addEventListener('click', function() {
+            filterPanel.classList.add('filters-open');
+            body.classList.add('filters-opened');
+            backdrop.classList.add('active');
+        });
+    }
+    
+    if (filterClose) {
+        filterClose.addEventListener('click', function() {
+            filterPanel.classList.remove('filters-open');
+            body.classList.remove('filters-opened');
+            backdrop.classList.remove('active');
+        });
+    }
+    
+    // Close filters when clicking on backdrop
+    if (backdrop) {
+        backdrop.addEventListener('click', function() {
+            filterPanel.classList.remove('filters-open');
+            body.classList.remove('filters-opened');
+            backdrop.classList.remove('active');
+        });
+    }
+}
+
+/**
+ * Function to initialize filter reset
+ */
+function initFilterReset() {
+    const resetBtn = document.querySelector('.filter-reset');
+    const filterForm = document.querySelector('.tour-filters form');
+    
+    if (resetBtn && filterForm) {
+        resetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Reset all form inputs
+            const formInputs = filterForm.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+            formInputs.forEach(input => {
+                input.checked = false;
+            });
+            
+            // Reset price range slider if exists
+            const priceRangeSlider = document.querySelector('.price-range-slider');
+            if (priceRangeSlider && typeof jQuery !== 'undefined' && jQuery.ui) {
+                const minValue = parseInt(priceRangeSlider.dataset.min || 0);
+                const maxValue = parseInt(priceRangeSlider.dataset.max || 1000);
+                
+                jQuery(priceRangeSlider).slider('values', 0, minValue);
+                jQuery(priceRangeSlider).slider('values', 1, maxValue);
+                
+                // Update displays and inputs
+                const minDisplay = document.querySelector('.price-min-display');
+                const maxDisplay = document.querySelector('.price-max-display');
+                const minInput = document.getElementById('price_min');
+                const maxInput = document.getElementById('price_max');
+                const currencySymbol = priceRangeSlider.dataset.currency || '$';
+                
+                if (minDisplay) minDisplay.textContent = currencySymbol + minValue;
+                if (maxDisplay) maxDisplay.textContent = currencySymbol + maxValue;
+                if (minInput) minInput.value = minValue;
+                if (maxInput) maxInput.value = maxValue;
+            }
+            
+            // Submit the form to reset the page
+            window.location.href = filterForm.action;
+        });
+    }
+}
+
+/**
+ * Ensure equal card heights
+ */
+function equalizeCardHeights() {
+    const cards = document.querySelectorAll('.tour-card');
+    if (!cards.length) return;
+    
+    // Reset heights first
+    cards.forEach(card => {
+        card.style.height = 'auto';
+    });
+    
+    // Only equalize on desktop
+    if (window.innerWidth >= 768) {
+        // Get max card height
+        let maxHeight = 0;
+        cards.forEach(card => {
+            if (card.offsetHeight > maxHeight) {
+                maxHeight = card.offsetHeight;
+            }
+        });
+        
+        // Apply max height to all cards
+        cards.forEach(card => {
+            card.style.height = maxHeight + 'px';
+        });
+    }
+}
 
 /**
  * Initialize preloader with smooth fade-out
@@ -367,35 +665,6 @@ function quickBookingInit() {
     }
 }
 
-// Update the main initialization function to include our new function
-document.addEventListener('DOMContentLoaded', function() {
-    'use strict';
-    
-    // Initialize all components
-    preloaderInit();
-    headerInit();
-    searchInit();
-    quickBookingInit(); // Add the new function
-    backToTopInit();
-    sliderInit();
-    galleryInit();
-    dropdownInit();
-    alertInit();
-    tourTabsInit();
-    countUpInit();
-    bookingFormInit();
-    
-    // Call AOS (Animate On Scroll) if available
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out',
-            once: true,
-            offset: 50,
-            delay: 50
-        });
-    }
-});
 /**
  * Initialize back to top button with smooth scroll
  */

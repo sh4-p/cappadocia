@@ -360,11 +360,12 @@
     color: #FF6B35;
 }
 
+/* Fix for tour-meta text visibility */
 .tour-meta {
     display: flex;
     gap: 16px;
     margin-bottom: 16px;
-    color: #6c757d;
+    color: #495057; /* Darker gray for better visibility */
     font-size: 14px;
 }
 
@@ -376,7 +377,293 @@
 
 .tour-meta-item i {
     font-size: 18px;
-    color: #2A9D8F;
+    color: #2A9D8F; /* Teal color for the icons */
+}
+
+.tour-meta-item span {
+    color: #495057; /* Explicitly set text color */
+    font-weight: 500; /* Make it slightly bolder */
+}
+
+/* Enhanced Filter Styles */
+.filter-group {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.filter-header h4 {
+    margin-bottom: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.filter-toggle {
+    color: #6c757d;
+    transition: transform 0.3s ease;
+}
+
+.filter-group.open .filter-toggle {
+    transform: rotate(180deg);
+}
+
+.filter-body {
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.filter-group.open .filter-body {
+    display: block;
+}
+
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-label, .radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 10px;
+    width: 100%;
+}
+
+.checkbox-custom, .radio-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #adb5bd;
+    border-radius: 4px;
+    position: relative;
+    display: inline-block;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.radio-custom {
+    border-radius: 50%;
+}
+
+.checkbox-label input, .radio-label input {
+    display: none;
+}
+
+.checkbox-label input:checked + .checkbox-custom {
+    background-color: #FF6B35;
+    border-color: #FF6B35;
+}
+
+.radio-label input:checked + .radio-custom {
+    border-color: #FF6B35;
+}
+
+.checkbox-label input:checked + .checkbox-custom::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.radio-label input:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: #FF6B35;
+    border-radius: 50%;
+}
+
+.checkbox-text, .radio-text {
+    flex: 1;
+    color: #495057; /* Darker text for better readability */
+}
+
+.checkbox-count {
+    color: #6c757d;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* Price Range Slider */
+.price-range-slider {
+    margin: 15px 10px;
+    height: 6px;
+    position: relative;
+    background: #e9ecef;
+    border-radius: 5px;
+}
+
+.price-range-slider .ui-slider-range {
+    height: 6px;
+    background: #FF6B35;
+    position: absolute;
+}
+
+.price-range-slider .ui-slider-handle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #FF6B35;
+    position: absolute;
+    top: -6px;
+    margin-left: -9px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    outline: none;
+}
+
+.price-range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.filter-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #495057;
+}
+
+.filter-reset:hover {
+    background-color: #e9ecef;
+}
+
+/* Improved Mobile Filters */
+.filter-mobile-toggle {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #ffffff;
+    color: #264653;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .filter-mobile-toggle {
+        display: flex;
+    }
+    
+    .tour-filters {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85%;
+        height: 100vh;
+        z-index: 1050;
+        background-color: #ffffff;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        padding: 20px;
+    }
+    
+    .tour-filters.filters-open {
+        left: 0;
+    }
+    
+    .filters-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .filter-close-mobile {
+        display: block;
+        font-size: 24px;
+        color: #6c757d;
+        background: none;
+        border: none;
+    }
+}
+
+.menu-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+
+.menu-backdrop.active {
+    display: block;
+}
+
+/* No Results Styling */
+.no-results {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+}
+
+.no-results-icon {
+    font-size: 60px;
+    color: #ced4da;
+    margin-bottom: 20px;
+}
+
+.no-results h3 {
+    margin-bottom: 15px;
+    color: #264653;
+}
+
+.no-results p {
+    color: #6c757d;
+    max-width: 500px;
+    margin: 0 auto 20px;
 }
 
 .tour-description {
@@ -575,77 +862,3 @@ body.filters-opened {
     overflow: hidden;
 }
 </style>
-<script>
-    // Mobile filters toggle
-document.addEventListener('DOMContentLoaded', function() {
-    const filterToggle = document.querySelector('.filter-mobile-toggle');
-    const filterClose = document.querySelector('.filter-close-mobile');
-    const filterPanel = document.querySelector('.tour-filters');
-    const body = document.body;
-    
-    // Create backdrop element if it doesn't exist
-    let backdrop = document.querySelector('.menu-backdrop');
-    if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'menu-backdrop';
-        document.body.appendChild(backdrop);
-    }
-    
-    if (filterToggle) {
-        filterToggle.addEventListener('click', function() {
-            filterPanel.classList.add('filters-open');
-            body.classList.add('filters-opened');
-            backdrop.classList.add('active');
-        });
-    }
-    
-    if (filterClose) {
-        filterClose.addEventListener('click', function() {
-            filterPanel.classList.remove('filters-open');
-            body.classList.remove('filters-opened');
-            backdrop.classList.remove('active');
-        });
-    }
-    
-    // Close filters when clicking on backdrop
-    if (backdrop) {
-        backdrop.addEventListener('click', function() {
-            filterPanel.classList.remove('filters-open');
-            body.classList.remove('filters-opened');
-            backdrop.classList.remove('active');
-        });
-    }
-    
-    // Ensure cards have equal height
-    const equalizeCardHeights = function() {
-        const cards = document.querySelectorAll('.tour-card');
-        if (!cards.length) return;
-        
-        // Reset heights first
-        cards.forEach(card => {
-            card.style.height = 'auto';
-        });
-        
-        // Only equalize on desktop
-        if (window.innerWidth >= 768) {
-            // Get max card height
-            let maxHeight = 0;
-            cards.forEach(card => {
-                if (card.offsetHeight > maxHeight) {
-                    maxHeight = card.offsetHeight;
-                }
-            });
-            
-            // Apply max height to all cards
-            cards.forEach(card => {
-                card.style.height = maxHeight + 'px';
-            });
-        }
-    };
-    
-    // Run on page load and window resize
-    equalizeCardHeights();
-    window.addEventListener('resize', equalizeCardHeights);
-    window.addEventListener('load', equalizeCardHeights);
-});
-</script>

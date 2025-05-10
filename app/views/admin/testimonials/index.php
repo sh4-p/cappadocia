@@ -80,7 +80,7 @@
                                         <a href="<?php echo $adminUrl; ?>/testimonials/edit/<?php echo $testimonial['id']; ?>" class="action-btn" title="<?php _e('edit'); ?>">
                                             <i class="material-icons">edit</i>
                                         </a>
-                                        <a href="<?php echo $adminUrl; ?>/testimonials/delete/<?php echo $testimonial['id']; ?>" class="action-btn delete-btn" title="<?php _e('delete'); ?>" data-confirm="<?php _e('delete_testimonial_confirm'); ?>">
+                                        <a href="<?php echo $adminUrl; ?>/testimonials/delete/<?php echo $testimonial['id']; ?>" class="action-btn delete-btn" title="<?php _e('delete'); ?>" data-name="<?php echo htmlspecialchars($testimonial['name']); ?>">
                                             <i class="material-icons">delete</i>
                                         </a>
                                     </div>
@@ -162,21 +162,71 @@
 .status-inactive:hover {
     background-color: rgba(108, 117, 125, 0.2);
 }
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--gray-400);
+}
+
+.empty-state-icon i {
+    font-size: 4rem;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-description {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Delete confirmation
-    const deleteBtns = document.querySelectorAll('.delete-btn');
+    // Initialize DataTable
+    if (typeof $.fn.DataTable !== 'undefined') {
+        $('.datatable').DataTable({
+            responsive: true,
+            language: {
+                search: '',
+                searchPlaceholder: '<?php _e("search"); ?>',
+                lengthMenu: '<?php _e("show"); ?> _MENU_ <?php _e("entries"); ?>',
+                info: '<?php _e("showing"); ?> _START_ <?php _e("to"); ?> _END_ <?php _e("of"); ?> _TOTAL_ <?php _e("entries"); ?>',
+                infoEmpty: '<?php _e("showing"); ?> 0 <?php _e("to"); ?> 0 <?php _e("of"); ?> 0 <?php _e("entries"); ?>',
+                infoFiltered: '(<?php _e("filtered_from"); ?> _MAX_ <?php _e("total_entries"); ?>)',
+                paginate: {
+                    first: '<i class="material-icons">first_page</i>',
+                    previous: '<i class="material-icons">chevron_left</i>',
+                    next: '<i class="material-icons">chevron_right</i>',
+                    last: '<i class="material-icons">last_page</i>'
+                }
+            }
+        });
+    }
     
-    deleteBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+    // Delete confirmation
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
             e.preventDefault();
             
-            const confirmMessage = this.dataset.confirm || '<?php _e("delete_confirm"); ?>';
+            const url = this.getAttribute('href');
+            const name = this.dataset.name || '<?php _e("this_testimonial"); ?>';
             
-            if (confirm(confirmMessage)) {
-                window.location.href = this.getAttribute('href');
+            if (confirm('<?php _e("delete_testimonial_confirm"); ?>'.replace('{name}', name))) {
+                window.location.href = url;
             }
         });
     });

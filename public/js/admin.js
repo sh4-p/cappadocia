@@ -293,28 +293,38 @@ function updateOrder(container) {
  * Initialize rich text editor
  */
 function initEditor() {
-    const editors = document.querySelectorAll('.rich-editor');
-    
-    if (editors.length > 0) {
-        // Check if TinyMCE is available
-        if (typeof tinymce !== 'undefined') {
-            tinymce.init({
-                selector: '.rich-editor',
-                height: 400,
-                menubar: false,
-                plugins: [
-                    'advlist autolink lists link image charmap print preview anchor',
-                    'searchreplace visualblocks code fullscreen',
-                    'insertdatetime media table paste code help wordcount'
-                ],
-                toolbar: 'undo redo | formatselect | bold italic backcolor | \
-                          alignleft aligncenter alignright alignjustify | \
-                          bullist numlist outdent indent | removeformat | help',
-                valid_elements: '*[*]',
-                valid_children: '+body[style]',
-                extended_valid_elements: 'script[language|type|src]'
-            });
-        }
+    // Check if CKEditor is loaded
+    if (typeof ClassicEditor !== 'undefined') {
+        const editors = document.querySelectorAll('.editor');
+        
+        editors.forEach(editor => {
+            ClassicEditor
+                .create(editor)
+                .catch(error => {
+                    console.error('CKEditor initialization error:', error);
+                });
+        });
+    } 
+    // Check if TinyMCE is loaded as fallback
+    else if (typeof tinymce !== 'undefined') {
+        tinymce.init({
+            selector: '.rich-editor',
+            height: 400,
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                      alignleft aligncenter alignright alignjustify | \
+                      bullist numlist outdent indent | removeformat | help',
+            valid_elements: '*[*]',
+            valid_children: '+body[style]',
+            extended_valid_elements: 'script[language|type|src]'
+        });
+    } else {
+        console.warn('No rich text editor library loaded. Please include either CKEditor or TinyMCE.');
     }
 }
 

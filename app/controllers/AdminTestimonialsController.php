@@ -116,10 +116,16 @@ class AdminTestimonialsController extends Controller
             }
             
             // Validate details for each language
+            $hasContent = false;
             foreach ($languages as $lang) {
-                if (empty($details[$lang['id']]['content'])) {
-                    $errors[] = sprintf(__('content_required_for_lang'), $lang['name']);
+                if (!empty($details[$lang['id']]['content'])) {
+                    $hasContent = true;
+                    break;
                 }
+            }
+            
+            if (!$hasContent) {
+                $errors[] = __('content_required');
             }
             
             // If there are errors, set error message and return
@@ -215,12 +221,24 @@ class AdminTestimonialsController extends Controller
             $rating = $this->post('rating', 5);
             $isActive = $this->post('is_active', 0);
             $details = $this->post('details', []);
+            $removeImage = $this->post('remove_image', false);
             
             // Handle image upload
             $image = $this->file('image');
             $imageName = $testimonial['image'];
             
-            if ($image && $image['error'] === UPLOAD_ERR_OK) {
+            if ($removeImage) {
+                // Remove image
+                $imageName = null;
+                
+                // Delete old image if exists
+                if ($testimonial['image']) {
+                    $oldImagePath = BASE_PATH . '/public/uploads/testimonials/' . $testimonial['image'];
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+            } else if ($image && $image['error'] === UPLOAD_ERR_OK) {
                 $imageName = $this->uploadImage($image, 'testimonials');
                 
                 if (!$imageName) {
@@ -248,10 +266,16 @@ class AdminTestimonialsController extends Controller
             }
             
             // Validate details for each language
+            $hasContent = false;
             foreach ($languages as $lang) {
-                if (empty($details[$lang['id']]['content'])) {
-                    $errors[] = sprintf(__('content_required_for_lang'), $lang['name']);
+                if (!empty($details[$lang['id']]['content'])) {
+                    $hasContent = true;
+                    break;
                 }
+            }
+            
+            if (!$hasContent) {
+                $errors[] = __('content_required');
             }
             
             // If there are errors, set error message and return

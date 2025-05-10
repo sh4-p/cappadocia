@@ -16,7 +16,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form action="<?php echo $adminUrl; ?>/testimonials/create" method="post" enctype="multipart/form-data">
+        <form action="<?php echo $adminUrl; ?>/testimonials/create" method="post" enctype="multipart/form-data" id="testimonial-form">
             <div class="row">
                 <div class="col-md-8">
                     <!-- Basic Information -->
@@ -54,26 +54,20 @@
                     <div class="form-section">
                         <h3 class="form-section-title"><?php _e('content'); ?> <span class="required">*</span></h3>
                         
-                        <ul class="nav nav-tabs mb-3" role="tablist">
-                            <?php foreach ($languages as $code => $language): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link <?php echo $code === $currentLang ? 'active' : ''; ?>" data-toggle="tab" href="#content-<?php echo $code; ?>" role="tab">
-                                        <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $language['flag']; ?>" alt="<?php echo $language['name']; ?>" width="20">
-                                        <?php echo $language['name']; ?>
-                                    </a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                        
-                        <div class="tab-content">
-                            <?php foreach ($languages as $code => $language): ?>
-                                <div class="tab-pane fade <?php echo $code === $currentLang ? 'show active' : ''; ?>" id="content-<?php echo $code; ?>" role="tabpanel">
-                                    <div class="form-group">
-                                        <textarea id="content-<?php echo $code; ?>-editor" name="details[<?php echo $language['id']; ?>][content]" class="form-control editor" rows="5"><?php echo isset($details[$language['id']]['content']) ? htmlspecialchars($details[$language['id']]['content']) : ''; ?></textarea>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                        <!-- Plain textarea version - fallback solution -->
+                        <?php foreach ($languages as $code => $language): ?>
+                            <div class="form-group mb-4">
+                                <label class="form-label">
+                                    <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $language['flag']; ?>" alt="<?php echo $language['name']; ?>" width="20" class="mr-2">
+                                    <?php echo $language['name']; ?>
+                                </label>
+                                <textarea 
+                                    name="details[<?php echo $language['id']; ?>][content]" 
+                                    class="form-control" 
+                                    rows="5"
+                                    style="min-height: 150px;"><?php echo isset($details[$language['id']]['content']) ? htmlspecialchars($details[$language['id']]['content']) : ''; ?></textarea>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 
@@ -221,22 +215,19 @@
 .required {
     color: var(--danger-color);
 }
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize editors
-    const editors = document.querySelectorAll('.editor');
-    
-    editors.forEach(editor => {
-        ClassicEditor
-            .create(editor)
-            .catch(error => {
-                console.error(error);
-            });
-    });
-    
-    // Image preview
+    // Image preview functionality
     const imageInput = document.getElementById('image');
     const imagePreview = document.getElementById('image-preview');
     const removeImageBtn = document.getElementById('remove-image');
@@ -263,22 +254,20 @@ document.addEventListener('DOMContentLoaded', function() {
         hasImage = false;
     });
     
-    // Form validation
-    const form = document.querySelector('form');
+    // Basic form validation
+    const form = document.getElementById('testimonial-form');
     
     form.addEventListener('submit', function(e) {
         let valid = true;
-        
-        // Check if at least one language has content
         let hasContent = false;
         
-        <?php foreach ($languages as $language): ?>
-            const content<?php echo $language['id']; ?> = document.querySelector(`[name="details[<?php echo $language['id']; ?>][content]"]`).value;
-            
-            if (content<?php echo $language['id']; ?>.trim() !== '') {
+        // Check if at least one language has content
+        const textareas = form.querySelectorAll('textarea[name^="details"]');
+        textareas.forEach(function(textarea) {
+            if (textarea.value.trim() !== '') {
                 hasContent = true;
             }
-        <?php endforeach; ?>
+        });
         
         if (!hasContent) {
             alert("<?php _e('content_required'); ?>");

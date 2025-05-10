@@ -4,6 +4,9 @@
  */
 ?>
 
+<!-- Required JS Libraries -->
+<script src="https://cdn.ckeditor.com/ckeditor5/38.0.1/classic/ckeditor.js"></script>
+
 <div class="page-header">
     <h1 class="page-title"><?php _e('edit_testimonial'); ?>: <?php echo $testimonial['name']; ?></h1>
     <div class="page-actions">
@@ -16,7 +19,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form action="<?php echo $adminUrl; ?>/testimonials/edit/<?php echo $testimonial['id']; ?>" method="post" enctype="multipart/form-data">
+        <form action="<?php echo $adminUrl; ?>/testimonials/edit/<?php echo $testimonial['id']; ?>" method="post" enctype="multipart/form-data" id="testimonial-form">
             <input type="hidden" name="id" value="<?php echo $testimonial['id']; ?>">
             
             <div class="row">
@@ -56,10 +59,16 @@
                     <div class="form-section">
                         <h3 class="form-section-title"><?php _e('content'); ?> <span class="required">*</span></h3>
                         
-                        <ul class="nav nav-tabs mb-3" role="tablist">
+                        <ul class="nav nav-tabs mb-3" id="content-tabs" role="tablist">
                             <?php foreach ($languages as $code => $language): ?>
                                 <li class="nav-item">
-                                    <a class="nav-link <?php echo $code === $currentLang ? 'active' : ''; ?>" data-toggle="tab" href="#content-<?php echo $code; ?>" role="tab">
+                                    <a class="nav-link <?php echo $code === $currentLang ? 'active' : ''; ?>" 
+                                       id="tab-<?php echo $code; ?>" 
+                                       data-toggle="tab" 
+                                       href="#content-<?php echo $code; ?>" 
+                                       role="tab" 
+                                       aria-controls="content-<?php echo $code; ?>" 
+                                       aria-selected="<?php echo $code === $currentLang ? 'true' : 'false'; ?>">
                                         <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $language['flag']; ?>" alt="<?php echo $language['name']; ?>" width="20">
                                         <?php echo $language['name']; ?>
                                     </a>
@@ -67,11 +76,17 @@
                             <?php endforeach; ?>
                         </ul>
                         
-                        <div class="tab-content">
+                        <div class="tab-content" id="content-tabs-content">
                             <?php foreach ($languages as $code => $language): ?>
-                                <div class="tab-pane fade <?php echo $code === $currentLang ? 'show active' : ''; ?>" id="content-<?php echo $code; ?>" role="tabpanel">
+                                <div class="tab-pane fade <?php echo $code === $currentLang ? 'show active' : ''; ?>" 
+                                     id="content-<?php echo $code; ?>" 
+                                     role="tabpanel" 
+                                     aria-labelledby="tab-<?php echo $code; ?>">
                                     <div class="form-group">
-                                        <textarea id="content-<?php echo $code; ?>-editor" name="details[<?php echo $language['id']; ?>][content]" class="form-control editor" rows="5"><?php echo isset($testimonialDetails[$language['id']]['content']) ? htmlspecialchars($testimonialDetails[$language['id']]['content']) : ''; ?></textarea>
+                                        <textarea id="editor-<?php echo $code; ?>" 
+                                                  name="details[<?php echo $language['id']; ?>][content]" 
+                                                  class="form-control editor" 
+                                                  rows="5"><?php echo isset($testimonialDetails[$language['id']]['content']) ? htmlspecialchars($testimonialDetails[$language['id']]['content']) : ''; ?></textarea>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -142,7 +157,7 @@
                                 <?php _e('cancel'); ?>
                             </a>
                             
-                            <a href="<?php echo $adminUrl; ?>/testimonials/delete/<?php echo $testimonial['id']; ?>" class="btn btn-danger btn-block mt-2 delete-btn" data-confirm="<?php _e('delete_testimonial_confirm'); ?>">
+                            <a href="<?php echo $adminUrl; ?>/testimonials/delete/<?php echo $testimonial['id']; ?>" class="btn btn-danger btn-block mt-2 delete-btn" data-name="<?php echo htmlspecialchars($testimonial['name']); ?>">
                                 <i class="material-icons">delete</i>
                                 <?php _e('delete_testimonial'); ?>
                             </a>
@@ -261,19 +276,58 @@
 .required {
     color: var(--danger-color);
 }
+
+/* Fix for CKEditor container */
+.ck-editor__editable {
+    min-height: 250px;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize editors
-    const editors = document.querySelectorAll('.editor');
+    // Initialize CKEditor for each language tab
+    const editorElements = document.querySelectorAll('.editor');
+    const editors = {};
     
-    editors.forEach(editor => {
-        ClassicEditor
-            .create(editor)
-            .catch(error => {
-                console.error(error);
+    editorElements.forEach(editorElement => {
+        if (typeof ClassicEditor !== 'undefined') {
+            ClassicEditor
+                .create(editorElement)
+                .then(editor => {
+                    editors[editorElement.id] = editor;
+                })
+                .catch(error => {
+                    console.error('CKEditor initialization error:', error);
+                });
+        } else {
+            console.error('ClassicEditor is not defined. Make sure the CKEditor script is loaded correctly.');
+        }
+    });
+    
+    // Initialize Bootstrap tabs
+    const tabLinks = document.querySelectorAll('.nav-link');
+    tabLinks.forEach(tabLink => {
+        tabLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            // Remove active class from all tabs
+            tabLinks.forEach(tab => {
+                tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
+                
+                const tabPaneId = tab.getAttribute('href');
+                const tabPane = document.querySelector(tabPaneId);
+                tabPane.classList.remove('show', 'active');
             });
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
+            
+            const targetId = this.getAttribute('href');
+            const targetPane = document.querySelector(targetId);
+            targetPane.classList.add('show', 'active');
+        });
     });
     
     // Image preview
@@ -306,13 +360,13 @@ document.addEventListener('DOMContentLoaded', function() {
         removeImageInput.type = 'hidden';
         removeImageInput.name = 'remove_image';
         removeImageInput.value = '1';
-        form.appendChild(removeImageInput);
+        document.getElementById('testimonial-form').appendChild(removeImageInput);
         
         hasImage = false;
     });
     
     // Form validation
-    const form = document.querySelector('form');
+    const form = document.getElementById('testimonial-form');
     
     form.addEventListener('submit', function(e) {
         let valid = true;
@@ -321,7 +375,17 @@ document.addEventListener('DOMContentLoaded', function() {
         let hasContent = false;
         
         <?php foreach ($languages as $language): ?>
-            const content<?php echo $language['id']; ?> = document.querySelector(`[name="details[<?php echo $language['id']; ?>][content]"]`).value;
+            // Get content from CKEditor instance if exists
+            let content<?php echo $language['id']; ?> = '';
+            if (editors['editor-<?php echo $language['code']; ?>']) {
+                content<?php echo $language['id']; ?> = editors['editor-<?php echo $language['code']; ?>'].getData();
+            } else {
+                // Fallback to textarea value
+                const textarea<?php echo $language['id']; ?> = document.querySelector('[name="details[<?php echo $language['id']; ?>][content]"]');
+                if (textarea<?php echo $language['id']; ?>) {
+                    content<?php echo $language['id']; ?> = textarea<?php echo $language['id']; ?>.value;
+                }
+            }
             
             if (content<?php echo $language['id']; ?>.trim() !== '') {
                 hasContent = true;
@@ -345,7 +409,8 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            const confirmMessage = this.dataset.confirm || '<?php _e("delete_confirm"); ?>';
+            const name = this.dataset.name || 'this testimonial';
+            const confirmMessage = "<?php _e('delete_confirm'); ?>".replace('{name}', name);
             
             if (confirm(confirmMessage)) {
                 window.location.href = this.getAttribute('href');

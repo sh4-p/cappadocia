@@ -1459,6 +1459,19 @@ input:checked + .toggle-slider:before {
     max-width: 350px;
 }
 
+.ck-editor {
+    width: 100%;
+}
+
+.ck-editor__editable {
+    min-height: 250px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.ck-content p {
+    margin-bottom: 0.5em;
+}
 .notification {
     background-color: var(--white-color);
     border-radius: var(--border-radius-md);
