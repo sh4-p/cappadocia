@@ -42,7 +42,7 @@
                         <div class="form-group">
                             <label for="rating" class="form-label"><?php _e('rating'); ?> <span class="required">*</span></label>
                             <div class="rating-input">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?php for ($i = 5; $i >= 1; $i--): ?>
                                     <input type="radio" id="rating-<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>" <?php echo (isset($rating) && $rating == $i) || (!isset($rating) && $i == 5) ? 'checked' : ''; ?>>
                                     <label for="rating-<?php echo $i; ?>"><i class="material-icons">star</i></label>
                                 <?php endfor; ?>

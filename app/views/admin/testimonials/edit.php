@@ -47,7 +47,7 @@
                         <div class="form-group">
                             <label for="rating" class="form-label"><?php _e('rating'); ?> <span class="required">*</span></label>
                             <div class="rating-input">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?php for ($i = 5; $i >= 1; $i--): ?>
                                     <input type="radio" id="rating-<?php echo $i; ?>" name="rating" value="<?php echo $i; ?>" <?php echo $testimonial['rating'] == $i ? 'checked' : ''; ?>>
                                     <label for="rating-<?php echo $i; ?>"><i class="material-icons">star</i></label>
                                 <?php endfor; ?>
@@ -59,40 +59,21 @@
                     <div class="form-section">
                         <h3 class="form-section-title"><?php _e('content'); ?> <span class="required">*</span></h3>
                         
-                        <ul class="nav nav-tabs mb-3" id="content-tabs" role="tablist">
-                            <?php foreach ($languages as $code => $language): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link <?php echo $code === $currentLang ? 'active' : ''; ?>" 
-                                       id="tab-<?php echo $code; ?>" 
-                                       data-toggle="tab" 
-                                       href="#content-<?php echo $code; ?>" 
-                                       role="tab" 
-                                       aria-controls="content-<?php echo $code; ?>" 
-                                       aria-selected="<?php echo $code === $currentLang ? 'true' : 'false'; ?>">
-                                        <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $language['flag']; ?>" alt="<?php echo $language['name']; ?>" width="20">
-                                        <?php echo $language['name']; ?>
-                                    </a>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                        
-                        <div class="tab-content" id="content-tabs-content">
-                            <?php foreach ($languages as $code => $language): ?>
-                                <div class="tab-pane fade <?php echo $code === $currentLang ? 'show active' : ''; ?>" 
-                                     id="content-<?php echo $code; ?>" 
-                                     role="tabpanel" 
-                                     aria-labelledby="tab-<?php echo $code; ?>">
-                                    <div class="form-group">
-                                        <textarea id="editor-<?php echo $code; ?>" 
-                                                  name="details[<?php echo $language['id']; ?>][content]" 
-                                                  class="form-control editor" 
-                                                  rows="5"><?php echo isset($testimonialDetails[$language['id']]['content']) ? htmlspecialchars($testimonialDetails[$language['id']]['content']) : ''; ?></textarea>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                        <!-- Plain textarea version - fallback solution -->
+                        <?php foreach ($languages as $language): ?>
+                            <div class="form-group mb-4">
+                                <label class="form-label">
+                                    <img src="<?php echo $uploadsUrl; ?>/flags/<?php echo $language['flag']; ?>" alt="<?php echo $language['name']; ?>" width="20" class="mr-2">
+                                    <?php echo $language['name']; ?>
+                                </label>
+                                <textarea 
+                                    name="details[<?php echo $language['id']; ?>][content]" 
+                                    class="form-control" 
+                                    rows="5"
+                                    style="min-height: 150px;"><?php echo isset($testimonialDetails[$language['id']]['content']) ? htmlspecialchars($testimonialDetails[$language['id']]['content']) : ''; ?></textarea>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                </div>
                 
                 <div class="col-md-4">
                     <!-- Sidebar -->
