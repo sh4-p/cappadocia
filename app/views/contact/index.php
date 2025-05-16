@@ -5,7 +5,7 @@
 ?>
 
 <!-- Page Banner -->
-<div class="page-banner" style="background-image: url('<?php echo $imgUrl; ?>/contact-bg.jpg');">
+<div class="page-banner" style="background-image: url('<?php echo $imgUrl; ?>/contact_bg.png');">
     <div class="container">
         <h1 class="page-title"><?php _e('contact_us'); ?></h1>
         <div class="breadcrumbs">
@@ -47,7 +47,7 @@
         
         <div class="contact-form-wrapper">
             <div class="contact-form" data-aos="fade-up">
-                <?php if ($this->session->hasFlash('success')): ?>
+                <?php if ($session->hasFlash('success')): ?>
                     <div class="alert alert-success">
                         <i class="material-icons">check_circle</i>
                         <span><?php echo $this->session->getFlash('success'); ?></span>
@@ -57,7 +57,7 @@
                     </div>
                 <?php endif; ?>
                 
-                <?php if ($this->session->hasFlash('error')): ?>
+                <?php if ($session->hasFlash('error')): ?>
                     <div class="alert alert-error">
                         <i class="material-icons">error</i>
                         <span><?php echo $this->session->getFlash('error'); ?></span>

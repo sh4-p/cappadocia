@@ -2,6 +2,11 @@
 /**
  * Gallery index view
  */
+// Add this at the top of your index.php file
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+// Add this at the top of views/gallery/index.php
+echo "<!-- Gallery view loading -->";
 ?>
 
 <!-- Page Header -->

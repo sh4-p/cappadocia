@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/style.css">
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/responsive.css">
     
+    
     <!-- Add any additional CSS files -->
     <?php if (isset($additionalCss) && is_array($additionalCss)): ?>
         <?php foreach ($additionalCss as $css): ?>
@@ -195,11 +196,9 @@
                         <h3 class="widget-title"><?php _e('top_tours'); ?></h3>
                         <ul class="recent-tours">
                             <?php 
-                            // Get featured tours
-                            $tourModel = new Tour();
-                            $featuredTours = $tourModel->getFeatured($currentLang, 3);
-                            
-                            foreach ($featuredTours as $tour): 
+                            // Bu kısım değiştirildi - Artık controller'dan gelen bilgileri kullanıyoruz
+                            if (isset($featuredTours) && is_array($featuredTours)): 
+                                foreach ($featuredTours as $tour): 
                             ?>
                                 <li>
                                     <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $tour['slug']; ?>">
@@ -219,7 +218,10 @@
                                         </div>
                                     </a>
                                 </li>
-                            <?php endforeach; ?>
+                            <?php 
+                                endforeach; 
+                            endif; 
+                            ?>
                         </ul>
                     </div>
                     

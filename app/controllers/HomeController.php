@@ -34,6 +34,9 @@ class HomeController extends Controller
         // Get featured tours
         $featuredTours = $this->tourModel->getFeatured($langCode, 6);
         
+        // Get featured tours for the layout (limited to 3)
+        $this->data['featuredTours'] = $this->tourModel->getFeatured($langCode, 3);
+        
         // Get destinations (categories with image)
         $categoryModel = $this->loadModel('Category');
         $destinations = $categoryModel->getAllWithDetails($langCode, [
