@@ -1,0 +1,256 @@
+/* ========== GLASSMORPHISM HERO BACKGROUND ========== */
+body {
+    background-color: #f8f9fa;
+    background-image: 
+        radial-gradient(at 20% 80%, rgba(255, 107, 53, 0.15) 0%, transparent 50%),
+        radial-gradient(at 80% 20%, rgba(42, 157, 143, 0.15) 0%, transparent 50%),
+        radial-gradient(at 40% 40%, rgba(244, 162, 97, 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Enhanced Hero Section for Glassmorphism Header */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    min-height: 700px;
+    display: flex;
+    align-items: center;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: var(--white-color);
+    padding: 0;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        rgba(38, 70, 83, 0.75) 0%,
+        rgba(38, 70, 83, 0.45) 50%,
+        rgba(255, 107, 53, 0.3) 100%
+    );
+    z-index: 1;
+}
+
+/* Remove padding from main content */
+.site-main {
+    padding-top: 0;
+}
+
+/* Adjust page headers */
+.page-header {
+    height: 450px;
+    padding-top: 150px;
+}
+
+.page-banner {
+    position: relative;
+    height: 450px;
+    background-size: cover;
+    background-position: center;
+    color: var(--white-color);
+    display: flex;
+    align-items: center;
+    padding-top: 100px;
+}
+
+.page-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(38, 70, 83, 0.85) 0%,
+        rgba(38, 70, 83, 0.65) 100%
+    );
+    z-index: 1;
+}
+
+.page-banner .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Tour Detail Header */
+.tour-header {
+    margin-top: 100px;
+}
+
+/* About Page First Section */
+.about-content {
+    padding-top: calc(var(--spacing-xxl) + 100px);
+}
+
+/* Contact Page First Section */
+.contact-section:first-of-type {
+    padding-top: calc(var(--spacing-xxl) + 100px);
+}
+
+/* Tours Page Content */
+.tours-wrapper {
+    margin-top: 100px;
+}
+
+/* Gallery Page */
+.gallery-filter {
+    margin-top: 100px;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Search Overlay Enhancement */
+.search-overlay {
+    background: rgba(26, 32, 44, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.search-field input {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.search-result {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Enhanced Glassmorphism Cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 992px) {
+    .hero-section {
+        padding-top: 80px;
+    }
+    
+    .page-header,
+    .page-banner {
+        height: 350px;
+        padding-top: 120px;
+    }
+    
+    .tour-header {
+        margin-top: 80px;
+    }
+    
+    .about-content {
+        padding-top: calc(var(--spacing-xxl) + 80px);
+    }
+    
+    .contact-section:first-of-type {
+        padding-top: calc(var(--spacing-xxl) + 80px);
+    }
+    
+    .tours-wrapper {
+        margin-top: 80px;
+    }
+    
+    .gallery-filter {
+        margin-top: 80px;
+    }
+}
+
+/* Language Dropdown Enhancement for Mobile */
+@media (max-width: 576px) {
+    .site-header {
+        padding: 0.5rem 1rem;
+    }
+    
+    .logo img {
+        height: 40px;
+    }
+    
+    .dropdown-toggle {
+        padding: 0.5rem;
+    }
+    
+    .dropdown-toggle span {
+        display: none;
+    }
+    
+    .dropdown-toggle i {
+        display: none;
+    }
+    
+    .search-toggle {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .mobile-toggle {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Smooth Transitions */
+.site-header,
+.site-header.scrolled,
+.main-nav ul li a,
+.dropdown-toggle,
+.search-toggle,
+.mobile-toggle {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Button Hover Effects */
+.btn-glass {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.btn-glass:hover::before {
+    left: 100%;
+}
+
+/* Header Glow Effect on Scroll */
+.site-header.scrolled {
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.15),
+        0 0 80px rgba(255, 107, 53, 0.1);
+}
+
+/* Active Navigation Item */
+.main-nav ul li a.active {
+    background: rgba(255, 107, 53, 0.15);
+    color: var(--primary-color);
+}

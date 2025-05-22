@@ -18,6 +18,8 @@
     
     <!-- CSS Files -->
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/style.css">
+    <link rel="stylesheet" href="<?php echo $cssUrl; ?>/header-glassmorphism.css">
+    <link rel="stylesheet" href="<?php echo $cssUrl; ?>/glassmorphism-enhancements.css">
     <link rel="stylesheet" href="<?php echo $cssUrl; ?>/responsive.css">
     
     
