@@ -140,9 +140,15 @@ class ContactController extends Controller
         </html>
         ";
         
-        // Log email data
-        $logMessage = "Email to: $to, From: $name <$email>, Subject: $subject, Message: $message";
-        $this->logMessage($logMessage);
+        // Log email data (encrypted for security)
+        $encryptedData = $this->encryptLogData([
+            'to' => $to,
+            'from_name' => $name,
+            'from_email' => $email,
+            'subject' => $subject,
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        $this->logMessage($encryptedData);
         
         // Send email (in a real application)
         // return mail($to, "Contact Form: $subject", $htmlMessage, $headers);
@@ -169,6 +175,64 @@ class ContactController extends Controller
         // Append message to log file
         $timestamp = date('Y-m-d H:i:s');
         file_put_contents($logFile, "[$timestamp] $message" . PHP_EOL, FILE_APPEND);
+    }
+    
+    /**
+     * Encrypt log data for security
+     * 
+     * @param array $data Data to encrypt
+     * @return string Encrypted data
+     */
+    private function encryptLogData($data)
+    {
+        // Convert data to JSON
+        $jsonData = json_encode($data);
+        
+        // Use encryption key from config
+        $encryptionKey = LOG_ENCRYPTION_KEY;
+        
+        // Create a hash of the key for consistent length
+        $key = hash('sha256', $encryptionKey, true);
+        
+        // Generate a random IV
+        $iv = openssl_random_pseudo_bytes(16);
+        
+        // Encrypt the data
+        $encrypted = openssl_encrypt($jsonData, 'AES-256-CBC', $key, 0, $iv);
+        
+        // Combine IV and encrypted data
+        $result = base64_encode($iv . $encrypted);
+        
+        return $result;
+    }
+    
+    /**
+     * Decrypt log data
+     * 
+     * @param string $encryptedData Encrypted data
+     * @return array|null Decrypted data
+     */
+    private function decryptLogData($encryptedData)
+    {
+        // Use encryption key from config
+        $encryptionKey = LOG_ENCRYPTION_KEY;
+        $key = hash('sha256', $encryptionKey, true);
+        
+        // Decode the data
+        $data = base64_decode($encryptedData);
+        
+        // Extract IV and encrypted content
+        $iv = substr($data, 0, 16);
+        $encrypted = substr($data, 16);
+        
+        // Decrypt
+        $decrypted = openssl_decrypt($encrypted, 'AES-256-CBC', $key, 0, $iv);
+        
+        if ($decrypted === false) {
+            return null;
+        }
+        
+        return json_decode($decrypted, true);
     }
     
     /**

@@ -32,6 +32,10 @@ define('DEFAULT_ACTION', 'index');
 define('SESSION_PREFIX', 'cappadocia_');
 define('SESSION_LIFETIME', 7200); // 2 hours
 
+// Security configuration
+define('LOG_ENCRYPTION_KEY', getenv('LOG_ENCRYPTION_KEY') ?: 'cappadocia_travel_log_encryption_key_2024');
+// In production, set LOG_ENCRYPTION_KEY environment variable with a strong random key
+
 // Include database configuration
 require_once BASE_PATH . '/config/database.php';
 

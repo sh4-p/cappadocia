@@ -118,7 +118,29 @@ class Controller
      */
     protected function redirect($url)
     {
-        header('Location: ' . APP_URL . '/' . $url);
+        // Check if URL already starts with APP_URL
+        if (strpos($url, APP_URL) === 0) {
+            header('Location: ' . $url);
+        } else {
+            // Check if URL already has language prefix
+            $availableLanguages = json_decode(AVAILABLE_LANGUAGES, true);
+            $hasLangPrefix = false;
+            
+            foreach ($availableLanguages as $langCode => $langName) {
+                if (strpos($url, $langCode . '/') === 0 || $url === $langCode) {
+                    $hasLangPrefix = true;
+                    break;
+                }
+            }
+            
+            // If no language prefix and not admin area, add current language
+            if (!$hasLangPrefix && strpos($url, 'admin') !== 0) {
+                $currentLang = $this->language->getCurrentLanguage();
+                $url = $currentLang . '/' . $url;
+            }
+            
+            header('Location: ' . APP_URL . '/' . $url);
+        }
         exit;
     }
 

@@ -50,7 +50,7 @@
                 <?php if ($session->hasFlash('success')): ?>
                     <div class="alert alert-success">
                         <i class="material-icons">check_circle</i>
-                        <span><?php echo $this->session->getFlash('success'); ?></span>
+                        <span><?php echo $session->getFlash('success'); ?></span>
                         <button type="button" class="alert-close">
                             <i class="material-icons">close</i>
                         </button>
@@ -60,7 +60,7 @@
                 <?php if ($session->hasFlash('error')): ?>
                     <div class="alert alert-error">
                         <i class="material-icons">error</i>
-                        <span><?php echo $this->session->getFlash('error'); ?></span>
+                        <span><?php echo $session->getFlash('error'); ?></span>
                         <button type="button" class="alert-close">
                             <i class="material-icons">close</i>
                         </button>
