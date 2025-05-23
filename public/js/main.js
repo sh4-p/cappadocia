@@ -941,36 +941,48 @@ function galleryInit() {
  * Initialize dropdowns
  */
 function dropdownInit() {
-    const dropdowns = document.querySelectorAll('.dropdown');
+    const dropdowns = document.querySelectorAll('.dropdown, .language-dropdown');
     
     dropdowns.forEach(function(dropdown) {
         const toggle = dropdown.querySelector('.dropdown-toggle');
+        const menu = dropdown.querySelector('.dropdown-menu');
         
-        if (toggle) {
-            // Make dropdown work on click (in addition to hover)
+        if (toggle && menu) {
+            // Önemli değişiklik: Hover değil click ile açılacak
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Close all other dropdowns
+                // Tüm diğer açık dropdownları kapat
                 dropdowns.forEach(function(otherDropdown) {
-                    if (otherDropdown !== dropdown && otherDropdown.querySelector('.dropdown-menu')) {
-                        otherDropdown.querySelector('.dropdown-menu').classList.remove('active');
+                    if (otherDropdown !== dropdown) {
+                        const otherMenu = otherDropdown.querySelector('.dropdown-menu');
+                        if (otherMenu) {
+                            otherMenu.classList.remove('active');
+                            otherMenu.style.opacity = '0';
+                            otherMenu.style.visibility = 'hidden';
+                        }
                     }
                 });
                 
                 // Toggle current dropdown
-                const menu = dropdown.querySelector('.dropdown-menu');
-                if (menu) {
-                    menu.classList.toggle('active');
+                if (menu.classList.contains('active')) {
+                    menu.classList.remove('active');
+                    menu.style.opacity = '0';
+                    menu.style.visibility = 'hidden';
+                } else {
+                    menu.classList.add('active');
+                    menu.style.opacity = '1';
+                    menu.style.visibility = 'visible';
                 }
             });
             
-            // Close dropdown when clicking outside
+            // Dropdown dışına tıklandığında kapat
             document.addEventListener('click', function(e) {
-                const menu = dropdown.querySelector('.dropdown-menu');
-                if (menu && menu.classList.contains('active') && !dropdown.contains(e.target)) {
+                if (!dropdown.contains(e.target)) {
                     menu.classList.remove('active');
+                    menu.style.opacity = '0';
+                    menu.style.visibility = 'hidden';
                 }
             });
         }
