@@ -76,11 +76,11 @@
                     </div>
                     <div class="card-body">
                         <div class="tour-image">
-                            <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" alt="<?php echo $tour['name']; ?>">
+                            <img src="<?php echo $uploadsUrl . '/tours/' . $booking['featured_image']; ?>" alt="<?php echo $booking['tour_name']; ?>">
                         </div>
                         <h4 class="tour-name">
-                            <a href="<?php echo $adminUrl; ?>/tours/edit/<?php echo $tour['id']; ?>" target="_blank">
-                                <?php echo $tour['name']; ?>
+                            <a href="<?php echo $adminUrl; ?>/tours/edit/<?php echo $booking['tour_id']; ?>" target="_blank">
+                                <?php echo $booking['tour_name']; ?>
                             </a>
                         </h4>
                         <div class="detail-item">
@@ -98,11 +98,13 @@
                         <div class="detail-item">
                             <div class="detail-label"><?php _e('price_per_adult'); ?></div>
                             <div class="detail-value">
-                                <?php if ($tour['discount_price'] > 0): ?>
-                                    <del><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></del>
-                                    <?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?>
+                                <?php if (isset($booking['discount_price']) && $booking['discount_price'] > 0): ?>
+                                    <del><?php echo $settings['currency_symbol'] . number_format($booking['price'], 2); ?></del>
+                                    <?php echo $settings['currency_symbol'] . number_format($booking['discount_price'], 2); ?>
+                                <?php elseif (isset($booking['price'])): ?>
+                                    <?php echo $settings['currency_symbol'] . number_format($booking['price'], 2); ?>
                                 <?php else: ?>
-                                    <?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?>
+                                    <?php echo '-'; ?>
                                 <?php endif; ?>
                             </div>
                         </div>

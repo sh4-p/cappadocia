@@ -62,7 +62,13 @@ class Booking extends Model
      */
     public function getWithTourDetails($id, $langCode = DEFAULT_LANGUAGE)
     {
-        $sql = "SELECT b.*, t.id as tour_id, td.name as tour_name, td.slug as tour_slug
+        $sql = "SELECT b.*, 
+                       t.id as tour_id, 
+                       t.price, 
+                       t.discount_price, 
+                       t.featured_image,
+                       td.name as tour_name, 
+                       td.slug as tour_slug
                 FROM {$this->table} b
                 LEFT JOIN tours t ON b.tour_id = t.id
                 LEFT JOIN tour_details td ON t.id = td.tour_id
