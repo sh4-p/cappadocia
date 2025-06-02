@@ -636,6 +636,7 @@
         max-width: 100%;
         padding: 0 1rem;
         box-sizing: border-box;
+        overflow: visible !important;
     }
 
     /* Mobile-First Hero Section */
@@ -1323,7 +1324,7 @@
         position: fixed;
         inset: 0;
         background: rgba(0,0,0,0.6);
-        z-index: 1000;
+        z-index: 2000 !important; /* Header'dan daha yüksek */
         align-items: flex-end;
     }
 
@@ -1334,10 +1335,12 @@
     .booking-modal-content {
         background: var(--white-color);
         width: 100%;
+        z-index: 2001 !important;
         max-height: 90vh;
         border-radius: 20px 20px 0 0;
         padding: 1.5rem;
-        overflow-y: auto;
+        position: relative;
+        overflow: visible !important; /* overflow-y: auto yerine visible */
         animation: slideUp 0.3s ease;
     }
 
@@ -1363,6 +1366,16 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
+    }
+    /* Date input için özel ayarlar */
+    input[type="date"] {
+        position: relative;
+        z-index: 10;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    .booking-form {
+        overflow: visible !important;
     }
 
     .booking-form .form-group {
@@ -1531,7 +1544,67 @@
         font-size: 1.25rem;
         color: var(--primary-color);
     }
+    .site-header {
+        overflow: visible !important;
+    }
+    .header-wrapper {
+        overflow: visible !important;
+        position: relative;
+    }
 
+    /* Language dropdown için z-index ve position düzeltmeleri */
+    .language-dropdown {
+        position: relative;
+        z-index: 1100 !important;
+    }
+
+    .dropdown-menu {
+        position: absolute !important;
+        z-index: 1200 !important;
+        overflow: visible !important;
+    }
+    /* Mobile için dropdown menu düzeltmeleri */
+    @media (max-width: 768px) {
+        .dropdown-menu {
+            position: fixed !important; /* absolute yerine fixed */
+            top: auto !important;
+            right: 10px !important;
+            left: auto !important;
+            margin-top: 10px;
+            max-width: calc(100vw - 40px);
+            width: 200px;
+        }
+        
+        /* Aktif durumda görünür olması için */
+        .language-dropdown.active .dropdown-menu,
+        .dropdown-menu.active {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+            display: block !important;
+        }
+    }
+    /* iOS Safari için özel düzeltmeler */
+    @media (max-width: 768px) {
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: auto;
+            height: auto;
+            color: transparent;
+            background: transparent;
+            z-index: 1;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit {
+            position: relative;
+            z-index: 0;
+        }
+    }
     /* Responsive Design */
     @media (min-width: 576px) {
         .container {
@@ -1663,20 +1736,20 @@
     }
     /* Mobil booking bar için düzeltme */
     #mobile-booking-bar {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    z-index: 1000 !important;
-    background: var(--white-color) !important;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.12) !important;
-    display: flex;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 0.8rem 1rem !important;
-    margin: 0 !important;
-    border-top: 1px solid rgba(0,0,0,0.05) !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        z-index: 999 !important; /* Header'dan düşük ama diğer içerikten yüksek */
+        background: var(--white-color) !important;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.12) !important;
+        display: flex;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0.8rem 1rem !important;
+        margin: 0 !important;
+        border-top: 1px solid rgba(0,0,0,0.05) !important;
     }
 
     /* Desktop görünümde mobil barı kesinlikle gizlemek için */
@@ -1849,6 +1922,76 @@
         <!-- JavaScript -->
         <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
+    // Language Dropdown Toggle Fonksiyonu
+    document.addEventListener('DOMContentLoaded', function() {
+        // Language dropdown için click event
+        const languageDropdown = document.querySelector('.language-dropdown');
+        const dropdownToggle = document.querySelector('.dropdown-toggle');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        
+        if (dropdownToggle && dropdownMenu) {
+            // Mobile cihazlarda click ile açma/kapama
+            dropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle active class
+                languageDropdown.classList.toggle('active');
+                dropdownMenu.classList.toggle('active');
+            });
+            
+            // Dropdown dışına tıklandığında kapat
+            document.addEventListener('click', function(e) {
+                if (!languageDropdown.contains(e.target)) {
+                    languageDropdown.classList.remove('active');
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+            
+            // Dropdown içindeki linklere tıklandığında kapat
+            dropdownMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function() {
+                    languageDropdown.classList.remove('active');
+                    dropdownMenu.classList.remove('active');
+                });
+            });
+        }
+        
+        // Date picker için özel düzeltme
+        const dateInput = document.getElementById('booking_date');
+        if (dateInput) {
+            // iOS için özel ayar
+            dateInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.showPicker ? this.showPicker() : this.focus();
+            });
+            
+            // Android için düzeltme
+            dateInput.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+                this.focus();
+            });
+        }
+        
+        // Modal açıldığında body scroll'u engelleme düzeltmesi
+        const originalOpenBookingModal = window.openBookingModal;
+        window.openBookingModal = function() {
+            originalOpenBookingModal();
+            // Modal açıldığında overflow'u düzelt
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        };
+        
+        const originalCloseBookingModal = window.closeBookingModal;
+        window.closeBookingModal = function() {
+            originalCloseBookingModal();
+            // Modal kapandığında overflow'u geri al
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        };
+    });
     // Define all functions immediately to ensure they're available globally
     function openBookingModal() {
         document.getElementById('bookingModal').classList.add('active');
