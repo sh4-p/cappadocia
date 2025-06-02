@@ -1661,22 +1661,45 @@
             max-width: 1140px;
         }
     }
-    /* Enhanced Mobile Booking Bar */
+    /* Mobil booking bar için düzeltme */
     #mobile-booking-bar {
-      position: fixed !important;
-      bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      z-index: 1000 !important;
-      background: var(--white-color) !important;
-      box-shadow: 0 -4px 15px rgba(0,0,0,0.12) !important; /* Enhanced shadow */
-      display: flex;
-      align-items: center !important;
-      justify-content: space-between !important;
-      padding: 0.8rem 1rem !important;
-      margin: 0 !important; /* Remove any margin */
-      border-top: 1px solid rgba(0,0,0,0.05) !important; /* Subtle border */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+    background: var(--white-color) !important;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.12) !important;
+    display: flex;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.8rem 1rem !important;
+    margin: 0 !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+    }
+
+    /* Desktop görünümde mobil barı kesinlikle gizlemek için */
+    @media (min-width: 992px) {
+    #mobile-booking-bar {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
+    /* Body padding düzeltmesi */
+    body::after {
+        height: 0 !important;
+    }
+    }
+
+    /* Genel hidden-desktop sınıfını daha güçlü hale getirme */
+    .hidden-desktop {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
     }
     
     #mobile-booking-bar .price-display {
@@ -1742,7 +1765,9 @@
     .tabs-nav::-webkit-scrollbar {
         display: none;
     }
+    @media (max-width: 375px) {
 
+    }
     /* Adjust for smaller screens */
     @media (max-width: 375px) {
       #mobile-booking-bar {
@@ -1824,66 +1849,7 @@
         <!-- JavaScript -->
         <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-    // Initialize Swiper Gallery
-    const gallerySwiper = new Swiper('.gallery-swiper', {
-        slidesPerView: 1,
-        spaceBetween: 0,
-        loop: true,
-        pagination: {
-            el: '.swiper-pagination',
-            clickable: true
-        },
-        on: {
-            slideChange: function() {
-                document.querySelector('.gallery-counter .current').textContent = this.realIndex + 1;
-            }
-        }
-    });
-
-    // Initialize Related Tours Swiper
-    const relatedSwiper = new Swiper('.related-tours-slider', {
-        slidesPerView: 1.2,
-        spaceBetween: 16,
-        breakpoints: {
-            576: {
-                slidesPerView: 2.2,
-                spaceBetween: 20
-            },
-            768: {
-                slidesPerView: 3,
-                spaceBetween: 24
-            },
-            992: {
-                slidesPerView: 2,
-                spaceBetween: 24
-            }
-        }
-    });
-
-    // Tab Navigation
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
-            
-            // Remove active class from all
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-            
-            // Add active class to clicked
-            button.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-            
-            // Initialize map when location tab is clicked
-            if (tabId === 'location' && typeof initMap === 'function') {
-                initMap();
-            }
-        });
-    });
-
-    // Booking Modal Functions
+    // Define all functions immediately to ensure they're available globally
     function openBookingModal() {
         document.getElementById('bookingModal').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1894,17 +1860,10 @@
         document.body.style.overflow = '';
     }
 
-    // Close modal on backdrop click
-    document.getElementById('bookingModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeBookingModal();
-        }
-    });
-
     // Guest Counter Functions
-    const pricePerAdult = <?php echo $tour['discount_price'] ?: $tour['price']; ?>;
-    const pricePerChild = pricePerAdult * 0.5;
-    const currencySymbol = '<?php echo $settings['currency_symbol']; ?>';
+    let pricePerAdult = 0; // Will be set once DOM is loaded
+    let pricePerChild = 0;
+    let currencySymbol = '';
 
     function updateGuests(type, change) {
         const countElement = document.getElementById(type + '-count');
@@ -1946,65 +1905,47 @@
             currencySymbol + total.toFixed(2);
     }
 
-    // Share Buttons
-    document.querySelectorAll('.share-btn').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const type = this.getAttribute('data-type');
-            const url = encodeURIComponent(window.location.href);
-            const title = encodeURIComponent(document.title);
-            
-            let shareUrl = '';
-            
-            switch(type) {
-                case 'facebook':
-                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-                    break;
-                case 'twitter':
-                    shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
-                    break;
-                case 'whatsapp':
-                    shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`;
-                    break;
-                case 'pinterest':
-                    const image = encodeURIComponent(document.querySelector('.swiper-slide img').src);
-                    shareUrl = `https://pinterest.com/pin/create/button/?url=${url}&media=${image}&description=${title}`;
-                    break;
-            }
-            
-            if (shareUrl) {
-                window.open(shareUrl, '_blank', 'width=600,height=500');
-            }
-        });
-    });
-
-    // Update the handleBookingBar function
+    // Booking bar visibility function
     function handleBookingBar() {
         const mobileBar = document.getElementById('mobile-booking-bar');
         const sidebarBooking = document.querySelector('.sidebar-content .price-booking-section');
         const body = document.body;
         
         if (window.innerWidth >= 992) {
-            mobileBar.classList.add('hidden-desktop');
+            // Desktop view - hide mobile bar
+            if (mobileBar) {
+                mobileBar.classList.add('hidden-desktop');
+                mobileBar.style.display = 'none';
+                mobileBar.style.visibility = 'hidden';
+            }
+            
+            // Show sidebar booking section
             if (sidebarBooking) {
                 sidebarBooking.style.display = 'block';
             }
+            
+            // Fix body padding
             body.style.paddingBottom = '0';
         } else {
-            mobileBar.classList.remove('hidden-desktop');
+            // Mobile view - show mobile bar
+            if (mobileBar) {
+                mobileBar.classList.remove('hidden-desktop');
+                mobileBar.style.display = 'flex';
+                mobileBar.style.visibility = 'visible';
+            }
+            
+            // Hide sidebar booking section
             if (sidebarBooking) {
                 sidebarBooking.style.display = 'none';
             }
-            // Adjust body padding to match the height of the mobile booking bar
-            const barHeight = mobileBar.offsetHeight;
-            body.style.paddingBottom = barHeight + 'px';
+            
+            // Adjust body padding
+            if (mobileBar) {
+                const barHeight = mobileBar.offsetHeight;
+                body.style.paddingBottom = barHeight + 'px';
+            }
         }
     }
-
-    // Call the function on load and resize
-    window.addEventListener('load', handleBookingBar);
-    window.addEventListener('resize', handleBookingBar);
-
 
     // Initialize Google Map
     function initMap() {
@@ -2026,11 +1967,123 @@
         new google.maps.Marker({
             position: { lat: lat, lng: lng },
             map: map,
-            title: '<?php echo $tour['name']; ?>'
+            title: document.querySelector('.tour-title').textContent
         });
         
         mapElement.setAttribute('data-initialized', 'true');
     }
+
+    // Wait for DOM to be fully loaded before initializing
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize price variables
+        pricePerAdult = parseFloat(document.querySelector('.price-current').textContent.replace(/[^0-9.]/g, '')) || 0;
+        pricePerChild = pricePerAdult * 0.5;
+        currencySymbol = document.querySelector('.price-current').textContent.replace(/[0-9.,]/g, '').trim();
+        
+        // Initialize Swiper Gallery
+        const gallerySwiper = new Swiper('.gallery-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 0,
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            on: {
+                slideChange: function() {
+                    document.querySelector('.gallery-counter .current').textContent = this.realIndex + 1;
+                }
+            }
+        });
+
+        // Initialize Related Tours Swiper
+        if (document.querySelector('.related-tours-slider')) {
+            const relatedSwiper = new Swiper('.related-tours-slider', {
+                slidesPerView: 1.2,
+                spaceBetween: 16,
+                breakpoints: {
+                    576: {
+                        slidesPerView: 2.2,
+                        spaceBetween: 20
+                    },
+                    768: {
+                        slidesPerView: 3,
+                        spaceBetween: 24
+                    },
+                    992: {
+                        slidesPerView: 2,
+                        spaceBetween: 24
+                    }
+                }
+            });
+        }
+
+        // Tab Navigation
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                
+                // Remove active class from all
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked
+                button.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Initialize map when location tab is clicked
+                if (tabId === 'location' && typeof initMap === 'function') {
+                    initMap();
+                }
+            });
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBookingModal();
+            }
+        });
+
+        // Share Buttons
+        document.querySelectorAll('.share-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const type = this.getAttribute('data-type');
+                const url = encodeURIComponent(window.location.href);
+                const title = encodeURIComponent(document.title);
+                
+                let shareUrl = '';
+                
+                switch(type) {
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+                        break;
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+                        break;
+                    case 'whatsapp':
+                        shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`;
+                        break;
+                    case 'pinterest':
+                        const image = encodeURIComponent(document.querySelector('.swiper-slide img').src);
+                        shareUrl = `https://pinterest.com/pin/create/button/?url=${url}&media=${image}&description=${title}`;
+                        break;
+                }
+                
+                if (shareUrl) {
+                    window.open(shareUrl, '_blank', 'width=600,height=500');
+                }
+            });
+        });
+
+        // Call the function on load and resize
+        handleBookingBar();
+        window.addEventListener('resize', handleBookingBar);
+    });
     </script>
 
     <!-- Google Maps Script -->
