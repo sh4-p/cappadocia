@@ -1352,9 +1352,14 @@ $additionalScripts = '
     
     .btn-primary:hover {
         background-color: var(--primary-dark-color);
+        color: var(--white-color) !important; /* Metnin beyaz kalmasını sağla */
         box-shadow: var(--shadow-md);
     }
     
+    .btn-primary:hover i {
+        color: var(--white-color) !important; /* İkonların beyaz kalmasını sağla */
+    }
+
     .btn-outline {
         background-color: transparent;
         border: 1px solid var(--gray-300);
@@ -1363,9 +1368,94 @@ $additionalScripts = '
     
     .btn-outline:hover {
         background-color: var(--gray-100);
+        color: var(--dark-color) !important; /* Metni koyu renkte tut */
         border-color: var(--gray-400);
     }
-    
+
+    .btn-outline:hover i {
+        color: var(--primary-color) !important; /* İkonları birincil renkte tut */
+    }
+    /* Next/Previous butonları için özel stil */
+    .form-navigation .btn {
+        position: relative;
+        transition: all var(--transition-fast);
+        overflow: hidden;
+    }
+
+    .form-navigation .btn-primary:hover {
+        color: var(--white-color) !important;
+        background-color: var(--primary-dark-color);
+    }
+
+    .form-navigation .btn-outline:hover {
+        color: var(--gray-800) !important; 
+        background-color: var(--gray-100);
+    }
+
+    /* İkonlar için özel stil */
+    .form-navigation .btn i {
+        transition: all var(--transition-fast);
+    }
+
+    .form-navigation .btn-primary:hover i {
+        color: var(--white-color) !important;
+    }
+
+    .form-navigation .btn-outline:hover i {
+        color: var(--primary-color) !important;
+    }
+    /* Next Tab butonları için özel düzeltmeler */
+    .next-tab.btn-primary {
+        background-color: var(--primary-color);
+        color: var(--white-color) !important;
+    }
+
+    .next-tab.btn-primary:hover {
+        background-color: var(--primary-dark-color);
+        color: var(--white-color) !important;
+    }
+
+    .next-tab.btn-primary i {
+        color: var(--white-color) !important;
+    }
+
+    .next-tab.btn-primary:hover i {
+        color: var(--white-color) !important;
+    }
+
+    /* Yüksek öncelik için daha spesifik seçiciler */
+    .form-navigation .next-tab.btn-primary {
+        color: var(--white-color) !important;
+    }
+
+    .form-navigation .next-tab.btn-primary:hover {
+        color: var(--white-color) !important;
+    }
+
+    .form-navigation .next-tab.btn-primary i {
+        color: var(--white-color) !important;
+    }
+
+    .form-navigation .next-tab.btn-primary:hover i {
+        color: var(--white-color) !important;
+    }
+
+    /* Confirm button için özel stil */
+    .btn-primary[type="submit"] {
+        color: var(--white-color) !important;
+    }
+
+    .btn-primary[type="submit"]:hover {
+        color: var(--white-color) !important;
+    }
+
+    .btn-primary[type="submit"] i {
+        color: var(--white-color) !important;
+    }
+
+    .btn-primary[type="submit"]:hover i {
+        color: var(--white-color) !important;
+    }
     .btn-glass {
         background-color: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
@@ -1722,11 +1812,48 @@ $additionalScripts = '
             margin-bottom: var(--spacing-sm);
         }
     }
+    .terms-check {
+    position: relative;
+    }
+    .terms-check .error-message {
+        margin-top: 0.25rem;
+        margin-left: 2rem;
+    }
+    .error-input {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+    .highlight-preselected {
+        background-color: rgba(67, 97, 238, 0.05);
+        border-color: var(--primary-color) !important;
+    }
 </style>
+<!-- JavaScript için dil çevirileri -->
+<script>
+    var translations = {
+        // Form validasyonu için çeviriler
+        'date_required': '<?php _e('date_required'); ?>',
+        'first_name_required': '<?php _e('first_name_required'); ?>',
+        'last_name_required': '<?php _e('last_name_required'); ?>',
+        'email_required': '<?php _e('email_required'); ?>',
+        'invalid_email': '<?php _e('invalid_email'); ?>',
+        'phone_required': '<?php _e('phone_required'); ?>',
+        'card_name_required': '<?php _e('card_name_required'); ?>',
+        'card_number_required': '<?php _e('card_number_required'); ?>',
+        'card_expiry_required': '<?php _e('card_expiry_required'); ?>',
+        'card_cvv_required': '<?php _e('card_cvv_required'); ?>',
+        'terms_required': '<?php _e('terms_required'); ?>'
+    };
 
+    // Çeviri yardımcı fonksiyonu
+    function __(key) {
+        return translations[key] || key;
+    }
+</script>
 <!-- JavaScript for Booking Form -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  
+  document.addEventListener('DOMContentLoaded', function() {
     // URL'den parametre alma fonksiyonu
     function getUrlParameter(name) {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -1771,11 +1898,127 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Hata gösterme fonksiyonu
+    function showError(inputElement, message) {
+        // Mevcut hata mesajını temizle
+        clearError(inputElement);
+        
+        // Hata mesajı oluştur
+        const errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.textContent = message;
+        errorElement.style.color = '#dc3545';
+        errorElement.style.fontSize = '0.875rem';
+        errorElement.style.marginTop = '0.25rem';
+        
+        // Input elementinin bulunduğu konteynerin sonuna ekle
+        const parentElement = inputElement.closest('.form-group');
+        if (parentElement) {
+            parentElement.appendChild(errorElement);
+            
+            // Input'a hata sınıfı ekle
+            inputElement.classList.add('error-input');
+            inputElement.style.borderColor = '#dc3545';
+        }
+    }
+    
+    // Hata mesajını temizleme fonksiyonu
+    function clearError(inputElement) {
+        const parentElement = inputElement.closest('.form-group');
+        if (parentElement) {
+            const errorElement = parentElement.querySelector('.error-message');
+            if (errorElement) {
+                parentElement.removeChild(errorElement);
+            }
+            
+            // Input'tan hata sınıfını kaldır
+            inputElement.classList.remove('error-input');
+            inputElement.style.borderColor = '';
+        }
+    }
+    
+    // Tüm hataları temizleme
+    function clearAllErrors() {
+        document.querySelectorAll('.error-message').forEach(error => error.remove());
+        document.querySelectorAll('.error-input').forEach(input => {
+            input.classList.remove('error-input');
+            input.style.borderColor = '';
+        });
+    }
+    
+    // Adım validasyonu
+    function validateStep(stepId) {
+        clearAllErrors();
+        
+        if (stepId === 'booking-details') {
+            // Booking details validasyonu
+            const dateInput = document.getElementById('booking_date');
+            if (!dateInput.value) {
+                showError(dateInput, __('date_required'));
+                return false;
+            }
+        }
+        else if (stepId === 'personal-info') {
+            // Kişisel bilgi validasyonu
+            const firstName = document.getElementById('first_name');
+            const lastName = document.getElementById('last_name');
+            const email = document.getElementById('booking_email');
+            const phone = document.getElementById('booking_phone');
+            
+            let isValid = true;
+            
+            if (!firstName.value) {
+                showError(firstName, __('first_name_required'));
+                isValid = false;
+            }
+            
+            if (!lastName.value) {
+                showError(lastName, __('last_name_required'));
+                isValid = false;
+            }
+            
+            if (!email.value) {
+                showError(email, __('email_required'));
+                isValid = false;
+            } else if (!isValidEmail(email.value)) {
+                showError(email, __('invalid_email'));
+                isValid = false;
+            }
+            
+            if (!phone.value) {
+                showError(phone, __('phone_required'));
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        return true;
+    }
+    
+    // E-posta doğrulama
+    function isValidEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+    
     // Next/Prev Tab Navigation
     document.querySelectorAll('.next-tab').forEach(btn => {
         btn.addEventListener('click', function() {
-            const nextTabId = this.getAttribute('data-next');
-            setActiveTab(nextTabId);
+            const currentTabId = this.closest('.tab-pane').id.replace('-tab', '');
+            
+            // Mevcut adımı doğrula
+            if (validateStep(currentTabId)) {
+                const nextTabId = this.getAttribute('data-next');
+                setActiveTab(nextTabId);
+            } else {
+                // Sayfayı ilk hataya doğru kaydır
+                const firstError = document.querySelector('.error-input');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
         });
     });
     
@@ -1786,10 +2029,44 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Input olaylarını dinle
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('input', function() {
+            clearError(this);
+        });
+        
+        input.addEventListener('focus', function() {
+            this.classList.remove('error-input');
+            this.style.borderColor = '';
+        });
+    });
+    
     // Payment Method Selection
     const paymentMethods = document.querySelectorAll('.payment-method');
     const paymentContents = document.querySelectorAll('.payment-content');
-    
+
+    // Function to toggle required attributes based on payment method
+    function toggleRequiredFields(methodId) {
+        // Get all credit card fields
+        const cardFields = [
+            document.getElementById('card_name'),
+            document.getElementById('card_number'),
+            document.getElementById('card_expiry'),
+            document.getElementById('card_cvv')
+        ];
+        
+        // Set required attribute based on selected payment method
+        cardFields.forEach(field => {
+            if (field) {
+                if (methodId === 'card') {
+                    field.setAttribute('required', '');
+                } else {
+                    field.removeAttribute('required');
+                }
+            }
+        });
+    }
+
     paymentMethods.forEach(method => {
         method.addEventListener('click', function() {
             // Update radio selection
@@ -1808,6 +2085,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     content.classList.add('active');
                 }
             });
+            
+            // Toggle required fields based on payment method
+            toggleRequiredFields(methodId);
         });
     });
     
@@ -1885,6 +2165,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Update the booking summary date
                 document.getElementById('summary_date').textContent = dateStr;
                 updateSummary();
+                
+                // Hata mesajını temizle
+                clearError(document.getElementById('booking_date'));
             }
         });
         
@@ -1941,10 +2224,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Form yüklendiğinde hemen booking-details sekmesini aktif yaparak, kullanıcının seçimlerini görmesini sağla
+    // Sayfa yüklendiğinde ilk aktif ödeme yöntemi için required özelliklerini ayarla
     window.addEventListener('load', function() {
         // Sayfa tamamen yüklendikten sonra booking-details sekmesini aktif hale getir
         setActiveTab('booking-details');
+        
+        // Varsayılan ödeme yöntemi için required alanları ayarla
+        const defaultPaymentMethod = document.querySelector('.payment-method.active');
+        if (defaultPaymentMethod) {
+            const methodId = defaultPaymentMethod.getAttribute('data-method');
+            toggleRequiredFields(methodId);
+        }
         
         // Eğer URL'den parametreler geldiyse, bunun vurgulanması için ek görsel işaret ekleyebiliriz
         if (urlDate || urlAdults || urlChildren) {
@@ -2009,36 +2299,113 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookingForm = document.getElementById('booking_form');
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
-            // Simple validation example
+            e.preventDefault(); // Önce formu durdur, geçerliyse sonra manuel gönder
+            
+            let isValid = true;
+            clearAllErrors();
+            
+            // Booking details validasyonu
             const bookingDate = document.getElementById('booking_date').value;
             if (!bookingDate) {
-                e.preventDefault();
-                alert('Please select a booking date');
+                showError(document.getElementById('booking_date'), __('date_required'));
                 setActiveTab('booking-details');
+                isValid = false;
                 return;
             }
             
-            const firstName = document.getElementById('first_name').value;
-            const lastName = document.getElementById('last_name').value;
-            const email = document.getElementById('booking_email').value;
-            const phone = document.getElementById('booking_phone').value;
+            // Kişisel bilgiler validasyonu
+            const firstName = document.getElementById('first_name');
+            const lastName = document.getElementById('last_name');
+            const email = document.getElementById('booking_email');
+            const phone = document.getElementById('booking_phone');
             
-            if (!firstName || !lastName || !email || !phone) {
-                e.preventDefault();
-                alert('Please fill in all required personal information');
+            if (!firstName.value) {
+                showError(firstName, __('first_name_required'));
+                isValid = false;
+            }
+            
+            if (!lastName.value) {
+                showError(lastName, __('last_name_required'));
+                isValid = false;
+            }
+            
+            if (!email.value) {
+                showError(email, __('email_required'));
+                isValid = false;
+            } else if (!isValidEmail(email.value)) {
+                showError(email, __('invalid_email'));
+                isValid = false;
+            }
+            
+            if (!phone.value) {
+                showError(phone, __('phone_required'));
+                isValid = false;
+            }
+            
+            if (!isValid) {
                 setActiveTab('personal-info');
+                // İlk hataya odaklan
+                const firstError = document.querySelector('.error-input');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
                 return;
             }
             
-            const termsCheck = document.getElementById('terms_check').checked;
-            if (!termsCheck) {
-                e.preventDefault();
-                alert('Please accept the terms and conditions');
+            // Ödeme yöntemi kontrolü
+            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            // Sadece kredi kartı seçilmişse kart alanlarını doğrula
+            if (selectedPaymentMethod === 'card') {
+                const cardName = document.getElementById('card_name');
+                const cardNumber = document.getElementById('card_number');
+                const cardExpiry = document.getElementById('card_expiry');
+                const cardCvv = document.getElementById('card_cvv');
+                
+                let cardValid = true;
+                
+                if (!cardName.value) {
+                    showError(cardName, __('card_name_required'));
+                    cardValid = false;
+                }
+                
+                if (!cardNumber.value) {
+                    showError(cardNumber, __('card_number_required'));
+                    cardValid = false;
+                }
+                
+                if (!cardExpiry.value) {
+                    showError(cardExpiry, __('card_expiry_required'));
+                    cardValid = false;
+                }
+                
+                if (!cardCvv.value) {
+                    showError(cardCvv, __('card_cvv_required'));
+                    cardValid = false;
+                }
+                
+                if (!cardValid) {
+                    setActiveTab('payment-info');
+                    // İlk hataya odaklan
+                    const firstError = document.querySelector('.error-input');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus();
+                    }
+                    return;
+                }
+            }
+            
+            const termsCheck = document.getElementById('terms_check');
+            if (!termsCheck.checked) {
+                showError(termsCheck, __('terms_required'));
                 setActiveTab('payment-info');
                 return;
             }
             
-            // All validation passed, form will submit
+            // Tüm validasyonlar geçildiyse formu gönder
+            this.submit();
         });
     }
 });
