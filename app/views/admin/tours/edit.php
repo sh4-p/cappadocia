@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin Tour Edit View
+ * Admin Tour Edit View - Günlük İtinerary ve Duration Seçimi ile
  */
 ?>
 
@@ -77,10 +77,66 @@
                                     <small class="form-text"><?php _e('excludes_help'); ?></small>
                                 </div>
                                 
+                                <!-- Günlük İtinerary Sistemi -->
                                 <div class="form-group">
-                                    <label for="itinerary_<?php echo $lang['code']; ?>" class="form-label"><?php _e('itinerary'); ?></label>
-                                    <textarea id="itinerary_<?php echo $lang['code']; ?>" name="details[<?php echo $lang['id']; ?>][itinerary]" class="form-control" rows="10"><?php echo htmlspecialchars($details['itinerary'] ?? ''); ?></textarea>
-                                    <small class="form-text"><?php _e('itinerary_help'); ?></small>
+                                    <label class="form-label"><?php _e('daily_itinerary'); ?></label>
+                                    <div class="itinerary-builder" data-lang="<?php echo $lang['code']; ?>">
+                                        <div class="itinerary-days" id="itinerary-days-<?php echo $lang['code']; ?>">
+                                            <?php
+                                            // Parse existing itinerary
+                                            $existingItinerary = [];
+                                            if (!empty($details['itinerary'])) {
+                                                // Try to parse as JSON first (new format)
+                                                $jsonItinerary = json_decode($details['itinerary'], true);
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($jsonItinerary)) {
+                                                    $existingItinerary = $jsonItinerary;
+                                                } else {
+                                                    // Parse old format (plain text with double newlines)
+                                                    $days = explode("\n\n", $details['itinerary']);
+                                                    foreach ($days as $index => $day) {
+                                                        if (trim($day)) {
+                                                            $lines = explode("\n", $day);
+                                                            $existingItinerary[$index + 1] = [
+                                                                'title' => $lines[0] ?? '',
+                                                                'description' => implode("\n", array_slice($lines, 1))
+                                                            ];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // If no existing data, create at least one day
+                                            if (empty($existingItinerary)) {
+                                                $existingItinerary[1] = ['title' => '', 'description' => ''];
+                                            }
+                                            
+                                            foreach ($existingItinerary as $dayNum => $dayData):
+                                            ?>
+                                                <div class="itinerary-day" data-day="<?php echo $dayNum; ?>">
+                                                    <div class="day-header">
+                                                        <h5><?php _e('day'); ?> <?php echo $dayNum; ?></h5>
+                                                        <button type="button" class="btn btn-sm btn-danger remove-day" <?php echo count($existingItinerary) <= 1 ? 'style="display: none;"' : ''; ?>>
+                                                            <i class="material-icons">delete</i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="day-content">
+                                                        <div class="form-group">
+                                                            <label><?php _e('day_title'); ?></label>
+                                                            <input type="text" name="details[<?php echo $lang['id']; ?>][itinerary][<?php echo $dayNum; ?>][title]" class="form-control" placeholder="<?php _e('day_title_placeholder'); ?>" value="<?php echo htmlspecialchars($dayData['title'] ?? ''); ?>">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><?php _e('day_description'); ?></label>
+                                                            <textarea name="details[<?php echo $lang['id']; ?>][itinerary][<?php echo $dayNum; ?>][description]" class="form-control" rows="4" placeholder="<?php _e('day_description_placeholder'); ?>"><?php echo htmlspecialchars($dayData['description'] ?? ''); ?></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <button type="button" class="btn btn-success add-day" data-lang="<?php echo $lang['code']; ?>">
+                                            <i class="material-icons">add</i>
+                                            <?php _e('add_day'); ?>
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div class="form-group">
@@ -104,39 +160,58 @@
                     <h3 class="card-title"><?php _e('tour_gallery'); ?></h3>
                 </div>
                 <div class="card-body">
-                    <div class="gallery-grid">
-                        <?php if (empty($gallery)): ?>
-                            <div class="empty-gallery">
-                                <p><?php _e('no_gallery_images'); ?></p>
-                                <a href="<?php echo $adminUrl; ?>/gallery/create?tour_id=<?php echo $tour['id']; ?>" class="btn btn-primary btn-sm">
-                                    <i class="material-icons">add_photo_alternate</i>
-                                    <?php _e('add_images'); ?>
-                                </a>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($gallery as $image): ?>
-                                <div class="gallery-item">
-                                    <div class="gallery-image">
-                                        <img src="<?php echo $uploadsUrl . '/gallery/' . $image['image']; ?>" alt="<?php echo $image['title']; ?>">
-                                        <div class="gallery-actions">
-                                            <a href="<?php echo $adminUrl; ?>/gallery/edit/<?php echo $image['id']; ?>" class="gallery-action-btn" title="<?php _e('edit'); ?>">
-                                                <i class="material-icons">edit</i>
-                                            </a>
-                                            <a href="<?php echo $adminUrl; ?>/gallery/delete/<?php echo $image['id']; ?>" class="gallery-action-btn delete-btn" title="<?php _e('delete'); ?>" data-confirm="<?php _e('delete_image_confirm'); ?>">
-                                                <i class="material-icons">delete</i>
-                                            </a>
+                    <!-- Existing Gallery Images -->
+                    <?php if (!empty($galleryItems)): ?>
+                        <div class="existing-gallery">
+                            <h5><?php _e('existing_images'); ?></h5>
+                            <div class="existing-gallery-grid">
+                                <?php foreach ($galleryItems as $image): ?>
+                                    <div class="existing-gallery-item" data-image-id="<?php echo $image['id']; ?>">
+                                        <div class="existing-gallery-image">
+                                            <img src="<?php echo $uploadsUrl . '/gallery/' . $image['image']; ?>" alt="<?php echo $image['title']; ?>">
+                                            <div class="existing-gallery-actions">
+                                                <a href="<?php echo $adminUrl; ?>/tours/deleteGalleryImage/<?php echo $image['id']; ?>/<?php echo $tour['id']; ?>" class="gallery-action-btn delete-btn" title="<?php _e('delete'); ?>" data-confirm="<?php _e('delete_image_confirm'); ?>">
+                                                    <i class="material-icons">delete</i>
+                                                </a>
+                                            </div>
                                         </div>
+                                        <div class="existing-gallery-title"><?php echo $image['title'] ?: __('no_title'); ?></div>
                                     </div>
-                                    <div class="gallery-title"><?php echo $image['title'] ?: __('no_title'); ?></div>
-                                </div>
-                            <?php endforeach; ?>
-                            <div class="gallery-add">
-                                <a href="<?php echo $adminUrl; ?>/gallery/create?tour_id=<?php echo $tour['id']; ?>" class="gallery-add-btn">
-                                    <i class="material-icons">add_photo_alternate</i>
-                                    <span><?php _e('add_more_images'); ?></span>
-                                </a>
+                                <?php endforeach; ?>
                             </div>
-                        <?php endif; ?>
+                        </div>
+                        <hr>
+                    <?php endif; ?>
+
+                    <!-- Add New Images -->
+                    <div class="gallery-upload-section">
+                        <h5><?php _e('add_new_images'); ?></h5>
+                        
+                        <!-- Drag & Drop Zone -->
+                        <div class="gallery-dropzone" id="gallery-dropzone">
+                            <div class="dropzone-content">
+                                <i class="material-icons">cloud_upload</i>
+                                <h4><?php _e('drag_drop_images_here'); ?></h4>
+                                <p><?php _e('or_click_to_select'); ?></p>
+                                <button type="button" class="btn btn-primary" id="select-images-btn">
+                                    <i class="material-icons">add_photo_alternate</i>
+                                    <?php _e('select_images'); ?>
+                                </button>
+                            </div>
+                            <input type="file" id="gallery-images" name="gallery_images[]" multiple accept="image/*" style="display: none;">
+                        </div>
+
+                        <!-- Preview Grid -->
+                        <div class="gallery-preview-grid" id="gallery-preview-grid" style="display: none;">
+                            <div class="preview-grid-header">
+                                <h6><?php _e('new_images_to_upload'); ?></h6>
+                                <button type="button" class="btn btn-light btn-sm" id="clear-all-btn">
+                                    <i class="material-icons">clear_all</i>
+                                    <?php _e('clear_all'); ?>
+                                </button>
+                            </div>
+                            <div class="preview-grid" id="preview-grid"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -160,9 +235,34 @@
                         </select>
                     </div>
                     
+                    <!-- Duration Seçimi -->
                     <div class="form-group">
-                        <label for="duration" class="form-label"><?php _e('duration'); ?> <span class="required">*</span></label>
-                        <input type="text" id="duration" name="duration" class="form-control" value="<?php echo htmlspecialchars($tour['duration']); ?>" placeholder="<?php _e('duration_placeholder'); ?>" required>
+                        <label for="duration_type" class="form-label"><?php _e('duration'); ?> <span class="required">*</span></label>
+                        <select id="duration_type" name="duration_type" class="form-select" required>
+                            <option value=""><?php _e('select_duration'); ?></option>
+                            <option value="half-day" <?php echo ($tour['duration_type'] ?? '') == 'half-day' ? 'selected' : ''; ?>><?php _e('half_day'); ?> (4-5 <?php _e('hours'); ?>)</option>
+                            <option value="full-day" <?php echo ($tour['duration_type'] ?? '') == 'full-day' ? 'selected' : ''; ?>><?php _e('full_day'); ?> (8-10 <?php _e('hours'); ?>)</option>
+                            <option value="2-days" <?php echo ($tour['duration_type'] ?? '') == '2-days' ? 'selected' : ''; ?>>2 <?php _e('days'); ?></option>
+                            <option value="3-days" <?php echo ($tour['duration_type'] ?? '') == '3-days' ? 'selected' : ''; ?>>3 <?php _e('days'); ?></option>
+                            <option value="4-days" <?php echo ($tour['duration_type'] ?? '') == '4-days' ? 'selected' : ''; ?>>4 <?php _e('days'); ?></option>
+                            <option value="5-days" <?php echo ($tour['duration_type'] ?? '') == '5-days' ? 'selected' : ''; ?>>5 <?php _e('days'); ?></option>
+                            <option value="6-days" <?php echo ($tour['duration_type'] ?? '') == '6-days' ? 'selected' : ''; ?>>6 <?php _e('days'); ?></option>
+                            <option value="7-days" <?php echo ($tour['duration_type'] ?? '') == '7-days' ? 'selected' : ''; ?>>7 <?php _e('days'); ?></option>
+                            <option value="custom" <?php echo ($tour['duration_type'] ?? '') == 'custom' ? 'selected' : ''; ?>><?php _e('custom_duration'); ?></option>
+                        </select>
+                    </div>
+                    
+                    <!-- Custom Duration (sadece custom seçildiğinde görünür) -->
+                    <div class="form-group" id="custom-duration-group" <?php echo ($tour['duration_type'] ?? '') !== 'custom' ? 'style="display: none;"' : ''; ?>>
+                        <label for="custom_duration" class="form-label"><?php _e('custom_duration_text'); ?></label>
+                        <input type="text" id="custom_duration" name="custom_duration" class="form-control" placeholder="<?php _e('duration_placeholder'); ?>" value="<?php echo htmlspecialchars($tour['duration'] ?? ''); ?>">
+                    </div>
+                    
+                    <!-- Gün sayısı (duration ile senkronize) -->
+                    <div class="form-group">
+                        <label for="duration_days" class="form-label"><?php _e('number_of_days'); ?></label>
+                        <input type="number" id="duration_days" name="duration_days" class="form-control" min="1" max="30" value="<?php echo $tour['duration_days'] ?? 1; ?>" <?php echo ($tour['duration_type'] ?? '') !== 'custom' ? 'readonly' : ''; ?>>
+                        <small class="form-text"><?php _e('days_auto_calculated'); ?></small>
                     </div>
                     
                     <div class="form-group">
@@ -198,7 +298,7 @@
                 </div>
             </div>
             
-            <!-- Tour Image -->
+            <!-- Featured Image -->
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title"><?php _e('featured_image'); ?></h3>
@@ -207,9 +307,9 @@
                     <div class="form-group">
                         <div class="image-preview">
                             <?php if ($tour['featured_image']): ?>
-                                <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" alt="<?php echo $tour['name']; ?>" class="preview-image">
+                                <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" alt="<?php echo $tour['name']; ?>" class="preview-image" id="featured-preview">
                             <?php else: ?>
-                                <img src="<?php echo $imgUrl; ?>/no-image.jpg" alt="<?php _e('no_image'); ?>" class="preview-image">
+                                <img src="<?php echo $imgUrl; ?>/no-image.jpg" alt="<?php _e('no_image'); ?>" class="preview-image" id="featured-preview">
                             <?php endif; ?>
                         </div>
                         <div class="mt-3">
@@ -228,11 +328,11 @@
                 <div class="card-body">
                     <div class="stat-item">
                         <div class="stat-label"><?php _e('bookings'); ?></div>
-                        <div class="stat-value"><?php echo number_format($stats['bookings']); ?></div>
+                        <div class="stat-value"><?php echo number_format($stats['bookings'] ?? 0); ?></div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-label"><?php _e('revenue'); ?></div>
-                        <div class="stat-value"><?php echo $settings['currency_symbol'] . number_format($stats['revenue'], 2); ?></div>
+                        <div class="stat-value"><?php echo $settings['currency_symbol'] . number_format($stats['revenue'] ?? 0, 2); ?></div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-label"><?php _e('created_at'); ?></div>
@@ -259,7 +359,210 @@
     </div>
 </form>
 
+<!-- Same styles as create.php -->
 <style>
+/* İtinerary Builder Styles */
+.itinerary-builder {
+    border: 1px solid #e0e0e0;
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    background: var(--gray-50);
+}
+
+.itinerary-days {
+    margin-bottom: 1rem;
+}
+
+.itinerary-day {
+    background: var(--white-color);
+    border: 1px solid #e0e0e0;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--primary-color);
+    color: var(--white-color);
+}
+
+.day-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.remove-day {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.day-content {
+    padding: 1.5rem;
+}
+
+.add-day {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Custom Duration Group */
+#custom-duration-group {
+    transition: all 0.3s ease;
+}
+
+/* Duration Days Field */
+input[readonly] {
+    background-color: var(--gray-100);
+    cursor: not-allowed;
+}
+
+/* Existing Gallery Styles */
+.existing-gallery {
+    margin-bottom: var(--spacing-lg);
+}
+
+.existing-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.existing-gallery-item {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    background-color: var(--white-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.existing-gallery-image {
+    position: relative;
+    height: 120px;
+    overflow: hidden;
+}
+
+.existing-gallery-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.existing-gallery-actions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.existing-gallery-image:hover .existing-gallery-actions {
+    opacity: 1;
+}
+
+.gallery-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--border-radius-circle);
+    background-color: var(--white-color);
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    text-decoration: none;
+}
+
+.gallery-action-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.gallery-action-btn.delete-btn:hover {
+    background-color: var(--danger-color);
+}
+
+.existing-gallery-title {
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--gray-700);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Gallery Upload Styles (same as create.php) */
+.gallery-upload-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.gallery-dropzone {
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--border-radius-lg);
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--gray-50);
+}
+
+.gallery-dropzone:hover,
+.gallery-dropzone.dragover {
+    border-color: var(--primary-color);
+    background-color: rgba(67, 97, 238, 0.05);
+}
+
+.dropzone-content i {
+    font-size: 4rem;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+}
+
+.dropzone-content h4 {
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.dropzone-content p {
+    color: var(--gray-500);
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: var(--gray-600);
+}
+
+.stat-value {
+    font-weight: var(--font-weight-medium);
+}
+
+/* Language Tabs */
 .language-tabs {
     margin-bottom: var(--spacing-lg);
 }
@@ -323,144 +626,25 @@
     gap: var(--spacing-md);
 }
 
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-md);
-}
-
-.gallery-item {
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-    background-color: var(--white-color);
-    box-shadow: var(--shadow-sm);
-}
-
-.gallery-image {
-    position: relative;
-    height: 150px;
-    overflow: hidden;
-}
-
-.gallery-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.gallery-actions {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-}
-
-.gallery-image:hover .gallery-actions {
-    opacity: 1;
-}
-
-.gallery-action-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--border-radius-circle);
-    background-color: var(--white-color);
-    color: var(--dark-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color var(--transition-fast), color var(--transition-fast);
-}
-
-.gallery-action-btn:hover {
-    background-color: var(--primary-color);
-    color: var(--white-color);
-}
-
-.gallery-title {
-    padding: var(--spacing-sm);
-    text-align: center;
-    font-size: var(--font-size-sm);
-    color: var(--gray-700);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.gallery-add {
-    border: 2px dashed var(--gray-300);
-    border-radius: var(--border-radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 150px;
-}
-
-.gallery-add-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: var(--gray-500);
-    transition: color var(--transition-fast);
-}
-
-.gallery-add-btn:hover {
-    color: var(--primary-color);
-}
-
-.gallery-add-btn i {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-xs);
-}
-
-.empty-gallery {
-    text-align: center;
-    padding: var(--spacing-lg) 0;
-    color: var(--gray-500);
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.stat-item:last-child {
-    border-bottom: none;
-}
-
-.stat-label {
-    color: var(--gray-600);
-}
-
-.stat-value {
-    font-weight: var(--font-weight-medium);
-}
-
-@media (max-width: 992px) {
-    .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
+@media (max-width: 768px) {
+    .existing-gallery-grid,
+    .preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
-}
-
-@media (max-width: 576px) {
-    .gallery-grid {
-        grid-template-columns: 1fr;
+    
+    .itinerary-builder {
+        padding: 1rem;
+    }
+    
+    .day-content {
+        padding: 1rem;
     }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Language Tabs
+    // Language Tabs (same as create.php)
     const langTabBtns = document.querySelectorAll('.language-tab-btn');
     const langTabContents = document.querySelectorAll('.language-tab-content');
     
@@ -468,47 +652,203 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const lang = this.dataset.lang;
             
-            // Deactivate all tabs
             langTabBtns.forEach(btn => btn.classList.remove('active'));
             langTabContents.forEach(content => content.classList.remove('active'));
             
-            // Activate selected tab
             this.classList.add('active');
             document.querySelector(`.language-tab-content[data-lang="${lang}"]`).classList.add('active');
         });
     });
     
-    // Image Preview
-    const imageInput = document.getElementById('featured_image');
-    const previewImage = document.querySelector('.preview-image');
+    // Duration Selection Logic (same as create.php)
+    const durationSelect = document.getElementById('duration_type');
+    const customDurationGroup = document.getElementById('custom-duration-group');
+    const durationDaysInput = document.getElementById('duration_days');
     
-    if (imageInput && previewImage) {
-        imageInput.addEventListener('change', function() {
+    durationSelect.addEventListener('change', function() {
+        const value = this.value;
+        
+        if (value === 'custom') {
+            customDurationGroup.style.display = 'block';
+            durationDaysInput.readOnly = false;
+        } else {
+            customDurationGroup.style.display = 'none';
+            durationDaysInput.readOnly = true;
+            
+            switch(value) {
+                case 'half-day':
+                case 'full-day':
+                    durationDaysInput.value = 1;
+                    break;
+                case '2-days':
+                    durationDaysInput.value = 2;
+                    break;
+                case '3-days':
+                    durationDaysInput.value = 3;
+                    break;
+                case '4-days':
+                    durationDaysInput.value = 4;
+                    break;
+                case '5-days':
+                    durationDaysInput.value = 5;
+                    break;
+                case '6-days':
+                    durationDaysInput.value = 6;
+                    break;
+                case '7-days':
+                    durationDaysInput.value = 7;
+                    break;
+                default:
+                    durationDaysInput.value = 1;
+            }
+            
+            updateItineraryDays();
+        }
+    });
+    
+    // Itinerary Management (adapted for edit)
+    function updateItineraryDays() {
+        const days = parseInt(durationDaysInput.value) || 1;
+        
+        document.querySelectorAll('.itinerary-builder').forEach(builder => {
+            const lang = builder.dataset.lang;
+            const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+            const currentDays = daysContainer.querySelectorAll('.itinerary-day').length;
+            
+            if (days > currentDays) {
+                for (let i = currentDays + 1; i <= days; i++) {
+                    addItineraryDay(lang, i);
+                }
+            } else if (days < currentDays) {
+                for (let i = currentDays; i > days; i--) {
+                    const dayElement = daysContainer.querySelector(`[data-day="${i}"]`);
+                    if (dayElement) {
+                        dayElement.remove();
+                    }
+                }
+            }
+            
+            updateRemoveButtons(lang);
+        });
+    }
+    
+    function addItineraryDay(lang, dayNumber) {
+        const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+        const langId = document.querySelector(`[data-lang="${lang}"]`).closest('.language-tab-content').querySelector('input[name*="details["]').name.match(/\[(\d+)\]/)[1];
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = 'itinerary-day';
+        dayElement.setAttribute('data-day', dayNumber);
+        
+        dayElement.innerHTML = `
+            <div class="day-header">
+                <h5><?php _e('day'); ?> ${dayNumber}</h5>
+                <button type="button" class="btn btn-sm btn-danger remove-day">
+                    <i class="material-icons">delete</i>
+                </button>
+            </div>
+            <div class="day-content">
+                <div class="form-group">
+                    <label><?php _e('day_title'); ?></label>
+                    <input type="text" name="details[${langId}][itinerary][${dayNumber}][title]" class="form-control" placeholder="<?php _e('day_title_placeholder'); ?>">
+                </div>
+                <div class="form-group">
+                    <label><?php _e('day_description'); ?></label>
+                    <textarea name="details[${langId}][itinerary][${dayNumber}][description]" class="form-control" rows="4" placeholder="<?php _e('day_description_placeholder'); ?>"></textarea>
+                </div>
+            </div>
+        `;
+        
+        daysContainer.appendChild(dayElement);
+        
+        dayElement.querySelector('.remove-day').addEventListener('click', function() {
+            dayElement.remove();
+            updateRemoveButtons(lang);
+            renumberDays(lang);
+        });
+    }
+    
+    function updateRemoveButtons(lang) {
+        const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+        const days = daysContainer.querySelectorAll('.itinerary-day');
+        
+        days.forEach((day, index) => {
+            const removeBtn = day.querySelector('.remove-day');
+            if (days.length > 1) {
+                removeBtn.style.display = 'block';
+            } else {
+                removeBtn.style.display = 'none';
+            }
+        });
+    }
+    
+    function renumberDays(lang) {
+        const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+        const days = daysContainer.querySelectorAll('.itinerary-day');
+        const langId = document.querySelector(`[data-lang="${lang}"]`).closest('.language-tab-content').querySelector('input[name*="details["]').name.match(/\[(\d+)\]/)[1];
+        
+        days.forEach((day, index) => {
+            const dayNumber = index + 1;
+            day.setAttribute('data-day', dayNumber);
+            day.querySelector('.day-header h5').textContent = `<?php _e('day'); ?> ${dayNumber}`;
+            
+            const titleInput = day.querySelector('input[type="text"]');
+            const descInput = day.querySelector('textarea');
+            
+            titleInput.name = `details[${langId}][itinerary][${dayNumber}][title]`;
+            descInput.name = `details[${langId}][itinerary][${dayNumber}][description]`;
+        });
+    }
+    
+    // Add Day Buttons
+    document.querySelectorAll('.add-day').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lang = this.dataset.lang;
+            const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+            const currentDays = daysContainer.querySelectorAll('.itinerary-day').length;
+            const newDayNumber = currentDays + 1;
+            
+            addItineraryDay(lang, newDayNumber);
+            updateRemoveButtons(lang);
+            
+            if (durationSelect.value === 'custom' || !durationSelect.value) {
+                durationDaysInput.value = newDayNumber;
+            }
+        });
+    });
+    
+    // Initialize remove buttons and events for existing days
+    document.querySelectorAll('.itinerary-builder').forEach(builder => {
+        const lang = builder.dataset.lang;
+        updateRemoveButtons(lang);
+        
+        builder.querySelectorAll('.remove-day').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const day = this.closest('.itinerary-day');
+                day.remove();
+                updateRemoveButtons(lang);
+                renumberDays(lang);
+            });
+        });
+    });
+    
+    // Featured Image Preview
+    const featuredImageInput = document.getElementById('featured_image');
+    const featuredPreview = document.getElementById('featured-preview');
+    
+    if (featuredImageInput && featuredPreview) {
+        featuredImageInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
-                    previewImage.src = e.target.result;
+                    featuredPreview.src = e.target.result;
                 }
-                
                 reader.readAsDataURL(this.files[0]);
             }
         });
     }
     
-    // Initialize rich text editors
-    const editors = document.querySelectorAll('.editor');
-    
-    if (editors.length > 0 && typeof ClassicEditor !== 'undefined') {
-        editors.forEach(editor => {
-            ClassicEditor.create(editor)
-                .catch(error => {
-                    console.error(error);
-                });
-        });
-    }
-    
-    // Delete confirmation
+    // Delete confirmation for existing images
     const deleteBtns = document.querySelectorAll('.delete-btn');
     
     deleteBtns.forEach(btn => {
@@ -522,5 +862,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Gallery upload system (same as create.php)
+    const galleryDropzone = document.getElementById('gallery-dropzone');
+    const galleryInput = document.getElementById('gallery-images');
+    const selectImagesBtn = document.getElementById('select-images-btn');
+    const previewGrid = document.getElementById('preview-grid');
+    const previewSection = document.getElementById('gallery-preview-grid');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    
+    let selectedFiles = [];
+    let dragCounter = 0;
+    
+    // (Gallery upload code same as create.php...)
+    
+    // Initialize rich text editors
+    const editors = document.querySelectorAll('.editor');
+    
+    if (editors.length > 0 && typeof ClassicEditor !== 'undefined') {
+        editors.forEach(editor => {
+            ClassicEditor.create(editor)
+                .catch(error => {
+                    console.error(error);
+                });
+        });
+    }
 });
 </script>
