@@ -575,6 +575,13 @@ input[readonly] {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Language mappings - PHP'den alınacak
+    const languageMappings = {
+        <?php foreach ($languages as $lang): ?>
+        '<?php echo $lang['code']; ?>': <?php echo $lang['id']; ?>,
+        <?php endforeach; ?>
+    };
+    
     // Language Tabs
     const langTabBtns = document.querySelectorAll('.language-tab-btn');
     const langTabContents = document.querySelectorAll('.language-tab-content');
@@ -583,11 +590,9 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const lang = this.dataset.lang;
             
-            // Deactivate all tabs
             langTabBtns.forEach(btn => btn.classList.remove('active'));
             langTabContents.forEach(content => content.classList.remove('active'));
             
-            // Activate selected tab
             this.classList.add('active');
             document.querySelector(`.language-tab-content[data-lang="${lang}"]`).classList.add('active');
         });
@@ -598,66 +603,65 @@ document.addEventListener('DOMContentLoaded', function() {
     const customDurationGroup = document.getElementById('custom-duration-group');
     const durationDaysInput = document.getElementById('duration_days');
     
-    durationSelect.addEventListener('change', function() {
-        const value = this.value;
-        
-        if (value === 'custom') {
-            customDurationGroup.style.display = 'block';
-            durationDaysInput.readOnly = false;
-            durationDaysInput.value = '';
-        } else {
-            customDurationGroup.style.display = 'none';
-            durationDaysInput.readOnly = true;
+    if (durationSelect && durationDaysInput) {
+        durationSelect.addEventListener('change', function() {
+            const value = this.value;
             
-            // Set days based on selection
-            switch(value) {
-                case 'half-day':
-                case 'full-day':
-                    durationDaysInput.value = 1;
-                    break;
-                case '2-days':
-                    durationDaysInput.value = 2;
-                    break;
-                case '3-days':
-                    durationDaysInput.value = 3;
-                    break;
-                case '4-days':
-                    durationDaysInput.value = 4;
-                    break;
-                case '5-days':
-                    durationDaysInput.value = 5;
-                    break;
-                case '6-days':
-                    durationDaysInput.value = 6;
-                    break;
-                case '7-days':
-                    durationDaysInput.value = 7;
-                    break;
-                default:
-                    durationDaysInput.value = 1;
+            if (value === 'custom') {
+                if (customDurationGroup) customDurationGroup.style.display = 'block';
+                durationDaysInput.readOnly = false;
+                durationDaysInput.value = '';
+            } else {
+                if (customDurationGroup) customDurationGroup.style.display = 'none';
+                durationDaysInput.readOnly = true;
+                
+                switch(value) {
+                    case 'half-day':
+                    case 'full-day':
+                        durationDaysInput.value = 1;
+                        break;
+                    case '2-days':
+                        durationDaysInput.value = 2;
+                        break;
+                    case '3-days':
+                        durationDaysInput.value = 3;
+                        break;
+                    case '4-days':
+                        durationDaysInput.value = 4;
+                        break;
+                    case '5-days':
+                        durationDaysInput.value = 5;
+                        break;
+                    case '6-days':
+                        durationDaysInput.value = 6;
+                        break;
+                    case '7-days':
+                        durationDaysInput.value = 7;
+                        break;
+                    default:
+                        durationDaysInput.value = 1;
+                }
+                
+                updateItineraryDays();
             }
-            
-            // Update itinerary days for all languages
-            updateItineraryDays();
-        }
-    });
+        });
+    }
     
     // Itinerary Management
     function updateItineraryDays() {
         const days = parseInt(durationDaysInput.value) || 1;
         
-        document.querySelectorAll('.itinerary-builder').forEach(builder => {
-            const lang = builder.dataset.lang;
-            const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+        Object.keys(languageMappings).forEach(langCode => {
+            const daysContainer = document.getElementById(`itinerary-days-${langCode}`);
+            if (!daysContainer) return;
+            
             const currentDays = daysContainer.querySelectorAll('.itinerary-day').length;
             
             if (days > currentDays) {
-                // Add more days
                 for (let i = currentDays + 1; i <= days; i++) {
-                    addItineraryDay(lang, i);
+                    addItineraryDay(langCode, i);
                 }
             } else if (days < currentDays) {
-                // Remove excess days
                 for (let i = currentDays; i > days; i--) {
                     const dayElement = daysContainer.querySelector(`[data-day="${i}"]`);
                     if (dayElement) {
@@ -666,14 +670,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Update remove button visibility
-            updateRemoveButtons(lang);
+            updateRemoveButtons(langCode);
         });
     }
     
-    function addItineraryDay(lang, dayNumber) {
-        const daysContainer = document.getElementById(`itinerary-days-${lang}`);
-        const langId = document.querySelector(`[data-lang="${lang}"]`).closest('.language-tab-content').querySelector('input[name*="details["]').name.match(/\[(\d+)\]/)[1];
+    function addItineraryDay(langCode, dayNumber) {
+        const daysContainer = document.getElementById(`itinerary-days-${langCode}`);
+        if (!daysContainer) return;
+        
+        const langId = languageMappings[langCode];
+        if (!langId) return;
         
         const dayElement = document.createElement('div');
         dayElement.className = 'itinerary-day';
@@ -681,35 +687,38 @@ document.addEventListener('DOMContentLoaded', function() {
         
         dayElement.innerHTML = `
             <div class="day-header">
-                <h5><?php _e('day'); ?> ${dayNumber}</h5>
+                <h5>Day ${dayNumber}</h5>
                 <button type="button" class="btn btn-sm btn-danger remove-day">
                     <i class="material-icons">delete</i>
                 </button>
             </div>
             <div class="day-content">
                 <div class="form-group">
-                    <label><?php _e('day_title'); ?></label>
-                    <input type="text" name="details[${langId}][itinerary][${dayNumber}][title]" class="form-control" placeholder="<?php _e('day_title_placeholder'); ?>">
+                    <label>Day Title</label>
+                    <input type="text" name="details[${langId}][itinerary][${dayNumber}][title]" class="form-control" placeholder="e.g., Arrival & City Tour">
                 </div>
                 <div class="form-group">
-                    <label><?php _e('day_description'); ?></label>
-                    <textarea name="details[${langId}][itinerary][${dayNumber}][description]" class="form-control" rows="4" placeholder="<?php _e('day_description_placeholder'); ?>"></textarea>
+                    <label>Day Description</label>
+                    <textarea name="details[${langId}][itinerary][${dayNumber}][description]" class="form-control" rows="4" placeholder="Describe what happens on this day..."></textarea>
                 </div>
             </div>
         `;
         
         daysContainer.appendChild(dayElement);
         
-        // Add event listener to remove button
-        dayElement.querySelector('.remove-day').addEventListener('click', function() {
+        // Add remove event listener
+        const removeBtn = dayElement.querySelector('.remove-day');
+        removeBtn.addEventListener('click', function() {
             dayElement.remove();
-            updateRemoveButtons(lang);
-            renumberDays(lang);
+            updateRemoveButtons(langCode);
+            renumberDays(langCode);
         });
     }
     
-    function updateRemoveButtons(lang) {
-        const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+    function updateRemoveButtons(langCode) {
+        const daysContainer = document.getElementById(`itinerary-days-${langCode}`);
+        if (!daysContainer) return;
+        
         const days = daysContainer.querySelectorAll('.itinerary-day');
         
         days.forEach((day, index) => {
@@ -722,57 +731,61 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    function renumberDays(lang) {
-        const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+    function renumberDays(langCode) {
+        const daysContainer = document.getElementById(`itinerary-days-${langCode}`);
+        if (!daysContainer) return;
+        
         const days = daysContainer.querySelectorAll('.itinerary-day');
-        const langId = document.querySelector(`[data-lang="${lang}"]`).closest('.language-tab-content').querySelector('input[name*="details["]').name.match(/\[(\d+)\]/)[1];
+        const langId = languageMappings[langCode];
         
         days.forEach((day, index) => {
             const dayNumber = index + 1;
             day.setAttribute('data-day', dayNumber);
-            day.querySelector('.day-header h5').textContent = `<?php _e('day'); ?> ${dayNumber}`;
+            day.querySelector('.day-header h5').textContent = `Day ${dayNumber}`;
             
-            // Update input names
             const titleInput = day.querySelector('input[type="text"]');
             const descInput = day.querySelector('textarea');
             
-            titleInput.name = `details[${langId}][itinerary][${dayNumber}][title]`;
-            descInput.name = `details[${langId}][itinerary][${dayNumber}][description]`;
+            if (titleInput) titleInput.name = `details[${langId}][itinerary][${dayNumber}][title]`;
+            if (descInput) descInput.name = `details[${langId}][itinerary][${dayNumber}][description]`;
         });
     }
     
-    // Add Day Buttons
+    // Add Day Button Events
     document.querySelectorAll('.add-day').forEach(btn => {
         btn.addEventListener('click', function() {
-            const lang = this.dataset.lang;
-            const daysContainer = document.getElementById(`itinerary-days-${lang}`);
+            const langCode = this.dataset.lang;
+            const daysContainer = document.getElementById(`itinerary-days-${langCode}`);
+            if (!daysContainer) return;
+            
             const currentDays = daysContainer.querySelectorAll('.itinerary-day').length;
             const newDayNumber = currentDays + 1;
             
-            addItineraryDay(lang, newDayNumber);
-            updateRemoveButtons(lang);
+            addItineraryDay(langCode, newDayNumber);
+            updateRemoveButtons(langCode);
             
-            // Update duration days if manual add
-            if (durationSelect.value === 'custom' || !durationSelect.value) {
+            if (durationSelect && (durationSelect.value === 'custom' || !durationSelect.value)) {
                 durationDaysInput.value = newDayNumber;
             }
         });
     });
     
-    // Initialize remove buttons
-    document.querySelectorAll('.itinerary-builder').forEach(builder => {
-        const lang = builder.dataset.lang;
-        updateRemoveButtons(lang);
-        
-        // Add event listeners to existing remove buttons
-        builder.querySelectorAll('.remove-day').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const day = this.closest('.itinerary-day');
-                day.remove();
-                updateRemoveButtons(lang);
-                renumberDays(lang);
-            });
+    // Initialize existing remove buttons
+    document.querySelectorAll('.remove-day').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const day = this.closest('.itinerary-day');
+            const daysContainer = day.closest('.itinerary-days');
+            const langCode = daysContainer.id.replace('itinerary-days-', '');
+            
+            day.remove();
+            updateRemoveButtons(langCode);
+            renumberDays(langCode);
         });
+    });
+    
+    // Initialize remove button visibility
+    Object.keys(languageMappings).forEach(langCode => {
+        updateRemoveButtons(langCode);
     });
     
     // Featured Image Preview

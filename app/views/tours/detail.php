@@ -157,37 +157,85 @@
                         </div>
                     </div>
 
+                    <!-- Updated Itinerary Tab Content -->
                     <div class="tab-content" id="itinerary">
                         <div class="content-section">
                             <h3><?php _e('tour_itinerary'); ?></h3>
                             <div class="itinerary-timeline">
                                 <?php
                                 if (isset($tour['itinerary']) && !empty($tour['itinerary'])):
-                                    $itinerary = explode("\n\n", $tour['itinerary']);
-                                    foreach ($itinerary as $index => $day):
-                                        if (trim($day)):
+                                    // Try to parse as JSON first (new format)
+                                    $itineraryData = json_decode($tour['itinerary'], true);
+                                    
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($itineraryData)):
+                                        // New format: JSON array with day numbers as keys
+                                        ksort($itineraryData); // Sort by day number
+                                        foreach ($itineraryData as $dayNumber => $dayData):
+                                            if (!empty($dayData['title']) || !empty($dayData['description'])):
                                 ?>
-                                    <div class="itinerary-item">
-                                        <div class="itinerary-marker"><?php echo $index + 1; ?></div>
-                                        <div class="itinerary-content">
-                                            <?php 
-                                            $lines = explode("\n", $day);
-                                            if (count($lines) > 0): ?>
-                                                <h4><?php echo $lines[0]; ?></h4>
-                                                <?php if (count($lines) > 1): ?>
-                                                    <p><?php echo implode("<br>", array_slice($lines, 1)); ?></p>
-                                                <?php endif; ?>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
+                                            <div class="itinerary-item">
+                                                <div class="itinerary-marker"><?php echo $dayNumber; ?></div>
+                                                <div class="itinerary-content">
+                                                    <?php if (!empty($dayData['title'])): ?>
+                                                        <h4><?php echo htmlspecialchars($dayData['title']); ?></h4>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($dayData['description'])): ?>
+                                                        <p><?php echo nl2br(htmlspecialchars($dayData['description'])); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                <?php
+                                            endif;
+                                        endforeach;
+                                    else:
+                                        // Old format: plain text with double newlines
+                                        $itinerary = explode("\n\n", $tour['itinerary']);
+                                        foreach ($itinerary as $index => $day):
+                                            if (trim($day)):
+                                ?>
+                                            <div class="itinerary-item">
+                                                <div class="itinerary-marker"><?php echo $index + 1; ?></div>
+                                                <div class="itinerary-content">
+                                                    <?php 
+                                                    $lines = explode("\n", $day);
+                                                    if (count($lines) > 0): ?>
+                                                        <h4><?php echo htmlspecialchars($lines[0]); ?></h4>
+                                                        <?php if (count($lines) > 1): ?>
+                                                            <p><?php echo nl2br(htmlspecialchars(implode("\n", array_slice($lines, 1)))); ?></p>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
                                 <?php 
-                                        endif;
-                                    endforeach;
+                                            endif;
+                                        endforeach;
+                                    endif;
                                 else:
                                 ?>
-                                    <p class="text-center"><?php _e('no_itinerary_available'); ?></p>
+                                    <div class="no-itinerary">
+                                        <div class="no-itinerary-icon">
+                                            <i class="material-icons">event_note</i>
+                                        </div>
+                                        <p><?php _e('no_itinerary_available'); ?></p>
+                                    </div>
                                 <?php endif; ?>
                             </div>
+                            
+                            <!-- Tour Duration Info -->
+                            <?php if (isset($tour['duration_days']) && $tour['duration_days'] > 1): ?>
+                            <div class="duration-info">
+                                <div class="duration-card">
+                                    <div class="duration-icon">
+                                        <i class="material-icons">schedule</i>
+                                    </div>
+                                    <div class="duration-details">
+                                        <h5><?php _e('tour_duration'); ?></h5>
+                                        <p><?php echo $tour['duration']; ?></p>
+                                        <span class="duration-days"><?php echo $tour['duration_days']; ?> <?php _e('days'); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -971,53 +1019,229 @@
         font-size: 0.9375rem;
     }
 
-    /* Itinerary Timeline */
+    /* Enhanced Itinerary Styles */
     .itinerary-timeline {
         position: relative;
-        padding-left: 2rem;
+        padding-left: 3rem;
+        margin-bottom: 2rem;
     }
 
     .itinerary-item {
         position: relative;
-        padding-bottom: 2rem;
+        padding-bottom: 2.5rem;
+        margin-bottom: 1rem;
     }
 
     .itinerary-item:not(:last-child)::before {
         content: '';
         position: absolute;
-        left: -1.25rem;
-        top: 2rem;
-        bottom: 0;
-        width: 2px;
-        background: #e0e0e0;
+        left: -2rem;
+        top: 3rem;
+        bottom: -1rem;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--primary-color), #e0e0e0);
+        border-radius: 2px;
     }
 
     .itinerary-marker {
         position: absolute;
-        left: -2rem;
+        left: -3rem;
         top: 0;
-        width: 2rem;
-        height: 2rem;
-        background: var(--primary-color);
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
         color: var(--white-color);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        z-index: 1;
+    }
+
+    .itinerary-content {
+        background: var(--white-color);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border-left: 4px solid var(--primary-color);
+        position: relative;
+    }
+
+    .itinerary-content::before {
+        content: '';
+        position: absolute;
+        left: -1rem;
+        top: 1.5rem;
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right: 8px solid var(--white-color);
     }
 
     .itinerary-content h4 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
         color: var(--dark-color);
+        font-weight: 600;
     }
 
     .itinerary-content p {
         font-size: 0.9375rem;
         color: var(--gray-700);
-        line-height: 1.6;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* No Itinerary State */
+    .no-itinerary {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: var(--light-color);
+        border-radius: 12px;
+        border: 2px dashed #e0e0e0;
+    }
+
+    .no-itinerary-icon {
+        font-size: 3rem;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+    }
+
+    .no-itinerary p {
+        color: var(--gray-600);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Duration Info Card */
+    .duration-info {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .duration-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--secondary-color), #219a8a);
+        color: var(--white-color);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.2);
+    }
+
+    .duration-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .duration-icon i {
+        font-size: 1.75rem;
+    }
+
+    .duration-details h5 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    .duration-details p {
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    .duration-days {
+        font-size: 0.875rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .itinerary-timeline {
+            padding-left: 2rem;
+        }
+        
+        .itinerary-marker {
+            left: -2rem;
+            width: 2rem;
+            height: 2rem;
+            font-size: 0.75rem;
+        }
+        
+        .itinerary-content {
+            padding: 1rem;
+        }
+        
+        .itinerary-content::before {
+            left: -0.75rem;
+            top: 1rem;
+            border-right-width: 6px;
+            border-top-width: 6px;
+            border-bottom-width: 6px;
+        }
+        
+        .itinerary-content h4 {
+            font-size: 1rem;
+        }
+        
+        .itinerary-content p {
+            font-size: 0.875rem;
+        }
+        
+        .duration-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .duration-icon {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .duration-icon i {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .itinerary-timeline {
+            padding-left: 1.5rem;
+        }
+        
+        .itinerary-marker {
+            left: -1.5rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            font-size: 0.7rem;
+        }
+        
+        .itinerary-item:not(:last-child)::before {
+            left: -1.25rem;
+        }
+        
+        .no-itinerary {
+            padding: 2rem 0.75rem;
+        }
+        
+        .no-itinerary-icon {
+            font-size: 2.5rem;
+        }
     }
 
     /* Includes/Excludes Lists */

@@ -42,7 +42,7 @@ class Tour extends Model
         
         // Start building the SQL query
         $sql = "SELECT t.*, td.name, td.slug, td.short_description, td.description, 
-                td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
+                td.includes, td.excludes, td.itinerary, t.duration_type, t.duration_days, td.meta_title, td.meta_description,
                 c.id as category_id, cd.name as category_name, cd.slug as category_slug
                 FROM tours t
                 JOIN tour_details td ON t.id = td.tour_id

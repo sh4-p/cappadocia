@@ -118,7 +118,15 @@ class AdminToursController extends Controller
             $categoryId = $this->post('category_id');
             $price = $this->post('price');
             $discountPrice = $this->post('discount_price');
-            $duration = $this->post('duration');
+            
+            // NEW: Handle duration fields
+            $durationType = $this->post('duration_type');
+            $durationDays = $this->post('duration_days', 1);
+            $customDuration = $this->post('custom_duration');
+            
+            // Determine final duration string
+            $duration = $this->determineDurationString($durationType, $durationDays, $customDuration);
+            
             $isFeatured = $this->post('is_featured', 0);
             $isActive = $this->post('is_active', 0);
             $details = $this->post('details', []);
@@ -152,6 +160,15 @@ class AdminToursController extends Controller
                 $errors[] = __('featured_image_required');
             }
             
+            // NEW: Validate duration
+            if (empty($durationType)) {
+                $errors[] = __('duration_required');
+            }
+            
+            if ($durationType === 'custom' && empty($customDuration)) {
+                $errors[] = __('custom_duration_required');
+            }
+            
             // Validate details for each language
             foreach ($languages as $lang) {
                 if (empty($details[$lang['id']]['name'])) {
@@ -171,7 +188,7 @@ class AdminToursController extends Controller
             if (!empty($errors)) {
                 $this->session->setFlash('error', implode('<br>', $errors));
                 
-                // Render view again
+                // Render view again with data
                 $this->render('admin/tours/create', [
                     'pageTitle' => __('add_tour'),
                     'languages' => $languages,
@@ -180,7 +197,9 @@ class AdminToursController extends Controller
                     'categoryId' => $categoryId,
                     'price' => $price,
                     'discountPrice' => $discountPrice,
-                    'duration' => $duration,
+                    'durationType' => $durationType,
+                    'durationDays' => $durationDays,
+                    'customDuration' => $customDuration,
                     'isFeatured' => $isFeatured,
                     'isActive' => $isActive,
                     'currentLang' => $langCode
@@ -196,17 +215,24 @@ class AdminToursController extends Controller
                 'price' => $price,
                 'discount_price' => $discountPrice ?: null,
                 'duration' => $duration,
+                'duration_type' => $durationType,
+                'duration_days' => $durationDays,
                 'is_featured' => $isFeatured ? 1 : 0,
                 'is_active' => $isActive ? 1 : 0
             ];
             
-            // Generate slugs if not provided
+            // Generate slugs and process itinerary
             foreach ($details as $langId => &$langDetails) {
                 if (empty($langDetails['slug'])) {
                     $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9-]/', '-', $langDetails['name'])));
                     $slug = preg_replace('/-+/', '-', $slug);
                     $slug = trim($slug, '-');
                     $langDetails['slug'] = $slug;
+                }
+                
+                // NEW: Process itinerary data
+                if (isset($langDetails['itinerary']) && is_array($langDetails['itinerary'])) {
+                    $langDetails['itinerary'] = $this->processItineraryData($langDetails['itinerary']);
                 }
             }
             
@@ -235,6 +261,55 @@ class AdminToursController extends Controller
             'categories' => $categories,
             'currentLang' => $langCode
         ], 'admin');
+    }
+
+    // NEW: Helper method to determine duration string
+    private function determineDurationString($durationType, $durationDays, $customDuration)
+    {
+        switch ($durationType) {
+            case 'half-day':
+                return __('half_day') . ' (4-5 ' . __('hours') . ')';
+            case 'full-day':
+                return __('full_day') . ' (8-10 ' . __('hours') . ')';
+            case '2-days':
+                return '2 ' . __('days');
+            case '3-days':
+                return '3 ' . __('days');
+            case '4-days':
+                return '4 ' . __('days');
+            case '5-days':
+                return '5 ' . __('days');
+            case '6-days':
+                return '6 ' . __('days');
+            case '7-days':
+                return '7 ' . __('days');
+            case 'custom':
+                return $customDuration;
+            default:
+                return __('full_day');
+        }
+    }
+
+    // NEW: Helper method to process itinerary data
+    private function processItineraryData($itineraryArray)
+    {
+        if (empty($itineraryArray) || !is_array($itineraryArray)) {
+            return '';
+        }
+        
+        // Convert array format to JSON for storage
+        $processedItinerary = [];
+        
+        foreach ($itineraryArray as $dayNumber => $dayData) {
+            if (!empty($dayData['title']) || !empty($dayData['description'])) {
+                $processedItinerary[$dayNumber] = [
+                    'title' => trim($dayData['title'] ?? ''),
+                    'description' => trim($dayData['description'] ?? '')
+                ];
+            }
+        }
+        
+        return empty($processedItinerary) ? '' : json_encode($processedItinerary);
     }
     
     /**
@@ -297,7 +372,15 @@ class AdminToursController extends Controller
             $categoryId = $this->post('category_id');
             $price = $this->post('price');
             $discountPrice = $this->post('discount_price');
-            $duration = $this->post('duration');
+            
+            // NEW: Handle duration fields
+            $durationType = $this->post('duration_type');
+            $durationDays = $this->post('duration_days', 1);
+            $customDuration = $this->post('custom_duration');
+            
+            // Determine final duration string
+            $duration = $this->determineDurationString($durationType, $durationDays, $customDuration);
+            
             $isFeatured = $this->post('is_featured', 0);
             $isActive = $this->post('is_active', 0);
             $details = $this->post('details', []);
@@ -324,7 +407,7 @@ class AdminToursController extends Controller
                 }
             }
             
-            // Validate inputs
+            // Validate inputs (same as create method)
             $errors = [];
             
             if (empty($price) || !is_numeric($price) || $price <= 0) {
@@ -333,6 +416,15 @@ class AdminToursController extends Controller
             
             if (!empty($discountPrice) && (!is_numeric($discountPrice) || $discountPrice <= 0 || $discountPrice >= $price)) {
                 $errors[] = __('valid_discount_price_required');
+            }
+            
+            // NEW: Validate duration
+            if (empty($durationType)) {
+                $errors[] = __('duration_required');
+            }
+            
+            if ($durationType === 'custom' && empty($customDuration)) {
+                $errors[] = __('custom_duration_required');
             }
             
             // Validate details for each language
@@ -378,17 +470,24 @@ class AdminToursController extends Controller
                 'price' => $price,
                 'discount_price' => $discountPrice ?: null,
                 'duration' => $duration,
+                'duration_type' => $durationType,
+                'duration_days' => $durationDays,
                 'is_featured' => $isFeatured ? 1 : 0,
                 'is_active' => $isActive ? 1 : 0
             ];
             
-            // Generate slugs if not provided
+            // Generate slugs and process itinerary
             foreach ($details as $langId => &$langDetails) {
                 if (empty($langDetails['slug'])) {
                     $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9-]/', '-', $langDetails['name'])));
                     $slug = preg_replace('/-+/', '-', $slug);
                     $slug = trim($slug, '-');
                     $langDetails['slug'] = $slug;
+                }
+                
+                // NEW: Process itinerary data
+                if (isset($langDetails['itinerary']) && is_array($langDetails['itinerary'])) {
+                    $langDetails['itinerary'] = $this->processItineraryData($langDetails['itinerary']);
                 }
             }
             
