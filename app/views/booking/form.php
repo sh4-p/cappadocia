@@ -275,134 +275,159 @@ $bookingHeroBg = isset($settings['booking_hero_bg']) ? $settings['booking_hero_b
                                     
                                     <div class="form-card">
                                         <div class="payment-methods">
-                                            <div class="payment-method active" data-method="card">
-                                                <div class="payment-method-radio">
-                                                    <input type="radio" id="payment_card" name="payment_method" value="card" checked>
-                                                    <div class="radio-indicator"></div>
+                                            <?php 
+                                            $first = true;
+                                            foreach ($activePaymentMethods as $methodId => $method): 
+                                            ?>
+                                                <div class="payment-method <?php echo $first ? 'active' : ''; ?>" data-method="<?php echo $methodId; ?>">
+                                                    <div class="payment-method-radio">
+                                                        <input type="radio" id="payment_<?php echo $methodId; ?>" name="payment_method" value="<?php echo $methodId; ?>" <?php echo $first ? 'checked' : ''; ?>>
+                                                        <div class="radio-indicator"></div>
+                                                    </div>
+                                                    <div class="payment-method-icon">
+                                                        <i class="material-icons"><?php echo $method['icon']; ?></i>
+                                                    </div>
+                                                    <div class="payment-method-details">
+                                                        <div class="payment-method-name"><?php echo $method['name']; ?></div>
+                                                        <div class="payment-method-description"><?php echo $method['description']; ?></div>
+                                                    </div>
                                                 </div>
-                                                <div class="payment-method-icon">
-                                                    <i class="material-icons">credit_card</i>
-                                                </div>
-                                                <div class="payment-method-details">
-                                                    <div class="payment-method-name"><?php _e('credit_card'); ?></div>
-                                                    <div class="payment-method-description"><?php _e('credit_card_description'); ?></div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="payment-method" data-method="paypal">
-                                                <div class="payment-method-radio">
-                                                    <input type="radio" id="payment_paypal" name="payment_method" value="paypal">
-                                                    <div class="radio-indicator"></div>
-                                                </div>
-                                                <div class="payment-method-icon">
-                                                    <i class="material-icons">account_balance_wallet</i>
-                                                </div>
-                                                <div class="payment-method-details">
-                                                    <div class="payment-method-name"><?php _e('paypal'); ?></div>
-                                                    <div class="payment-method-description"><?php _e('paypal_description'); ?></div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="payment-method" data-method="bank">
-                                                <div class="payment-method-radio">
-                                                    <input type="radio" id="payment_bank" name="payment_method" value="bank">
-                                                    <div class="radio-indicator"></div>
-                                                </div>
-                                                <div class="payment-method-icon">
-                                                    <i class="material-icons">account_balance</i>
-                                                </div>
-                                                <div class="payment-method-details">
-                                                    <div class="payment-method-name"><?php _e('bank_transfer'); ?></div>
-                                                    <div class="payment-method-description"><?php _e('bank_transfer_description'); ?></div>
-                                                </div>
-                                            </div>
+                                            <?php 
+                                                $first = false;
+                                            endforeach; 
+                                            ?>
                                         </div>
                                         
                                         <div class="payment-contents">
-                                            <div class="payment-content active" data-method="card">
-                                                <div class="form-row">
-                                                    <div class="form-group col-12">
-                                                        <label for="card_name" class="form-label"><?php _e('card_name'); ?> <span class="required">*</span></label>
-                                                        <div class="input-with-icon">
-                                                            <i class="material-icons">person</i>
-                                                            <input type="text" id="card_name" name="card_name" class="form-control" required>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <?php 
+                                            $first = true;
+                                            foreach ($activePaymentMethods as $methodId => $method): 
+                                            ?>
                                                 
-                                                <div class="form-row">
-                                                    <div class="form-group col-12">
-                                                        <label for="card_number" class="form-label"><?php _e('card_number'); ?> <span class="required">*</span></label>
-                                                        <div class="input-with-icon">
-                                                            <i class="material-icons">credit_card</i>
-                                                            <input type="text" id="card_number" name="card_number" class="form-control" placeholder="XXXX XXXX XXXX XXXX" required>
+                                                <!-- Card Payment Content -->
+                                                <?php if ($methodId === 'card'): ?>
+                                                    <div class="payment-content <?php echo $first ? 'active' : ''; ?>" data-method="card">
+                                                        <div class="form-row">
+                                                            <div class="form-group col-12">
+                                                                <label for="card_name" class="form-label"><?php _e('card_name'); ?> <span class="required">*</span></label>
+                                                                <div class="input-with-icon">
+                                                                    <i class="material-icons">person</i>
+                                                                    <input type="text" id="card_name" name="card_name" class="form-control" <?php echo $first ? 'required' : ''; ?>>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="form-row">
-                                                    <div class="form-group col-md-6">
-                                                        <label for="card_expiry" class="form-label"><?php _e('card_expiry'); ?> <span class="required">*</span></label>
-                                                        <div class="input-with-icon">
-                                                            <i class="material-icons">date_range</i>
-                                                            <input type="text" id="card_expiry" name="card_expiry" class="form-control" placeholder="MM/YY" required>
+                                                        
+                                                        <div class="form-row">
+                                                            <div class="form-group col-12">
+                                                                <label for="card_number" class="form-label"><?php _e('card_number'); ?> <span class="required">*</span></label>
+                                                                <div class="input-with-icon">
+                                                                    <i class="material-icons">credit_card</i>
+                                                                    <input type="text" id="card_number" name="card_number" class="form-control" placeholder="XXXX XXXX XXXX XXXX" <?php echo $first ? 'required' : ''; ?>>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    
-                                                    <div class="form-group col-md-6">
-                                                        <label for="card_cvv" class="form-label"><?php _e('card_cvv'); ?> <span class="required">*</span></label>
-                                                        <div class="input-with-icon">
+                                                        
+                                                        <div class="form-row">
+                                                            <div class="form-group col-md-6">
+                                                                <label for="card_expiry" class="form-label"><?php _e('card_expiry'); ?> <span class="required">*</span></label>
+                                                                <div class="input-with-icon">
+                                                                    <i class="material-icons">date_range</i>
+                                                                    <input type="text" id="card_expiry" name="card_expiry" class="form-control" placeholder="MM/YY" <?php echo $first ? 'required' : ''; ?>>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="form-group col-md-6">
+                                                                <label for="card_cvv" class="form-label"><?php _e('card_cvv'); ?> <span class="required">*</span></label>
+                                                                <div class="input-with-icon">
+                                                                    <i class="material-icons">lock</i>
+                                                                    <input type="text" id="card_cvv" name="card_cvv" class="form-control" placeholder="CVV" <?php echo $first ? 'required' : ''; ?>>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="payment-disclaimer">
                                                             <i class="material-icons">lock</i>
-                                                            <input type="text" id="card_cvv" name="card_cvv" class="form-control" placeholder="CVV" required>
+                                                            <span><?php _e('payment_card_disclaimer'); ?></span>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                <?php endif; ?>
                                                 
-                                                <div class="payment-disclaimer">
-                                                    <i class="material-icons">lock</i>
-                                                    <span><?php _e('payment_card_disclaimer'); ?></span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="payment-content" data-method="paypal">
-                                                <div class="payment-info">
-                                                    <div class="info-box">
-                                                        <i class="material-icons">info</i>
-                                                        <p><?php _e('paypal_info'); ?></p>
-                                                    </div>
-                                                    <div class="paypal-logo">
-                                                        <img src="<?php echo $imgUrl; ?>/paypal-logo.png" alt="PayPal" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="payment-content" data-method="bank">
-                                                <div class="payment-info">
-                                                    <div class="info-box warning">
-                                                        <i class="material-icons">info</i>
-                                                        <p><?php _e('bank_info'); ?></p>
-                                                    </div>
-                                                    <div class="bank-details">
-                                                        <div class="bank-detail">
-                                                            <div class="bank-detail-label"><?php _e('bank_name'); ?></div>
-                                                            <div class="bank-detail-value">Example Bank</div>
-                                                        </div>
-                                                        <div class="bank-detail">
-                                                            <div class="bank-detail-label"><?php _e('account_holder'); ?></div>
-                                                            <div class="bank-detail-value">Cappadocia Travel Agency</div>
-                                                        </div>
-                                                        <div class="bank-detail">
-                                                            <div class="bank-detail-label"><?php _e('iban'); ?></div>
-                                                            <div class="bank-detail-value">TR00 0000 0000 0000 0000 0000 00</div>
-                                                        </div>
-                                                        <div class="bank-detail">
-                                                            <div class="bank-detail-label"><?php _e('swift_code'); ?></div>
-                                                            <div class="bank-detail-value">EXAMPLEXXX</div>
+                                                <!-- PayPal Payment Content -->
+                                                <?php if ($methodId === 'paypal'): ?>
+                                                    <div class="payment-content <?php echo $first ? 'active' : ''; ?>" data-method="paypal">
+                                                        <div class="payment-info">
+                                                            <div class="info-box">
+                                                                <i class="material-icons">info</i>
+                                                                <p><?php _e('paypal_info'); ?></p>
+                                                            </div>
+                                                            <div class="paypal-logo">
+                                                                <img src="<?php echo $imgUrl; ?>/paypal-logo.png" alt="PayPal" />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
+                                                <?php endif; ?>
+                                                
+                                                <!-- Bank Transfer Payment Content -->
+                                                <?php if ($methodId === 'bank'): ?>
+                                                    <div class="payment-content <?php echo $first ? 'active' : ''; ?>" data-method="bank">
+                                                        <div class="payment-info">
+                                                            <div class="info-box warning">
+                                                                <i class="material-icons">info</i>
+                                                                <p><?php _e('bank_info'); ?></p>
+                                                            </div>
+                                                            <div class="bank-details">
+                                                                <div class="bank-detail">
+                                                                    <div class="bank-detail-label"><?php _e('bank_name'); ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_name']) ? $settings['bank_name'] : 'Example Bank'; ?></div>
+                                                                </div>
+                                                                <div class="bank-detail">
+                                                                    <div class="bank-detail-label"><?php _e('account_holder'); ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_account_holder']) ? $settings['bank_account_holder'] : 'Cappadocia Travel Agency'; ?></div>
+                                                                </div>
+                                                                <div class="bank-detail">
+                                                                    <div class="bank-detail-label"><?php _e('iban'); ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_iban']) ? $settings['bank_iban'] : 'TR00 0000 0000 0000 0000 0000 00'; ?></div>
+                                                                </div>
+                                                                <div class="bank-detail">
+                                                                    <div class="bank-detail-label"><?php _e('swift_code'); ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_swift']) ? $settings['bank_swift'] : 'EXAMPLEXXX'; ?></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                                
+                                                <!-- Cash Payment Content -->
+                                                <?php if ($methodId === 'cash'): ?>
+                                                    <div class="payment-content <?php echo $first ? 'active' : ''; ?>" data-method="cash">
+                                                        <div class="payment-info">
+                                                            <div class="info-box">
+                                                                <i class="material-icons">info</i>
+                                                                <p><?php _e('cash_info'); ?></p>
+                                                            </div>
+                                                            <div class="cash-instructions">
+                                                                <h5><?php _e('cash_payment_instructions'); ?></h5>
+                                                                <ul>
+                                                                    <li><?php _e('cash_instruction_1'); ?></li>
+                                                                    <li><?php _e('cash_instruction_2'); ?></li>
+                                                                    <li><?php _e('cash_instruction_3'); ?></li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="payment-disclaimer">
+                                                                <i class="material-icons">info</i>
+                                                                <span><?php _e('cash_payment_disclaimer'); ?></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                                
+                                            <?php 
+                                                $first = false;
+                                            endforeach; 
+                                            ?>
                                         </div>
+                                        
+                                        <!-- Rezervasyon özeti ve diğer alanlar burada devam eder... -->
                                         
                                         <div class="booking-summary">
                                             <h4 class="summary-title"><?php _e('booking_summary'); ?></h4>
@@ -597,6 +622,50 @@ $additionalScripts = '
 ?>
 
 <style>
+    .cash-instructions {
+        background-color: var(--white-color);
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .cash-instructions h5 {
+        margin-bottom: var(--spacing-sm);
+        color: var(--dark-color);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .cash-instructions ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        list-style-type: disc;
+    }
+
+    .cash-instructions li {
+        margin-bottom: 0.5rem;
+        color: var(--gray-700);
+        line-height: 1.5;
+    }
+
+    .cash-instructions li:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Payment method dinamik seçimi için ek stiller */
+    .payment-method[data-method="cash"] .payment-method-icon {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--success-color);
+    }
+
+    .payment-method[data-method="paypal"] .payment-method-icon {
+        background-color: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+    }
+
+    .payment-method[data-method="bank"] .payment-method-icon {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: var(--warning-color);
+    }
     /* Hero Section */
     .booking-hero {
         height: 50vh;
@@ -1898,6 +1967,57 @@ $additionalScripts = '
         });
     });
     
+    // Payment Method Selection - Dinamik olarak güncellenmiş
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const paymentContents = document.querySelectorAll('.payment-content');
+
+    // Function to toggle required attributes based on payment method
+    function toggleRequiredFields(methodId) {
+        // Get all credit card fields
+        const cardFields = [
+            document.getElementById('card_name'),
+            document.getElementById('card_number'),
+            document.getElementById('card_expiry'),
+            document.getElementById('card_cvv')
+        ];
+        
+        // Set required attribute based on selected payment method
+        cardFields.forEach(field => {
+            if (field) {
+                if (methodId === 'card') {
+                    field.setAttribute('required', '');
+                } else {
+                    field.removeAttribute('required');
+                }
+            }
+        });
+    }
+
+    // Dinamik payment method event listeners
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            // Update radio selection
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // Update active classes
+            paymentMethods.forEach(m => m.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show corresponding content
+            const methodId = this.getAttribute('data-method');
+            paymentContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.getAttribute('data-method') === methodId) {
+                    content.classList.add('active');
+                }
+            });
+            
+            // Toggle required fields based on payment method
+            toggleRequiredFields(methodId);
+        });
+    });
+    
     // Hata gösterme fonksiyonu
     function showError(inputElement, message) {
         // Mevcut hata mesajını temizle
@@ -1912,7 +2032,7 @@ $additionalScripts = '
         errorElement.style.marginTop = '0.25rem';
         
         // Input elementinin bulunduğu konteynerin sonuna ekle
-        const parentElement = inputElement.closest('.form-group');
+        const parentElement = inputElement.closest('.form-group') || inputElement.closest('.terms-check');
         if (parentElement) {
             parentElement.appendChild(errorElement);
             
@@ -1924,7 +2044,7 @@ $additionalScripts = '
     
     // Hata mesajını temizleme fonksiyonu
     function clearError(inputElement) {
-        const parentElement = inputElement.closest('.form-group');
+        const parentElement = inputElement.closest('.form-group') || inputElement.closest('.terms-check');
         if (parentElement) {
             const errorElement = parentElement.querySelector('.error-message');
             if (errorElement) {
@@ -1944,6 +2064,12 @@ $additionalScripts = '
             input.classList.remove('error-input');
             input.style.borderColor = '';
         });
+    }
+    
+    // E-posta doğrulama
+    function isValidEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
     }
     
     // Adım validasyonu
@@ -1996,12 +2122,6 @@ $additionalScripts = '
         return true;
     }
     
-    // E-posta doğrulama
-    function isValidEmail(email) {
-        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    }
-    
     // Next/Prev Tab Navigation
     document.querySelectorAll('.next-tab').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -2041,56 +2161,6 @@ $additionalScripts = '
         });
     });
     
-    // Payment Method Selection
-    const paymentMethods = document.querySelectorAll('.payment-method');
-    const paymentContents = document.querySelectorAll('.payment-content');
-
-    // Function to toggle required attributes based on payment method
-    function toggleRequiredFields(methodId) {
-        // Get all credit card fields
-        const cardFields = [
-            document.getElementById('card_name'),
-            document.getElementById('card_number'),
-            document.getElementById('card_expiry'),
-            document.getElementById('card_cvv')
-        ];
-        
-        // Set required attribute based on selected payment method
-        cardFields.forEach(field => {
-            if (field) {
-                if (methodId === 'card') {
-                    field.setAttribute('required', '');
-                } else {
-                    field.removeAttribute('required');
-                }
-            }
-        });
-    }
-
-    paymentMethods.forEach(method => {
-        method.addEventListener('click', function() {
-            // Update radio selection
-            const radio = this.querySelector('input[type="radio"]');
-            radio.checked = true;
-            
-            // Update active classes
-            paymentMethods.forEach(m => m.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Show corresponding content
-            const methodId = this.getAttribute('data-method');
-            paymentContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.getAttribute('data-method') === methodId) {
-                    content.classList.add('active');
-                }
-            });
-            
-            // Toggle required fields based on payment method
-            toggleRequiredFields(methodId);
-        });
-    });
-    
     // Guest Counter
     const counterBtns = document.querySelectorAll('.counter-btn');
     
@@ -2117,6 +2187,29 @@ $additionalScripts = '
         });
     });
     
+    // Price Calculation & Summary
+    function updateSummary() {
+        const adults = parseInt(document.getElementById('booking_adults').value);
+        const children = parseInt(document.getElementById('booking_children').value);
+        const basePrice = parseFloat(document.getElementById('booking_base_price').value);
+        const discountPrice = parseFloat(document.getElementById('booking_discount_price').value);
+        const currencySymbol = document.getElementById('currency_symbol').value;
+        
+        // Update summary participants
+        document.getElementById('summary_adults').textContent = adults;
+        document.getElementById('summary_children').textContent = children;
+        
+        // Calculate total price
+        const pricePerPerson = discountPrice > 0 ? discountPrice : basePrice;
+        const totalAdults = pricePerPerson * adults;
+        const totalChildren = pricePerPerson * 0.5 * children;
+        const totalPrice = totalAdults + totalChildren;
+        
+        // Update display
+        document.getElementById('total_price_display').textContent = currencySymbol + totalPrice.toFixed(2);
+        document.getElementById('booking_total_price').value = totalPrice.toFixed(2);
+    }
+    
     // Date Picker
     if (typeof flatpickr !== 'undefined') {
         console.log('Flatpickr yüklendi ve çalışıyor');
@@ -2134,27 +2227,17 @@ $additionalScripts = '
         
         // Flatpickr yapılandırması
         const datePickerInstance = flatpickr("#booking_date", {
-            // Bugünün tarihini manuel olarak ayarla
             minDate: today,
-            
-            // Mevcut ayı göster (önemli)
             defaultDate: initialDate,
-            
-            // Standart ayarlar
             dateFormat: "Y-m-d",
             disableMobile: true,
             altInput: true,
             altFormat: "F j, Y",
             
-            // İlk açılışta takvimi görüntüle (opsiyonel)
-            // inline: true,
-            
-            // Ek debug bilgisi
             onReady: function(selectedDates, dateStr, instance) {
                 console.log('Flatpickr hazır, varsayılan tarih:', dateStr);
                 console.log('Takvim ayı:', instance.currentMonth, instance.currentYear);
                 
-                // URL'den tarih varsa, özet bölümünü güncelleyelim
                 if (urlDate) {
                     document.getElementById('summary_date').textContent = instance.formatDate(new Date(urlDate), "F j, Y");
                 }
@@ -2162,11 +2245,8 @@ $additionalScripts = '
             
             onChange: function(selectedDates, dateStr) {
                 console.log('Seçilen tarih:', dateStr);
-                // Update the booking summary date
                 document.getElementById('summary_date').textContent = dateStr;
                 updateSummary();
-                
-                // Hata mesajını temizle
                 clearError(document.getElementById('booking_date'));
             }
         });
@@ -2175,12 +2255,10 @@ $additionalScripts = '
         if (urlDate) {
             console.log('URL\'den alınan tarih ayarlanıyor:', urlDate);
             datePickerInstance.setDate(urlDate);
-            
-            // Özet bölümünü güncelleyelim
             document.getElementById('summary_date').textContent = datePickerInstance.formatDate(new Date(urlDate), "F j, Y");
         }
         
-        // Mevcut ayı zorlayarak göster - URL'den geliyorsa o tarihe ait ayı göster
+        // Mevcut ayı zorlayarak göster
         setTimeout(function() {
             if (urlDate) {
                 const urlDateObj = new Date(urlDate);
@@ -2223,70 +2301,6 @@ $additionalScripts = '
             accordionItem.classList.toggle('active');
         });
     });
-    
-    // Sayfa yüklendiğinde ilk aktif ödeme yöntemi için required özelliklerini ayarla
-    window.addEventListener('load', function() {
-        // Sayfa tamamen yüklendikten sonra booking-details sekmesini aktif hale getir
-        setActiveTab('booking-details');
-        
-        // Varsayılan ödeme yöntemi için required alanları ayarla
-        const defaultPaymentMethod = document.querySelector('.payment-method.active');
-        if (defaultPaymentMethod) {
-            const methodId = defaultPaymentMethod.getAttribute('data-method');
-            toggleRequiredFields(methodId);
-        }
-        
-        // Eğer URL'den parametreler geldiyse, bunun vurgulanması için ek görsel işaret ekleyebiliriz
-        if (urlDate || urlAdults || urlChildren) {
-            // Önceden seçilmiş parametreleri vurgula
-            highlightPreselectedOptions();
-        }
-    });
-    
-    // Önceden seçilmiş parametreleri vurgulayan fonksiyon
-    function highlightPreselectedOptions() {
-        // Eğer URL'den tarih geldiyse, tarih alanını vurgula
-        if (urlDate) {
-            const dateInput = document.getElementById('booking_date');
-            dateInput.classList.add('preselected');
-            dateInput.parentElement.classList.add('highlight-preselected');
-        }
-        
-        // Eğer URL'den yetişkin sayısı geldiyse, yetişkin sayısı alanını vurgula
-        if (urlAdults) {
-            const adultsContainer = document.getElementById('booking_adults').closest('.guest-type');
-            adultsContainer.classList.add('highlight-preselected');
-        }
-        
-        // Eğer URL'den çocuk sayısı geldiyse, çocuk sayısı alanını vurgula
-        if (urlChildren && parseInt(urlChildren) > 0) {
-            const childrenContainer = document.getElementById('booking_children').closest('.guest-type');
-            childrenContainer.classList.add('highlight-preselected');
-        }
-    }
-    
-    // Price Calculation & Summary
-    function updateSummary() {
-        const adults = parseInt(document.getElementById('booking_adults').value);
-        const children = parseInt(document.getElementById('booking_children').value);
-        const basePrice = parseFloat(document.getElementById('booking_base_price').value);
-        const discountPrice = parseFloat(document.getElementById('booking_discount_price').value);
-        const currencySymbol = document.getElementById('currency_symbol').value;
-        
-        // Update summary participants
-        document.getElementById('summary_adults').textContent = adults;
-        document.getElementById('summary_children').textContent = children;
-        
-        // Calculate total price
-        const pricePerPerson = discountPrice > 0 ? discountPrice : basePrice;
-        const totalAdults = pricePerPerson * adults;
-        const totalChildren = pricePerPerson * 0.5 * children;
-        const totalPrice = totalAdults + totalChildren;
-        
-        // Update display
-        document.getElementById('total_price_display').textContent = currencySymbol + totalPrice.toFixed(2);
-        document.getElementById('booking_total_price').value = totalPrice.toFixed(2);
-    }
     
     // Initial summary update
     updateSummary();
@@ -2353,8 +2367,14 @@ $additionalScripts = '
                 return;
             }
             
-            // Ödeme yöntemi kontrolü
-            const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            // Ödeme yöntemi kontrolü - dinamik olarak seçilen yöntemi al
+            const selectedPaymentMethodElement = document.querySelector('input[name="payment_method"]:checked');
+            if (!selectedPaymentMethodElement) {
+                setActiveTab('payment-info');
+                return;
+            }
+            
+            const selectedPaymentMethod = selectedPaymentMethodElement.value;
             
             // Sadece kredi kartı seçilmişse kart alanlarını doğrula
             if (selectedPaymentMethod === 'card') {
@@ -2365,22 +2385,22 @@ $additionalScripts = '
                 
                 let cardValid = true;
                 
-                if (!cardName.value) {
+                if (cardName && !cardName.value) {
                     showError(cardName, __('card_name_required'));
                     cardValid = false;
                 }
                 
-                if (!cardNumber.value) {
+                if (cardNumber && !cardNumber.value) {
                     showError(cardNumber, __('card_number_required'));
                     cardValid = false;
                 }
                 
-                if (!cardExpiry.value) {
+                if (cardExpiry && !cardExpiry.value) {
                     showError(cardExpiry, __('card_expiry_required'));
                     cardValid = false;
                 }
                 
-                if (!cardCvv.value) {
+                if (cardCvv && !cardCvv.value) {
                     showError(cardCvv, __('card_cvv_required'));
                     cardValid = false;
                 }
@@ -2407,6 +2427,41 @@ $additionalScripts = '
             // Tüm validasyonlar geçildiyse formu gönder
             this.submit();
         });
+    }
+    
+    // Sayfa yüklendiğinde ilk aktif ödeme yöntemi için required özelliklerini ayarla
+    window.addEventListener('load', function() {
+        setActiveTab('booking-details');
+        
+        // Varsayılan ödeme yöntemi için required alanları ayarla
+        const defaultPaymentMethod = document.querySelector('.payment-method.active');
+        if (defaultPaymentMethod) {
+            const methodId = defaultPaymentMethod.getAttribute('data-method');
+            toggleRequiredFields(methodId);
+        }
+        
+        if (urlDate || urlAdults || urlChildren) {
+            highlightPreselectedOptions();
+        }
+    });
+    
+    // Önceden seçilmiş parametreleri vurgulayan fonksiyon
+    function highlightPreselectedOptions() {
+        if (urlDate) {
+            const dateInput = document.getElementById('booking_date');
+            dateInput.classList.add('preselected');
+            dateInput.parentElement.classList.add('highlight-preselected');
+        }
+        
+        if (urlAdults) {
+            const adultsContainer = document.getElementById('booking_adults').closest('.guest-type');
+            adultsContainer.classList.add('highlight-preselected');
+        }
+        
+        if (urlChildren && parseInt(urlChildren) > 0) {
+            const childrenContainer = document.getElementById('booking_children').closest('.guest-type');
+            childrenContainer.classList.add('highlight-preselected');
+        }
     }
 });
 </script>
