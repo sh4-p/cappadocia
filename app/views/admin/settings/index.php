@@ -343,6 +343,256 @@
                         </div>
                     </div>
                 </div>
+                <!-- Payment Settings -->
+                <div id="settings-payments" class="settings-tab-pane">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><?php _e('payment_settings'); ?></h3>
+                            <p class="card-description"><?php _e('payment_settings_description'); ?></p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Payment Methods Section -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">payment</i>
+                                    <?php _e('payment_methods'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('payment_methods_description'); ?></p>
+                                
+                                <div class="payment-methods-grid">
+                                    <!-- Credit Card -->
+                                    <div class="payment-method-card">
+                                        <div class="payment-method-header">
+                                            <div class="payment-method-icon">
+                                                <i class="material-icons">credit_card</i>
+                                            </div>
+                                            <div class="payment-method-info">
+                                                <h5><?php _e('credit_card'); ?></h5>
+                                                <p><?php _e('credit_card_admin_description'); ?></p>
+                                            </div>
+                                            <div class="payment-method-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" id="payment_card" name="settings[payment_card]" value="1" class="form-check-input" <?php echo ($settings['payment_card'] ?? '1') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="payment_card" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- PayPal -->
+                                    <div class="payment-method-card">
+                                        <div class="payment-method-header">
+                                            <div class="payment-method-icon">
+                                                <i class="material-icons">account_balance_wallet</i>
+                                            </div>
+                                            <div class="payment-method-info">
+                                                <h5><?php _e('paypal'); ?></h5>
+                                                <p><?php _e('paypal_admin_description'); ?></p>
+                                            </div>
+                                            <div class="payment-method-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" id="payment_paypal" name="settings[payment_paypal]" value="1" class="form-check-input" <?php echo ($settings['payment_paypal'] ?? '0') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="payment_paypal" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Bank Transfer -->
+                                    <div class="payment-method-card">
+                                        <div class="payment-method-header">
+                                            <div class="payment-method-icon">
+                                                <i class="material-icons">account_balance</i>
+                                            </div>
+                                            <div class="payment-method-info">
+                                                <h5><?php _e('bank_transfer'); ?></h5>
+                                                <p><?php _e('bank_transfer_admin_description'); ?></p>
+                                            </div>
+                                            <div class="payment-method-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" id="payment_bank" name="settings[payment_bank]" value="1" class="form-check-input" <?php echo ($settings['payment_bank'] ?? '0') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="payment_bank" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cash Payment -->
+                                    <div class="payment-method-card">
+                                        <div class="payment-method-header">
+                                            <div class="payment-method-icon">
+                                                <i class="material-icons">money</i>
+                                            </div>
+                                            <div class="payment-method-info">
+                                                <h5><?php _e('cash_payment'); ?></h5>
+                                                <p><?php _e('cash_payment_admin_description'); ?></p>
+                                            </div>
+                                            <div class="payment-method-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" id="payment_cash" name="settings[payment_cash]" value="1" class="form-check-input" <?php echo ($settings['payment_cash'] ?? '0') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="payment_cash" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="settings-divider">
+                            
+                            <!-- Bank Account Details Section -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">account_balance</i>
+                                    <?php _e('bank_account_details'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('bank_account_details_help'); ?></p>
+                                
+                                <div class="bank-details-form">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="bank_name" class="form-label"><?php _e('bank_name'); ?></label>
+                                            <input type="text" id="bank_name" name="settings[bank_name]" class="form-control" value="<?php echo htmlspecialchars($settings['bank_name'] ?? ''); ?>" placeholder="<?php _e('enter_bank_name'); ?>">
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+                                            <label for="account_name" class="form-label"><?php _e('account_name'); ?></label>
+                                            <input type="text" id="account_name" name="settings[account_name]" class="form-control" value="<?php echo htmlspecialchars($settings['account_name'] ?? ''); ?>" placeholder="<?php _e('enter_account_holder_name'); ?>">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="account_number" class="form-label"><?php _e('account_number'); ?></label>
+                                            <input type="text" id="account_number" name="settings[account_number]" class="form-control" value="<?php echo htmlspecialchars($settings['account_number'] ?? ''); ?>" placeholder="<?php _e('enter_account_number'); ?>">
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+                                            <label for="swift_code" class="form-label"><?php _e('swift_code'); ?></label>
+                                            <input type="text" id="swift_code" name="settings[swift_code]" class="form-control" value="<?php echo htmlspecialchars($settings['swift_code'] ?? ''); ?>" placeholder="<?php _e('enter_swift_code'); ?>">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="iban" class="form-label"><?php _e('iban'); ?></label>
+                                        <input type="text" id="iban" name="settings[iban]" class="form-control" value="<?php echo htmlspecialchars($settings['iban'] ?? ''); ?>" placeholder="<?php _e('enter_iban'); ?>">
+                                        <small class="form-text"><?php _e('iban_help'); ?></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="settings-divider">
+                            
+                            <!-- Payment Gateway Settings -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">settings</i>
+                                    <?php _e('payment_gateway_settings'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('payment_gateway_settings_description'); ?></p>
+                                
+                                <div class="gateway-settings">
+                                    <!-- Stripe Settings -->
+                                    <div class="gateway-card">
+                                        <div class="gateway-header">
+                                            <h5><?php _e('stripe_settings'); ?></h5>
+                                            <p><?php _e('stripe_settings_description'); ?></p>
+                                        </div>
+                                        <div class="gateway-body">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="stripe_public_key" class="form-label"><?php _e('stripe_public_key'); ?></label>
+                                                    <input type="text" id="stripe_public_key" name="settings[stripe_public_key]" class="form-control" value="<?php echo htmlspecialchars($settings['stripe_public_key'] ?? ''); ?>" placeholder="pk_...">
+                                                </div>
+                                                
+                                                <div class="form-group col-md-6">
+                                                    <label for="stripe_secret_key" class="form-label"><?php _e('stripe_secret_key'); ?></label>
+                                                    <input type="password" id="stripe_secret_key" name="settings[stripe_secret_key]" class="form-control" value="<?php echo htmlspecialchars($settings['stripe_secret_key'] ?? ''); ?>" placeholder="sk_...">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <div class="form-check">
+                                                    <input type="checkbox" id="stripe_test_mode" name="settings[stripe_test_mode]" value="1" class="form-check-input" <?php echo ($settings['stripe_test_mode'] ?? '1') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="stripe_test_mode" class="form-check-label"><?php _e('stripe_test_mode'); ?></label>
+                                                </div>
+                                                <small class="form-text"><?php _e('stripe_test_mode_help'); ?></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- PayPal Settings -->
+                                    <div class="gateway-card">
+                                        <div class="gateway-header">
+                                            <h5><?php _e('paypal_settings'); ?></h5>
+                                            <p><?php _e('paypal_settings_description'); ?></p>
+                                        </div>
+                                        <div class="gateway-body">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6">
+                                                    <label for="paypal_client_id" class="form-label"><?php _e('paypal_client_id'); ?></label>
+                                                    <input type="text" id="paypal_client_id" name="settings[paypal_client_id]" class="form-control" value="<?php echo htmlspecialchars($settings['paypal_client_id'] ?? ''); ?>">
+                                                </div>
+                                                
+                                                <div class="form-group col-md-6">
+                                                    <label for="paypal_client_secret" class="form-label"><?php _e('paypal_client_secret'); ?></label>
+                                                    <input type="password" id="paypal_client_secret" name="settings[paypal_client_secret]" class="form-control" value="<?php echo htmlspecialchars($settings['paypal_client_secret'] ?? ''); ?>">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <div class="form-check">
+                                                    <input type="checkbox" id="paypal_sandbox" name="settings[paypal_sandbox]" value="1" class="form-check-input" <?php echo ($settings['paypal_sandbox'] ?? '1') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="paypal_sandbox" class="form-check-label"><?php _e('paypal_sandbox_mode'); ?></label>
+                                                </div>
+                                                <small class="form-text"><?php _e('paypal_sandbox_help'); ?></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="settings-divider">
+                            
+                            <!-- Currency Settings -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">attach_money</i>
+                                    <?php _e('currency_settings'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('currency_settings_description'); ?></p>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label for="currency_code" class="form-label"><?php _e('currency_code'); ?></label>
+                                        <select id="currency_code" name="settings[currency_code]" class="form-select">
+                                            <option value="USD" <?php echo ($settings['currency_code'] ?? 'USD') == 'USD' ? 'selected' : ''; ?>>USD - US Dollar</option>
+                                            <option value="EUR" <?php echo ($settings['currency_code'] ?? '') == 'EUR' ? 'selected' : ''; ?>>EUR - Euro</option>
+                                            <option value="GBP" <?php echo ($settings['currency_code'] ?? '') == 'GBP' ? 'selected' : ''; ?>>GBP - British Pound</option>
+                                            <option value="TRY" <?php echo ($settings['currency_code'] ?? '') == 'TRY' ? 'selected' : ''; ?>>TRY - Turkish Lira</option>
+                                            <option value="CAD" <?php echo ($settings['currency_code'] ?? '') == 'CAD' ? 'selected' : ''; ?>>CAD - Canadian Dollar</option>
+                                            <option value="AUD" <?php echo ($settings['currency_code'] ?? '') == 'AUD' ? 'selected' : ''; ?>>AUD - Australian Dollar</option>
+                                            <option value="JPY" <?php echo ($settings['currency_code'] ?? '') == 'JPY' ? 'selected' : ''; ?>>JPY - Japanese Yen</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group col-md-4">
+                                        <label for="currency_symbol" class="form-label"><?php _e('currency_symbol'); ?></label>
+                                        <input type="text" id="currency_symbol" name="settings[currency_symbol]" class="form-control" value="<?php echo htmlspecialchars($settings['currency_symbol'] ?? '$'); ?>" maxlength="5">
+                                    </div>
+                                    
+                                    <div class="form-group col-md-4">
+                                        <label for="currency_position" class="form-label"><?php _e('currency_position'); ?></label>
+                                        <select id="currency_position" name="settings[currency_position]" class="form-select">
+                                            <option value="before" <?php echo ($settings['currency_position'] ?? 'before') == 'before' ? 'selected' : ''; ?>><?php _e('before_amount'); ?> ($100)</option>
+                                            <option value="after" <?php echo ($settings['currency_position'] ?? '') == 'after' ? 'selected' : ''; ?>><?php _e('after_amount'); ?> (100$)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Social Media Settings -->
                 <div id="settings-social" class="settings-tab-pane">
@@ -601,6 +851,288 @@
 </form>
 
 <style>
+    /* Payment Settings Specific Styles */
+    .card-description {
+        margin: 0;
+        color: var(--gray-600);
+        font-size: var(--font-size-sm);
+        margin-top: 0.5rem;
+    }
+
+    .settings-section {
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+        color: var(--dark-color);
+    }
+
+    .section-title i {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+    }
+
+    .section-description {
+        margin-bottom: 1.5rem;
+        color: var(--gray-600);
+        font-size: var(--font-size-sm);
+        line-height: 1.5;
+    }
+
+    .settings-divider {
+        border: none;
+        height: 1px;
+        background-color: var(--gray-300);
+        margin: 2rem 0;
+    }
+
+    /* Payment Methods Grid */
+    .payment-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .payment-method-card {
+        background-color: var(--white-color);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        transition: all var(--transition-fast);
+        position: relative;
+    }
+
+    .payment-method-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-md);
+    }
+
+    .payment-method-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .payment-method-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: var(--border-radius-circle);
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .payment-method-icon i {
+        font-size: 1.5rem;
+    }
+
+    .payment-method-info {
+        flex: 1;
+    }
+
+    .payment-method-info h5 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        color: var(--dark-color);
+    }
+
+    .payment-method-info p {
+        margin: 0;
+        font-size: var(--font-size-sm);
+        color: var(--gray-600);
+        line-height: 1.4;
+    }
+
+    .payment-method-toggle {
+        flex-shrink: 0;
+    }
+
+    /* Enhanced Form Switch */
+    .form-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .form-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .form-switch .form-check-label {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .form-switch .form-check-label:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    .form-switch input:checked + .form-check-label {
+        background-color: var(--primary-color);
+    }
+
+    .form-switch input:checked + .form-check-label:before {
+        transform: translateX(26px);
+    }
+
+    /* Bank Details Form */
+    .bank-details-form {
+        background-color: var(--gray-50);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+    }
+
+    /* Gateway Settings */
+    .gateway-settings {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .gateway-card {
+        background-color: var(--gray-50);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+    }
+
+    .gateway-header {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-300);
+    }
+
+    .gateway-header h5 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        color: var(--dark-color);
+    }
+
+    .gateway-header p {
+        margin: 0;
+        font-size: var(--font-size-sm);
+        color: var(--gray-600);
+    }
+
+    .gateway-body {
+        /* No additional styles needed */
+    }
+
+    /* Form Enhancements */
+    .form-row {
+        display: flex;
+        margin: 0 -10px;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        padding: 0 10px;
+        margin-bottom: 1rem;
+    }
+
+    .col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: var(--font-weight-medium);
+        color: var(--dark-color);
+    }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--border-radius-md);
+        font-size: 1rem;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        outline: none;
+    }
+
+    .form-text {
+        font-size: var(--font-size-sm);
+        color: var(--gray-600);
+        margin-top: 0.25rem;
+        line-height: 1.4;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .payment-methods-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .col-md-4,
+        .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        .gateway-settings {
+            gap: 1rem;
+        }
+        
+        .gateway-card,
+        .bank-details-form {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .payment-method-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1rem;
+        }
+        
+        .payment-method-toggle {
+            align-self: stretch;
+            display: flex;
+            justify-content: center;
+        }
+    }
     /* Settings tabs styles - using unique class names to avoid conflicts */
     .settings-nav-tabs-container {
         background-color: #fff;

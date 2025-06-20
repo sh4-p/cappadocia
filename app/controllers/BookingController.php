@@ -8,6 +8,7 @@ class BookingController extends Controller
 {
     private $tourModel;
     private $bookingModel;
+    private $settingsModel;
     
     /**
      * Constructor
@@ -19,6 +20,7 @@ class BookingController extends Controller
         // Load models
         $this->tourModel = $this->loadModel('Tour');
         $this->bookingModel = $this->loadModel('Booking');
+        $this->settingsModel = $this->loadModel('Settings');
     }
     
     /**
@@ -52,10 +54,25 @@ class BookingController extends Controller
         // Get available dates (can be from a calendar or fixed dates)
         $availableDates = $this->getAvailableDates();
         
+        // Get settings for payment methods and other configurations
+        $settings = $this->settingsModel->getAllSettings();
+        
+        // Get active payment methods
+        $activePaymentMethods = $this->getActivePaymentMethods($settings);
+        
+        // Check if at least one payment method is active
+        if (empty($activePaymentMethods)) {
+            // Set error message and redirect
+            $this->session->setFlash('error', __('no_payment_methods_available'));
+            $this->redirect('tours/' . $tour['slug']);
+        }
+        
         // Set page data
         $data = [
             'tour' => $tour,
             'availableDates' => $availableDates,
+            'settings' => $settings,
+            'activePaymentMethods' => $activePaymentMethods,
             'pageTitle' => sprintf(__('book_tour'), $tour['name']),
             'metaDescription' => sprintf(__('book_tour_description'), $tour['name']),
             'additionalCss' => [
@@ -68,6 +85,60 @@ class BookingController extends Controller
         
         // Render view
         $this->render('booking/form', $data);
+    }
+    
+    /**
+     * Get active payment methods from settings
+     * 
+     * @param array $settings Settings array
+     * @return array Active payment methods
+     */
+    private function getActivePaymentMethods($settings)
+    {
+        $paymentMethods = [];
+        
+        // Check each payment method
+        if (isset($settings['payment_card']) && $settings['payment_card'] == '1') {
+            $paymentMethods['card'] = [
+                'id' => 'card',
+                'name' => __('credit_card'),
+                'description' => __('credit_card_description'),
+                'icon' => 'credit_card',
+                'requires_fields' => true
+            ];
+        }
+        
+        if (isset($settings['payment_paypal']) && $settings['payment_paypal'] == '1') {
+            $paymentMethods['paypal'] = [
+                'id' => 'paypal',
+                'name' => __('paypal'),
+                'description' => __('paypal_description'),
+                'icon' => 'account_balance_wallet',
+                'requires_fields' => false
+            ];
+        }
+        
+        if (isset($settings['payment_bank']) && $settings['payment_bank'] == '1') {
+            $paymentMethods['bank'] = [
+                'id' => 'bank',
+                'name' => __('bank_transfer'),
+                'description' => __('bank_transfer_description'),
+                'icon' => 'account_balance',
+                'requires_fields' => false
+            ];
+        }
+        
+        if (isset($settings['payment_cash']) && $settings['payment_cash'] == '1') {
+            $paymentMethods['cash'] = [
+                'id' => 'cash',
+                'name' => __('cash_payment'),
+                'description' => __('cash_payment_description'),
+                'icon' => 'money',
+                'requires_fields' => false
+            ];
+        }
+        
+        return $paymentMethods;
     }
     
     /**
@@ -94,6 +165,7 @@ class BookingController extends Controller
         $children = $this->post('children', 0);
         $totalPrice = $this->post('total_price');
         $specialRequests = $this->post('special_requests');
+        $paymentMethod = $this->post('payment_method');
         
         // Validate inputs
         $errors = [];
@@ -134,12 +206,26 @@ class BookingController extends Controller
             $errors[] = __('invalid_price');
         }
         
+        if (empty($paymentMethod)) {
+            $errors[] = __('payment_method_required');
+        }
+        
         // Get tour details
         $tour = $this->tourModel->getWithDetails($tourId, $langCode);
         
         // Check if tour exists
         if (!$tour) {
             $errors[] = __('invalid_tour');
+        }
+        
+        // Validate payment method is active
+        if ($tour) {
+            $settings = $this->settingsModel->getAllSettings();
+            $activePaymentMethods = $this->getActivePaymentMethods($settings);
+            
+            if (!isset($activePaymentMethods[$paymentMethod])) {
+                $errors[] = __('invalid_payment_method');
+            }
         }
         
         // If there are errors, redirect back to form
@@ -179,6 +265,7 @@ class BookingController extends Controller
             'children' => $children,
             'total_price' => $totalPrice,
             'special_requests' => $specialRequests,
+            'payment_method' => $paymentMethod,
             'status' => 'pending'
         ];
         

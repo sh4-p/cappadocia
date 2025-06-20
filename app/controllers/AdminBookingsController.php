@@ -195,12 +195,32 @@ class AdminBookingsController extends Controller
             __('adults'),
             __('children'),
             __('total_price'),
+            __('payment_method'),
             __('status'),
             __('created_at')
         ]);
         
         // Add bookings
         foreach ($bookings as $booking) {
+            // Format payment method
+            $paymentMethod = '';
+            switch ($booking['payment_method']) {
+                case 'card':
+                    $paymentMethod = __('credit_card');
+                    break;
+                case 'paypal':
+                    $paymentMethod = __('paypal');
+                    break;
+                case 'bank':
+                    $paymentMethod = __('bank_transfer');
+                    break;
+                case 'cash':
+                    $paymentMethod = __('cash_payment');
+                    break;
+                default:
+                    $paymentMethod = $booking['payment_method'];
+            }
+            
             fputcsv($output, [
                 $booking['id'],
                 $booking['tour_name'],
@@ -211,6 +231,7 @@ class AdminBookingsController extends Controller
                 $booking['adults'],
                 $booking['children'],
                 $booking['total_price'],
+                $paymentMethod,
                 __($booking['status']),
                 $booking['created_at']
             ]);

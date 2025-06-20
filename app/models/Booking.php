@@ -258,4 +258,72 @@ class Booking extends Model
         
         return array_values($data);
     }
+    
+    /**
+     * Get payment method statistics
+     * 
+     * @param int $days Number of days (optional)
+     * @return array Payment method statistics
+     */
+    public function getPaymentMethodStats($days = null)
+    {
+        $sql = "SELECT payment_method, COUNT(*) as count, SUM(total_price) as total
+                FROM {$this->table}
+                WHERE status != 'cancelled'";
+        
+        $params = [];
+        
+        if ($days) {
+            $sql .= " AND created_at >= :startDate";
+            $params['startDate'] = date('Y-m-d', strtotime("-{$days} days"));
+        }
+        
+        $sql .= " GROUP BY payment_method
+                  ORDER BY count DESC";
+        
+        return $this->db->getRows($sql, $params);
+    }
+    
+    /**
+     * Insert booking with validation
+     * 
+     * @param array $data Booking data
+     * @return int|false Booking ID or false
+     */
+    public function insert($data)
+    {
+        // Validate required fields
+        $requiredFields = ['tour_id', 'first_name', 'last_name', 'email', 'phone', 'booking_date', 'adults', 'total_price'];
+        
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || empty($data[$field])) {
+                return false;
+            }
+        }
+        
+        // Set defaults
+        $data['children'] = isset($data['children']) ? (int)$data['children'] : 0;
+        $data['status'] = isset($data['status']) ? $data['status'] : 'pending';
+        $data['payment_method'] = isset($data['payment_method']) ? $data['payment_method'] : 'card';
+        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['updated_at'] = date('Y-m-d H:i:s');
+        
+        // Insert booking
+        return parent::insert($data);
+    }
+    
+    /**
+     * Update booking with validation
+     * 
+     * @param array $data Booking data
+     * @param array $conditions Where conditions
+     * @return bool Success
+     */
+    public function update($data, $conditions)
+    {
+        // Set updated timestamp
+        $data['updated_at'] = date('Y-m-d H:i:s');
+        
+        return parent::update($data, $conditions);
+    }
 }
