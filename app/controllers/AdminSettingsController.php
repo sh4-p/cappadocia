@@ -86,6 +86,26 @@ class AdminSettingsController extends Controller
         // Get form data
         $settings = $this->post('settings', []);
         
+        // Handle checkbox values - if not posted, set to 0
+        $checkboxSettings = [
+            'payment_card',
+            'payment_paypal', 
+            'payment_bank',
+            'payment_cash',
+            'stripe_test_mode',
+            'paypal_sandbox',
+            'maintenance_mode',
+            'debug_mode',
+            'email_notification_booking',
+            'email_notification_contact'
+        ];
+        
+        foreach ($checkboxSettings as $key) {
+            if (!isset($settings[$key])) {
+                $settings[$key] = '0';
+            }
+        }
+        
         // Handle regular file uploads
         $uploadedFiles = [
             'logo' => $this->file('logo'),
@@ -123,6 +143,7 @@ class AdminSettingsController extends Controller
                 }
             }
         }
+        
         
         // Save settings
         $result = $settingsModel->saveMultipleSettings($settings);
