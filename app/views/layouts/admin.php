@@ -32,7 +32,51 @@
             <div class="spinner"></div>
         </div>
     </div>
+    <!-- Flash Messages - Add this to your admin layout or view files -->
 
+    <?php if (isset($_SESSION['flash_success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="material-icons">check_circle</i>
+            <?php echo $_SESSION['flash_success']; ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <?php unset($_SESSION['flash_success']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['flash_error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="material-icons">error</i>
+            <?php echo $_SESSION['flash_error']; ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <?php unset($_SESSION['flash_error']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['flash_warning'])): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="material-icons">warning</i>
+            <?php echo $_SESSION['flash_warning']; ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <?php unset($_SESSION['flash_warning']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['flash_info'])): ?>
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="material-icons">info</i>
+            <?php echo $_SESSION['flash_info']; ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <?php unset($_SESSION['flash_info']); ?>
+    <?php endif; ?>        
     <!-- Admin Wrapper -->
     <div class="admin-wrapper">
         <!-- Sidebar -->
@@ -277,4 +321,83 @@
         <?php echo $additionalScripts; ?>
     <?php endif; ?>
 </body>
+<style>
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    position: relative;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+
+.alert .material-icons {
+    font-size: 20px;
+}
+
+.alert .close {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.alert .close:hover {
+    opacity: 1;
+}
+
+.alert-dismissible {
+    padding-right: 50px;
+}
+</style>
+
+<script>
+// Auto-hide alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            if (alert.parentNode) {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.3s';
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 300);
+            }
+        }, 5000);
+    });
+});
+</script>
 </html>

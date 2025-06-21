@@ -65,7 +65,8 @@ class AdminEmailTemplatesController extends Controller
         $this->render('admin/email-templates/index', [
             'pageTitle' => __('email_templates'),
             'templates' => $templates,
-            'availableKeys' => $availableKeys
+            'availableKeys' => $availableKeys,
+            'adminUrl' => $this->getAdminUrl()
         ], 'admin');
     }
     
@@ -124,7 +125,8 @@ class AdminEmailTemplatesController extends Controller
                     'subject' => $subject,
                     'body' => $body,
                     'description' => $description,
-                    'isActive' => $isActive
+                    'isActive' => $isActive,
+                    'adminUrl' => $this->getAdminUrl()
                 ], 'admin');
                 
                 return;
@@ -158,7 +160,8 @@ class AdminEmailTemplatesController extends Controller
         // Render view
         $this->render('admin/email-templates/create', [
             'pageTitle' => __('add_email_template'),
-            'availableKeys' => $availableKeys
+            'availableKeys' => $availableKeys,
+            'adminUrl' => $this->getAdminUrl()
         ], 'admin');
     }
     
@@ -235,7 +238,8 @@ class AdminEmailTemplatesController extends Controller
                     'pageTitle' => __('edit_email_template'),
                     'template' => $template,
                     'variables' => $variables,
-                    'availableKeys' => $availableKeys
+                    'availableKeys' => $availableKeys,
+                    'adminUrl' => $this->getAdminUrl()
                 ], 'admin');
                 
                 return;
@@ -271,7 +275,8 @@ class AdminEmailTemplatesController extends Controller
             'pageTitle' => __('edit_email_template'),
             'template' => $template,
             'variables' => $variables,
-            'availableKeys' => $availableKeys
+            'availableKeys' => $availableKeys,
+            'adminUrl' => $this->getAdminUrl()
         ], 'admin');
     }
     
@@ -301,7 +306,8 @@ class AdminEmailTemplatesController extends Controller
         $this->render('admin/email-templates/view', [
             'pageTitle' => __('view_email_template'),
             'template' => $template,
-            'variables' => $variables
+            'variables' => $variables,
+            'adminUrl' => $this->getAdminUrl()
         ], 'admin');
     }
     
@@ -412,7 +418,8 @@ class AdminEmailTemplatesController extends Controller
             'template' => $template,
             'renderedSubject' => $renderedSubject,
             'renderedBody' => $renderedBody,
-            'sampleData' => $sampleData
+            'sampleData' => $sampleData,
+            'adminUrl' => $this->getAdminUrl()
         ], 'admin');
     }
     
@@ -423,49 +430,83 @@ class AdminEmailTemplatesController extends Controller
      */
     public function testSend($id)
     {
-        // Check if request is POST
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('admin/email-templates');
+        try {
+            // Check if request is POST
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                $this->session->setFlash('error', 'Invalid request method');
+                $this->redirect('admin/email-templates');
+                return;
+            }
+            
+            // Load email template model
+            $emailTemplateModel = $this->loadModel('EmailTemplate');
+            
+            // Get template
+            $template = $emailTemplateModel->getById($id);
+            
+            // Check if template exists
+            if (!$template) {
+                $this->session->setFlash('error', 'Email template not found');
+                $this->redirect('admin/email-templates');
+                return;
+            }
+            
+            // Get test email address
+            $testEmail = $this->post('test_email');
+            
+            if (empty($testEmail) || !filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
+                $this->session->setFlash('error', 'Please provide a valid email address');
+                $this->redirect('admin/email-templates/view/' . $id);
+                return;
+            }
+            
+            // Get sample data
+            $sampleData = $this->getSampleData($template['template_key']);
+            
+            // Render template
+            $subject = $emailTemplateModel->renderTemplate($template['subject'], $sampleData);
+            $body = $emailTemplateModel->renderTemplate($template['body'], $sampleData);
+            
+            // Include Email class if not already loaded
+            if (!class_exists('Email')) {
+                require_once dirname(dirname(__DIR__)) . '/core/Email.php';
+            }
+            
+            // Send email
+            $email = new Email();
+            $result = $email->send($testEmail, $subject, $body);
+            
+            if ($result) {
+                $this->session->setFlash('success', 'Test email sent successfully to ' . $testEmail);
+            } else {
+                $this->session->setFlash('error', 'Failed to send test email: ' . $email->getError());
+            }
+            
+        } catch (Exception $e) {
+            // Log error for debugging
+            error_log('Test email error: ' . $e->getMessage());
+            $this->session->setFlash('error', 'An error occurred while sending test email: ' . $e->getMessage());
         }
         
-        // Load email template model
-        $emailTemplateModel = $this->loadModel('EmailTemplate');
-        
-        // Get template
-        $template = $emailTemplateModel->getById($id);
-        
-        // Check if template exists
-        if (!$template) {
-            $this->session->setFlash('error', __('email_template_not_found'));
-            $this->redirect('admin/email-templates');
-        }
-        
-        // Get test email address
-        $testEmail = $this->post('test_email');
-        
-        if (empty($testEmail) || !filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
-            $this->session->setFlash('error', __('valid_email_required'));
-            $this->redirect('admin/email-templates/view/' . $id);
-        }
-        
-        // Get sample data
-        $sampleData = $this->getSampleData($template['template_key']);
-        
-        // Render template
-        $subject = $emailTemplateModel->renderTemplate($template['subject'], $sampleData);
-        $body = $emailTemplateModel->renderTemplate($template['body'], $sampleData);
-        
-        // Send email
-        $email = new Email();
-        $result = $email->send($testEmail, $subject, $body);
-        
-        if ($result) {
-            $this->session->setFlash('success', __('test_email_sent'));
-        } else {
-            $this->session->setFlash('error', __('test_email_failed') . ': ' . $email->getError());
-        }
-        
+        // Always redirect back to template view
         $this->redirect('admin/email-templates/view/' . $id);
+    }
+    
+    /**
+     * Get admin URL base
+     * 
+     * @return string Admin URL
+     */
+    private function getAdminUrl()
+    {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'];
+        $scriptName = dirname($_SERVER['SCRIPT_NAME']);
+        
+        // Remove trailing slash
+        $scriptName = rtrim($scriptName, '/');
+        
+        return $protocol . $host . $scriptName . '/admin';
     }
     
     /**

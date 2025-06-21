@@ -246,36 +246,40 @@
     </div>
 </div>
 
-<!-- Test Email Modal -->
+<!-- Test Email Modal - Fixed Version -->
 <div class="modal fade" id="testModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="material-icons">send</i>
-                    <?php _e('send_test_email'); ?>
+                    Send Test Email
                 </h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-dismiss="modal" onclick="closeModal()">
                     <span>&times;</span>
                 </button>
             </div>
-            <form action="<?php echo $adminUrl; ?>/email-templates/test-send/<?php echo $template['id']; ?>" method="POST">
+            <form action="<?php echo '/cappadocia/admin/email-templates/test-send/' . $template['id']; ?>" method="POST" id="testEmailForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="test_email" class="form-label required">
-                            <?php _e('test_email_address'); ?>
+                            Test Email Address
                             <span class="text-danger">*</span>
                         </label>
                         <input type="email" name="test_email" id="test_email" class="form-control" 
-                               placeholder="<?php _e('enter_test_email'); ?>" required>
-                        <small class="form-help"><?php _e('test_email_help'); ?></small>
+                               placeholder="Enter test email address" required>
+                        <small class="form-help">Enter the email address where you want to send the test email.</small>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="material-icons">info</i>
+                        This test email will be sent with sample data for preview purposes.
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><?php _e('cancel'); ?></button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="sendTestBtn">
                         <i class="material-icons">send</i>
-                        <?php _e('send_test'); ?>
+                        Send Test
                     </button>
                 </div>
             </form>
@@ -287,6 +291,36 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Load HTML preview in iframe
     loadHtmlPreview();
+});
+
+// Form submit handler
+document.getElementById('testEmailForm').addEventListener('submit', function(e) {
+    const email = document.getElementById('test_email').value;
+    const btn = document.getElementById('sendTestBtn');
+    
+    if (!email) {
+        alert('Please enter an email address');
+        e.preventDefault();
+        return false;
+    }
+    
+    // Disable button to prevent double submission
+    btn.disabled = true;
+    btn.innerHTML = '<i class="material-icons">hourglass_empty</i> Sending...';
+    
+    // Debug: Show what will be submitted
+    console.log('Submitting form to:', this.action);
+    console.log('Method:', this.method);
+    console.log('Email:', email);
+    
+    return true;
+});
+
+// Close modal when clicking outside
+document.getElementById('testModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
 });
 
 function loadHtmlPreview() {
@@ -365,11 +399,147 @@ function previewTemplate() {
 }
 
 function showTestModal() {
-    $('#testModal').modal('show');
+    document.getElementById('testModal').style.display = 'block';
+    document.getElementById('testModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('testModal').style.display = 'none';
+    document.getElementById('testModal').classList.remove('show');
 }
 </script>
 
 <style>
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-dialog {
+    margin: 50px auto;
+    max-width: 500px;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.alert-info {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+.text-danger {
+    color: #dc3545;
+}
 .template-details {
     display: flex;
     flex-direction: column;
