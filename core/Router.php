@@ -87,6 +87,7 @@ class Router
         // Settings routes
         $this->addRoute($this->adminPrefix . '/settings', 'AdminSettings', 'index');
         $this->addRoute($this->adminPrefix . '/settings/update', 'AdminSettings', 'update');
+        $this->addRoute($this->adminPrefix . '/settings/test-email', 'AdminSettings', 'testEmail');
         
         // Language routes
         $this->addRoute($this->adminPrefix . '/languages', 'AdminLanguages', 'index');

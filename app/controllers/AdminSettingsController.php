@@ -97,7 +97,11 @@ class AdminSettingsController extends Controller
             'maintenance_mode',
             'debug_mode',
             'email_notification_booking',
-            'email_notification_contact'
+            'email_notification_contact',
+            'email_notification_registration',
+            'email_notification_newsletter',
+            'smtp_enabled',
+            'smtp_auth'
         ];
         
         foreach ($checkboxSettings as $key) {
@@ -116,6 +120,12 @@ class AdminSettingsController extends Controller
         foreach ($uploadedFiles as $key => $file) {
             if ($file && $file['error'] === UPLOAD_ERR_OK) {
                 $uploadDir = BASE_PATH . '/public/uploads/';
+                
+                // Create directory if not exists
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
                 $fileName = $key . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
                 
                 // Upload file
@@ -133,6 +143,12 @@ class AdminSettingsController extends Controller
             foreach ($homepageImages['name'] as $key => $name) {
                 if ($homepageImages['error'][$key] === UPLOAD_ERR_OK) {
                     $uploadDir = BASE_PATH . '/public/img/';
+                    
+                    // Create directory if not exists
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    
                     $fileExtension = pathinfo($name, PATHINFO_EXTENSION);
                     $fileName = $key . '.' . $fileExtension;
                     
@@ -144,6 +160,24 @@ class AdminSettingsController extends Controller
             }
         }
         
+        // Validate required email settings if SMTP is enabled
+        if (!empty($settings['smtp_enabled']) && $settings['smtp_enabled'] == '1') {
+            $requiredSMTPFields = ['smtp_host', 'smtp_port', 'email_from_address', 'email_from_name'];
+            foreach ($requiredSMTPFields as $field) {
+                if (empty($settings[$field])) {
+                    $this->session->setFlash('error', __('smtp_required_fields_missing'));
+                    $this->redirect('admin/settings');
+                    return;
+                }
+            }
+            
+            // Validate email format
+            if (!filter_var($settings['email_from_address'], FILTER_VALIDATE_EMAIL)) {
+                $this->session->setFlash('error', __('invalid_email_format'));
+                $this->redirect('admin/settings');
+                return;
+            }
+        }
         
         // Save settings
         $result = $settingsModel->saveMultipleSettings($settings);
@@ -156,5 +190,102 @@ class AdminSettingsController extends Controller
         
         // Redirect back to settings page
         $this->redirect('admin/settings');
+    }
+    
+    /**
+     * Test email action - test SMTP configuration
+     */
+    public function testEmail()
+    {
+        // Check if request is POST and Ajax
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$this->isAjax()) {
+            $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
+        
+        // Get JSON data
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$input) {
+            $this->json(['success' => false, 'message' => 'No data received'], 400);
+        }
+        
+        // Validate required fields
+        if (empty($input['test_email'])) {
+            $this->json(['success' => false, 'message' => 'Test email address is required'], 400);
+        }
+        
+        if (!filter_var($input['test_email'], FILTER_VALIDATE_EMAIL)) {
+            $this->json(['success' => false, 'message' => 'Invalid email address'], 400);
+        }
+        
+        // Load Email class
+        require_once BASE_PATH . '/core/Email.php';
+        $email = new Email();
+        
+        // Enable debug mode for testing
+        $email->setDebug(true);
+        
+        // Configure SMTP if enabled
+        if (!empty($input['smtp_enabled']) && $input['smtp_enabled'] == '1') {
+            if (empty($input['smtp_host']) || empty($input['smtp_port'])) {
+                $this->json(['success' => false, 'message' => 'SMTP host and port are required'], 400);
+            }
+            
+            $smtpConfig = [
+                'host' => trim($input['smtp_host']),
+                'port' => intval($input['smtp_port']),
+                'security' => $input['smtp_security'] ?? 'tls',
+                'auth' => !empty($input['smtp_auth']) && $input['smtp_auth'] == '1',
+                'username' => trim($input['smtp_username'] ?? ''),
+                'password' => $input['smtp_password'] ?? '',
+                'timeout' => intval($input['smtp_timeout'] ?? 30)
+            ];
+            
+            // Validate SMTP auth fields if auth is enabled
+            if ($smtpConfig['auth'] && (empty($smtpConfig['username']) || empty($smtpConfig['password']))) {
+                $this->json(['success' => false, 'message' => 'SMTP username and password are required when authentication is enabled'], 400);
+            }
+            
+            $email->configureSMTP($smtpConfig);
+        }
+        
+        // Set sender
+        $fromEmail = trim($input['email_from_address'] ?? '');
+        $fromName = trim($input['email_from_name'] ?? '');
+        
+        if (empty($fromEmail)) {
+            $this->json(['success' => false, 'message' => 'Sender email address is required'], 400);
+        }
+        
+        if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+            $this->json(['success' => false, 'message' => 'Invalid sender email address'], 400);
+        }
+        
+        $email->setFrom($fromEmail, $fromName);
+        
+        // Set reply-to if provided
+        if (!empty($input['email_reply_to'])) {
+            $email->setReplyTo(trim($input['email_reply_to']));
+        }
+        
+        // Send test email
+        try {
+            $result = $email->sendTestEmail($input['test_email']);
+            
+            if ($result) {
+                $this->json([
+                    'success' => true, 
+                    'message' => 'Test email sent successfully! Please check your inbox (and spam folder).'
+                ]);
+            } else {
+                $error = $email->getError();
+                $this->json([
+                    'success' => false, 
+                    'message' => $error ?: 'Failed to send test email. Please check your SMTP settings.'
+                ]);
+            }
+        } catch (Exception $e) {
+            $this->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
     }
 }

@@ -543,31 +543,279 @@
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title"><?php _e('email_settings'); ?></h3>
+                            <p class="card-description"><?php _e('email_settings_description'); ?></p>
                         </div>
                         <div class="card-body">
-                            <div class="form-group">
-                                <label for="email_from_name" class="form-label"><?php _e('email_from_name'); ?></label>
-                                <input type="text" id="email_from_name" name="settings[email_from_name]" class="form-control" value="<?php echo htmlspecialchars($settings['email_from_name'] ?? ''); ?>">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email_from_address" class="form-label"><?php _e('email_from_address'); ?></label>
-                                <input type="email" id="email_from_address" name="settings[email_from_address]" class="form-control" value="<?php echo htmlspecialchars($settings['email_from_address'] ?? ''); ?>">
-                            </div>
-                            
-                            <div class="form-group">
-                                <div class="form-check">
-                                    <input type="hidden" name="settings[email_notification_booking]" value="0">
-                                    <input type="checkbox" id="email_notification_booking" name="settings[email_notification_booking]" value="1" class="form-check-input" <?php echo ($settings['email_notification_booking'] ?? '1') == '1' ? 'checked' : ''; ?>>
-                                    <label for="email_notification_booking" class="form-check-label"><?php _e('email_notification_booking'); ?></label>
+                            <!-- General Email Settings -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">settings</i>
+                                    <?php _e('general_email_settings'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('general_email_settings_description'); ?></p>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="email_from_name" class="form-label"><?php _e('email_from_name'); ?> <span class="required">*</span></label>
+                                        <input type="text" id="email_from_name" name="settings[email_from_name]" class="form-control" value="<?php echo htmlspecialchars($settings['email_from_name'] ?? ''); ?>" required>
+                                        <small class="form-text"><?php _e('email_from_name_help'); ?></small>
+                                    </div>
+                                    
+                                    <div class="form-group col-md-6">
+                                        <label for="email_from_address" class="form-label"><?php _e('email_from_address'); ?> <span class="required">*</span></label>
+                                        <input type="email" id="email_from_address" name="settings[email_from_address]" class="form-control" value="<?php echo htmlspecialchars($settings['email_from_address'] ?? ''); ?>" required>
+                                        <small class="form-text"><?php _e('email_from_address_help'); ?></small>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="email_reply_to" class="form-label"><?php _e('email_reply_to'); ?></label>
+                                        <input type="email" id="email_reply_to" name="settings[email_reply_to]" class="form-control" value="<?php echo htmlspecialchars($settings['email_reply_to'] ?? ''); ?>">
+                                        <small class="form-text"><?php _e('email_reply_to_help'); ?></small>
+                                    </div>
+                                    
+                                    <div class="form-group col-md-6">
+                                        <label for="email_admin" class="form-label"><?php _e('email_admin'); ?></label>
+                                        <input type="email" id="email_admin" name="settings[email_admin]" class="form-control" value="<?php echo htmlspecialchars($settings['email_admin'] ?? ''); ?>">
+                                        <small class="form-text"><?php _e('email_admin_help'); ?></small>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="form-group">
-                                <div class="form-check">
-                                    <input type="hidden" name="settings[email_notification_contact]" value="0">
-                                    <input type="checkbox" id="email_notification_contact" name="settings[email_notification_contact]" value="1" class="form-check-input" <?php echo ($settings['email_notification_contact'] ?? '1') == '1' ? 'checked' : ''; ?>>
-                                    <label for="email_notification_contact" class="form-check-label"><?php _e('email_notification_contact'); ?></label>
+                            <hr class="settings-divider">
+                            
+                            <!-- SMTP Configuration -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">cloud</i>
+                                    <?php _e('smtp_configuration'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('smtp_configuration_description'); ?></p>
+                                
+                                <div class="form-group">
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="settings[smtp_enabled]" value="0">
+                                        <input type="checkbox" id="smtp_enabled" name="settings[smtp_enabled]" value="1" class="form-check-input smtp-toggle" <?php echo ($settings['smtp_enabled'] ?? '0') == '1' ? 'checked' : ''; ?>>
+                                        <label for="smtp_enabled" class="form-check-label"><?php _e('enable_smtp'); ?></label>
+                                    </div>
+                                    <small class="form-text"><?php _e('smtp_enabled_help'); ?></small>
+                                </div>
+                                
+                                <div id="smtp-config" class="smtp-config-section" style="display: none;">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="smtp_host" class="form-label"><?php _e('smtp_host'); ?> <span class="required">*</span></label>
+                                            <input type="text" id="smtp_host" name="settings[smtp_host]" class="form-control" value="<?php echo htmlspecialchars($settings['smtp_host'] ?? ''); ?>" placeholder="smtp.gmail.com">
+                                            <small class="form-text"><?php _e('smtp_host_help'); ?></small>
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+                                            <label for="smtp_port" class="form-label"><?php _e('smtp_port'); ?> <span class="required">*</span></label>
+                                            <select id="smtp_port" name="settings[smtp_port]" class="form-select">
+                                                <option value="25" <?php echo ($settings['smtp_port'] ?? '587') == '25' ? 'selected' : ''; ?>>25 (No encryption)</option>
+                                                <option value="587" <?php echo ($settings['smtp_port'] ?? '587') == '587' ? 'selected' : ''; ?>>587 (TLS/STARTTLS)</option>
+                                                <option value="465" <?php echo ($settings['smtp_port'] ?? '587') == '465' ? 'selected' : ''; ?>>465 (SSL)</option>
+                                                <option value="2525" <?php echo ($settings['smtp_port'] ?? '587') == '2525' ? 'selected' : ''; ?>>2525 (Alternative)</option>
+                                            </select>
+                                            <small class="form-text"><?php _e('smtp_port_help'); ?></small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="smtp_security" class="form-label"><?php _e('smtp_security'); ?></label>
+                                            <select id="smtp_security" name="settings[smtp_security]" class="form-select">
+                                                <option value="none" <?php echo ($settings['smtp_security'] ?? 'tls') == 'none' ? 'selected' : ''; ?>><?php _e('none'); ?></option>
+                                                <option value="ssl" <?php echo ($settings['smtp_security'] ?? 'tls') == 'ssl' ? 'selected' : ''; ?>>SSL</option>
+                                                <option value="tls" <?php echo ($settings['smtp_security'] ?? 'tls') == 'tls' ? 'selected' : ''; ?>>TLS</option>
+                                            </select>
+                                            <small class="form-text"><?php _e('smtp_security_help'); ?></small>
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+                                            <label for="smtp_timeout" class="form-label"><?php _e('smtp_timeout'); ?></label>
+                                            <input type="number" id="smtp_timeout" name="settings[smtp_timeout]" class="form-control" value="<?php echo htmlspecialchars($settings['smtp_timeout'] ?? '30'); ?>" min="10" max="300">
+                                            <small class="form-text"><?php _e('smtp_timeout_help'); ?></small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input type="hidden" name="settings[smtp_auth]" value="0">
+                                            <input type="checkbox" id="smtp_auth" name="settings[smtp_auth]" value="1" class="form-check-input" <?php echo ($settings['smtp_auth'] ?? '1') == '1' ? 'checked' : ''; ?>>
+                                            <label for="smtp_auth" class="form-check-label"><?php _e('smtp_authentication'); ?></label>
+                                        </div>
+                                        <small class="form-text"><?php _e('smtp_auth_help'); ?></small>
+                                    </div>
+                                    
+                                    <div id="smtp-auth-fields">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <label for="smtp_username" class="form-label"><?php _e('smtp_username'); ?></label>
+                                                <input type="text" id="smtp_username" name="settings[smtp_username]" class="form-control" value="<?php echo htmlspecialchars($settings['smtp_username'] ?? ''); ?>" autocomplete="username">
+                                                <small class="form-text"><?php _e('smtp_username_help'); ?></small>
+                                            </div>
+                                            
+                                            <div class="form-group col-md-6">
+                                                <label for="smtp_password" class="form-label"><?php _e('smtp_password'); ?></label>
+                                                <div class="input-group">
+                                                    <input type="password" id="smtp_password" name="settings[smtp_password]" class="form-control" value="<?php echo htmlspecialchars($settings['smtp_password'] ?? ''); ?>" autocomplete="current-password">
+                                                    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="smtp_password">
+                                                        <i class="material-icons">visibility</i>
+                                                    </button>
+                                                </div>
+                                                <small class="form-text"><?php _e('smtp_password_help'); ?></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="smtp-test-section">
+                                        <div class="form-group">
+                                            <label for="test_email" class="form-label"><?php _e('test_email_address'); ?></label>
+                                            <div class="input-group">
+                                                <input type="email" id="test_email" class="form-control" placeholder="<?php _e('enter_test_email'); ?>">
+                                                <button type="button" class="btn btn-info test-smtp-btn">
+                                                    <i class="material-icons">send</i>
+                                                    <?php _e('send_test_email'); ?>
+                                                </button>
+                                            </div>
+                                            <small class="form-text"><?php _e('test_email_help'); ?></small>
+                                        </div>
+                                        <div id="smtp-test-result" class="smtp-test-result"></div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="material-icons">info</i>
+                                        <div>
+                                            <strong><?php _e('smtp_common_providers'); ?></strong>
+                                            <ul class="smtp-providers-list">
+                                                <li><strong>Gmail:</strong> smtp.gmail.com, Port: 587, TLS</li>
+                                                <li><strong>Outlook/Hotmail:</strong> smtp.live.com, Port: 587, TLS</li>
+                                                <li><strong>Yahoo:</strong> smtp.mail.yahoo.com, Port: 587, TLS</li>
+                                                <li><strong>SendGrid:</strong> smtp.sendgrid.net, Port: 587, TLS</li>
+                                                <li><strong>Mailgun:</strong> smtp.mailgun.org, Port: 587, TLS</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="settings-divider">
+                            
+                            <!-- Email Notification Settings -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">notifications</i>
+                                    <?php _e('email_notifications'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('email_notifications_description'); ?></p>
+                                
+                                <div class="email-notifications-grid">
+                                    <div class="notification-card">
+                                        <div class="notification-header">
+                                            <div class="notification-icon">
+                                                <i class="material-icons">event_available</i>
+                                            </div>
+                                            <div class="notification-info">
+                                                <h5><?php _e('booking_notifications'); ?></h5>
+                                                <p><?php _e('booking_notifications_description'); ?></p>
+                                            </div>
+                                            <div class="notification-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="hidden" name="settings[email_notification_booking]" value="0">
+                                                    <input type="checkbox" id="email_notification_booking" name="settings[email_notification_booking]" value="1" class="form-check-input" <?php echo ($settings['email_notification_booking'] ?? '1') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="email_notification_booking" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="notification-card">
+                                        <div class="notification-header">
+                                            <div class="notification-icon">
+                                                <i class="material-icons">contact_mail</i>
+                                            </div>
+                                            <div class="notification-info">
+                                                <h5><?php _e('contact_notifications'); ?></h5>
+                                                <p><?php _e('contact_notifications_description'); ?></p>
+                                            </div>
+                                            <div class="notification-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="hidden" name="settings[email_notification_contact]" value="0">
+                                                    <input type="checkbox" id="email_notification_contact" name="settings[email_notification_contact]" value="1" class="form-check-input" <?php echo ($settings['email_notification_contact'] ?? '1') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="email_notification_contact" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="notification-card">
+                                        <div class="notification-header">
+                                            <div class="notification-icon">
+                                                <i class="material-icons">person_add</i>
+                                            </div>
+                                            <div class="notification-info">
+                                                <h5><?php _e('user_registration_notifications'); ?></h5>
+                                                <p><?php _e('user_registration_notifications_description'); ?></p>
+                                            </div>
+                                            <div class="notification-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="hidden" name="settings[email_notification_registration]" value="0">
+                                                    <input type="checkbox" id="email_notification_registration" name="settings[email_notification_registration]" value="1" class="form-check-input" <?php echo ($settings['email_notification_registration'] ?? '0') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="email_notification_registration" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="notification-card">
+                                        <div class="notification-header">
+                                            <div class="notification-icon">
+                                                <i class="material-icons">campaign</i>
+                                            </div>
+                                            <div class="notification-info">
+                                                <h5><?php _e('newsletter_notifications'); ?></h5>
+                                                <p><?php _e('newsletter_notifications_description'); ?></p>
+                                            </div>
+                                            <div class="notification-toggle">
+                                                <div class="form-check form-switch">
+                                                    <input type="hidden" name="settings[email_notification_newsletter]" value="0">
+                                                    <input type="checkbox" id="email_notification_newsletter" name="settings[email_notification_newsletter]" value="1" class="form-check-input" <?php echo ($settings['email_notification_newsletter'] ?? '0') == '1' ? 'checked' : ''; ?>>
+                                                    <label for="email_notification_newsletter" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="settings-divider">
+                            
+                            <!-- Email Templates -->
+                            <div class="settings-section">
+                                <h4 class="section-title">
+                                    <i class="material-icons">description</i>
+                                    <?php _e('email_templates'); ?>
+                                </h4>
+                                <p class="section-description"><?php _e('email_templates_description'); ?></p>
+                                
+                                <div class="form-group">
+                                    <label for="email_signature" class="form-label"><?php _e('email_signature'); ?></label>
+                                    <textarea id="email_signature" name="settings[email_signature]" class="form-control" rows="4" placeholder="<?php _e('email_signature_placeholder'); ?>"><?php echo htmlspecialchars($settings['email_signature'] ?? ''); ?></textarea>
+                                    <small class="form-text"><?php _e('email_signature_help'); ?></small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email_header" class="form-label"><?php _e('email_header_html'); ?></label>
+                                    <textarea id="email_header" name="settings[email_header]" class="form-control" rows="3" placeholder="<?php _e('email_header_placeholder'); ?>"><?php echo htmlspecialchars($settings['email_header'] ?? ''); ?></textarea>
+                                    <small class="form-text"><?php _e('email_header_help'); ?></small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email_footer" class="form-label"><?php _e('email_footer_html'); ?></label>
+                                    <textarea id="email_footer" name="settings[email_footer]" class="form-control" rows="3" placeholder="<?php _e('email_footer_placeholder'); ?>"><?php echo htmlspecialchars($settings['email_footer'] ?? ''); ?></textarea>
+                                    <small class="form-text"><?php _e('email_footer_help'); ?></small>
                                 </div>
                             </div>
                         </div>
