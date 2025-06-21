@@ -104,6 +104,16 @@ class Router
         $this->addRoute($this->adminPrefix . '/translations/delete-key/([0-9]+)', 'AdminTranslations', 'deleteKey', ['keyId']);
         $this->addRoute($this->adminPrefix . '/translations/import', 'AdminTranslations', 'import');
         $this->addRoute($this->adminPrefix . '/translations/export/([0-9]+)', 'AdminTranslations', 'export', ['languageId']);
+
+        // Admin email templates routes
+        $this->addRoute($this->adminPrefix . '/email-templates', 'AdminEmailTemplates', 'index');
+        $this->addRoute($this->adminPrefix . '/email-templates/create', 'AdminEmailTemplates', 'create');
+        $this->addRoute($this->adminPrefix . '/email-templates/edit/([0-9]+)', 'AdminEmailTemplates', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/email-templates/view/([0-9]+)', 'AdminEmailTemplates', 'view', ['id']);
+        $this->addRoute($this->adminPrefix . '/email-templates/delete/([0-9]+)', 'AdminEmailTemplates', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/email-templates/toggle-status/([0-9]+)', 'AdminEmailTemplates', 'toggleStatus', ['id']);
+        $this->addRoute($this->adminPrefix . '/email-templates/preview/([0-9]+)', 'AdminEmailTemplates', 'preview', ['id']);
+        $this->addRoute($this->adminPrefix . '/email-templates/test-send/([0-9]+)', 'AdminEmailTemplates', 'testSend', ['id']);
         
         // Pages routes
         $this->addRoute('page/([a-zA-Z0-9-]+)', 'Page', 'show', ['slug']);

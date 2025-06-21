@@ -91,6 +91,12 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo $adminUrl; ?>/email-templates" class="<?php echo $controllerName == 'AdminEmailTemplates' ? 'active' : ''; ?>">
+                                <i class="material-icons">email</i>
+                                <span><?php _e('email_templates'); ?></span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo $adminUrl; ?>/languages" class="<?php echo $controllerName == 'AdminLanguages' ? 'active' : ''; ?>">
                                 <i class="material-icons">language</i>
                                 <span><?php _e('languages'); ?></span>

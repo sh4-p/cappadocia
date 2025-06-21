@@ -2,7 +2,7 @@
 /**
  * Email Class
  * 
- * Handles email sending with SMTP support
+ * Handles email sending with SMTP support and database templates
  */
 class Email
 {
@@ -12,6 +12,7 @@ class Email
     private $replyTo = '';
     private $error = '';
     private $debug = false;
+    private $emailTemplateModel = null;
     
     /**
      * Constructor
@@ -20,6 +21,14 @@ class Email
     {
         // Load settings for default configuration
         $this->loadDefaultSettings();
+        
+        // Load email template model
+        try {
+            $db = new Database();
+            $this->emailTemplateModel = new EmailTemplate($db);
+        } catch (Exception $e) {
+            error_log('Email: Could not load EmailTemplate model: ' . $e->getMessage());
+        }
     }
     
     /**
@@ -106,17 +115,60 @@ class Email
     }
     
     /**
-     * Send test email
+     * Send email using template
+     * 
+     * @param string $templateKey Template key
+     * @param string $toEmail Recipient email
+     * @param array $variables Template variables
+     * @return bool Success
+     */
+    public function sendTemplate($templateKey, $toEmail, $variables = [])
+    {
+        if (!$this->emailTemplateModel) {
+            $this->error = 'Email template model not available';
+            return false;
+        }
+        
+        // Get template from database
+        $template = $this->emailTemplateModel->getByKey($templateKey);
+        
+        if (!$template) {
+            // Fallback to hardcoded templates
+            return $this->sendLegacyTemplate($templateKey, $toEmail, $variables);
+        }
+        
+        // Merge default variables
+        $variables = array_merge([
+            'from_email' => $this->fromEmail,
+            'from_name' => $this->fromName,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'server_name' => $_SERVER['SERVER_NAME'] ?? 'localhost',
+            'method' => !empty($this->smtpConfig['host']) ? 'SMTP' : 'PHP Mail'
+        ], $variables);
+        
+        // Render template
+        $subject = $this->emailTemplateModel->renderTemplate($template['subject'], $variables);
+        $body = $this->emailTemplateModel->renderTemplate($template['body'], $variables);
+        
+        return $this->send($toEmail, $subject, $body);
+    }
+    
+    /**
+     * Send test email using template
      * 
      * @param string $toEmail Recipient email
      * @return bool Success
      */
     public function sendTestEmail($toEmail)
     {
-        $subject = 'SMTP Test Email - ' . date('Y-m-d H:i:s');
-        $message = $this->getTestEmailBody();
+        $variables = [
+            'timestamp' => date('Y-m-d H:i:s'),
+            'server_name' => $_SERVER['SERVER_NAME'] ?? 'localhost',
+            'from_email' => $this->fromEmail,
+            'method' => !empty($this->smtpConfig['host']) ? 'SMTP' : 'PHP Mail'
+        ];
         
-        return $this->send($toEmail, $subject, $message);
+        return $this->sendTemplate('test_email', $toEmail, $variables);
     }
     
     /**
@@ -127,10 +179,19 @@ class Email
      */
     public function sendBookingConfirmation($booking)
     {
-        $subject = 'Booking Confirmation - ' . ($booking['tour_name'] ?? 'Tour');
-        $message = $this->getBookingEmailBody($booking);
+        $variables = [
+            'first_name' => $booking['first_name'] ?? '',
+            'last_name' => $booking['last_name'] ?? '',
+            'tour_name' => $booking['tour_name'] ?? '',
+            'booking_date' => $booking['booking_date'] ?? '',
+            'adults' => $booking['adults'] ?? '0',
+            'children' => $booking['children'] ?? '0',
+            'total_price' => number_format($booking['total_price'] ?? 0, 2),
+            'special_requests' => $booking['special_requests'] ?? '',
+            'from_name' => $this->fromName
+        ];
         
-        return $this->send($booking['email'], $subject, $message);
+        return $this->sendTemplate('booking_confirmation', $booking['email'], $variables);
     }
     
     /**
@@ -141,15 +202,83 @@ class Email
      */
     public function sendContactEmail($contact)
     {
-        $subject = 'New Contact Form Submission';
-        $message = $this->getContactEmailBody($contact);
+        $variables = [
+            'name' => $contact['name'] ?? '',
+            'email' => $contact['email'] ?? '',
+            'phone' => $contact['phone'] ?? '',
+            'subject' => $contact['subject'] ?? '',
+            'message' => $contact['message'] ?? '',
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
         
         // Send to admin
         $db = new Database();
         $settingsModel = new Settings($db);
         $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
         
-        return $this->send($adminEmail, $subject, $message);
+        return $this->sendTemplate('contact_form', $adminEmail, $variables);
+    }
+    
+    /**
+     * Send booking admin notification
+     * 
+     * @param array $booking Booking data
+     * @return bool Success
+     */
+    public function sendBookingAdminNotification($booking)
+    {
+        $variables = [
+            'first_name' => $booking['first_name'] ?? '',
+            'last_name' => $booking['last_name'] ?? '',
+            'tour_name' => $booking['tour_name'] ?? '',
+            'booking_date' => $booking['booking_date'] ?? '',
+            'adults' => $booking['adults'] ?? '0',
+            'children' => $booking['children'] ?? '0',
+            'total_price' => number_format($booking['total_price'] ?? 0, 2),
+            'email' => $booking['email'] ?? '',
+            'phone' => $booking['phone'] ?? ''
+        ];
+        
+        // Send to admin
+        $db = new Database();
+        $settingsModel = new Settings($db);
+        $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
+        
+        return $this->sendTemplate('booking_admin_notification', $adminEmail, $variables);
+    }
+    
+    /**
+     * Send legacy template (fallback for missing database templates)
+     * 
+     * @param string $templateKey Template key
+     * @param string $toEmail Recipient email
+     * @param array $variables Template variables
+     * @return bool Success
+     */
+    private function sendLegacyTemplate($templateKey, $toEmail, $variables)
+    {
+        switch ($templateKey) {
+            case 'test_email':
+                $subject = 'SMTP Test Email - ' . date('Y-m-d H:i:s');
+                $message = $this->getTestEmailBody();
+                break;
+                
+            case 'booking_confirmation':
+                $subject = 'Booking Confirmation - ' . ($variables['tour_name'] ?? 'Tour');
+                $message = $this->getBookingEmailBody($variables);
+                break;
+                
+            case 'contact_form':
+                $subject = 'New Contact Form Submission';
+                $message = $this->getContactEmailBody($variables);
+                break;
+                
+            default:
+                $this->error = "Template '$templateKey' not found";
+                return false;
+        }
+        
+        return $this->send($toEmail, $subject, $message);
     }
     
     /**
@@ -425,7 +554,7 @@ class Email
     }
     
     /**
-     * Get test email body
+     * Get test email body (legacy fallback)
      * 
      * @return string HTML email body
      */
@@ -475,14 +604,13 @@ class Email
     }
     
     /**
-     * Get booking confirmation email body
+     * Get booking confirmation email body (legacy fallback)
      * 
      * @param array $booking Booking data
      * @return string HTML email body
      */
     private function getBookingEmailBody($booking)
     {
-        // This can be expanded with a proper template system
         return "
         <!DOCTYPE html>
         <html>
@@ -516,7 +644,7 @@ class Email
     }
     
     /**
-     * Get contact form email body
+     * Get contact form email body (legacy fallback)
      * 
      * @param array $contact Contact form data
      * @return string HTML email body
