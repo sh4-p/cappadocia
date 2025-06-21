@@ -140,11 +140,10 @@ $bookingHeroBg = isset($settings['booking_hero_bg']) ? $settings['booking_hero_b
                                             <div class="form-group col-md-6">
                                                 <label for="booking_date" class="form-label"><?php _e('booking_date'); ?> <span class="required">*</span></label>
                                                 <div class="input-with-icon">
-                                                    <i class="material-icons">event</i>
                                                     <input type="text" id="booking_date" name="booking_date" class="form-control datepicker" required
                                                            placeholder="<?php _e('select_date'); ?>"
                                                            data-min-date="today">
-                                                    <!-- data-disabled-dates parametresi kaldırıldı -->
+                                                           <i class="material-icons">event</i>
                                                 </div>
                                                 <div class="form-text"><?php _e('booking_date_help'); ?></div>
                                             </div>
@@ -382,15 +381,19 @@ $bookingHeroBg = isset($settings['booking_hero_bg']) ? $settings['booking_hero_b
                                                                 </div>
                                                                 <div class="bank-detail">
                                                                     <div class="bank-detail-label"><?php _e('account_holder'); ?></div>
-                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_account_holder']) ? $settings['bank_account_holder'] : 'Cappadocia Travel Agency'; ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['account_name']) ? $settings['account_name'] : 'Cappadocia Travel Agency'; ?></div>
+                                                                </div>
+                                                                <div class="bank-detail">
+                                                                    <div class="bank-detail-label"><?php _e('account_number'); ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['account_number']) ? $settings['account_number'] : '0000 0000 0000 0000'; ?></div>
                                                                 </div>
                                                                 <div class="bank-detail">
                                                                     <div class="bank-detail-label"><?php _e('iban'); ?></div>
-                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_iban']) ? $settings['bank_iban'] : 'TR00 0000 0000 0000 0000 0000 00'; ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['iban']) ? $settings['iban'] : 'TR00 0000 0000 0000 0000 0000 00'; ?></div>
                                                                 </div>
                                                                 <div class="bank-detail">
                                                                     <div class="bank-detail-label"><?php _e('swift_code'); ?></div>
-                                                                    <div class="bank-detail-value"><?php echo isset($settings['bank_swift']) ? $settings['bank_swift'] : 'EXAMPLEXXX'; ?></div>
+                                                                    <div class="bank-detail-value"><?php echo isset($settings['swift_code']) ? $settings['swift_code'] : 'EXAMPLEXXX'; ?></div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1046,7 +1049,7 @@ $additionalScripts = '
     }
     
     .input-with-icon.textarea i {
-        top: 1.5rem;
+        top: 1rem;
         transform: none;
     }
     
@@ -1451,11 +1454,6 @@ $additionalScripts = '
         overflow: hidden;
     }
 
-    .form-navigation .btn-primary:hover {
-        color: var(--white-color) !important;
-        background-color: var(--primary-dark-color);
-    }
-
     .form-navigation .btn-outline:hover {
         color: var(--gray-800) !important; 
         background-color: var(--gray-100);
@@ -1479,25 +1477,11 @@ $additionalScripts = '
         color: var(--white-color) !important;
     }
 
-    .next-tab.btn-primary:hover {
-        background-color: var(--primary-dark-color);
-        color: var(--white-color) !important;
-    }
-
     .next-tab.btn-primary i {
         color: var(--white-color) !important;
     }
 
     .next-tab.btn-primary:hover i {
-        color: var(--white-color) !important;
-    }
-
-    /* Yüksek öncelik için daha spesifik seçiciler */
-    .form-navigation .next-tab.btn-primary {
-        color: var(--white-color) !important;
-    }
-
-    .form-navigation .next-tab.btn-primary:hover {
         color: var(--white-color) !important;
     }
 
@@ -1922,7 +1906,8 @@ $additionalScripts = '
 <!-- JavaScript for Booking Form -->
 <script>
   
-  document.addEventListener('DOMContentLoaded', function() {
+// JavaScript for Booking Form - SMART VALIDATION
+document.addEventListener('DOMContentLoaded', function() {
     // URL'den parametre alma fonksiyonu
     function getUrlParameter(name) {
         name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
@@ -1936,12 +1921,36 @@ $additionalScripts = '
     const urlAdults = getUrlParameter('adults');
     const urlChildren = getUrlParameter('children');
     
-    // Tab Functionality
+    // Progress Steps Management
+    function updateProgressSteps(activeTabId) {
+        const progressSteps = document.querySelectorAll('.progress-step');
+        
+        const tabStepMap = {
+            'booking-details': 1,
+            'personal-info': 2,
+            'payment-info': 3
+        };
+        
+        const currentStep = tabStepMap[activeTabId] || 1;
+        
+        progressSteps.forEach((step, index) => {
+            const stepNumber = index + 1;
+            
+            step.classList.remove('active', 'completed');
+            
+            if (stepNumber < currentStep) {
+                step.classList.add('completed');
+            } else if (stepNumber === currentStep) {
+                step.classList.add('active');
+            }
+        });
+    }
+    
+    // Tab Functionality with Progress Updates
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
     
     function setActiveTab(tabId) {
-        // Remove active class from all buttons and panes
         tabButtons.forEach(btn => {
             btn.classList.remove('active');
             if (btn.getAttribute('data-tab') === tabId) {
@@ -1956,7 +1965,7 @@ $additionalScripts = '
             }
         });
         
-        // Scroll to top of form
+        updateProgressSteps(tabId);
         document.querySelector('.booking-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     
@@ -1967,13 +1976,11 @@ $additionalScripts = '
         });
     });
     
-    // Payment Method Selection - Dinamik olarak güncellenmiş
+    // Payment Method Selection
     const paymentMethods = document.querySelectorAll('.payment-method');
     const paymentContents = document.querySelectorAll('.payment-content');
 
-    // Function to toggle required attributes based on payment method
     function toggleRequiredFields(methodId) {
-        // Get all credit card fields
         const cardFields = [
             document.getElementById('card_name'),
             document.getElementById('card_number'),
@@ -1981,7 +1988,6 @@ $additionalScripts = '
             document.getElementById('card_cvv')
         ];
         
-        // Set required attribute based on selected payment method
         cardFields.forEach(field => {
             if (field) {
                 if (methodId === 'card') {
@@ -1993,18 +1999,14 @@ $additionalScripts = '
         });
     }
 
-    // Dinamik payment method event listeners
     paymentMethods.forEach(method => {
         method.addEventListener('click', function() {
-            // Update radio selection
             const radio = this.querySelector('input[type="radio"]');
-            radio.checked = true;
+            if (radio) radio.checked = true;
             
-            // Update active classes
             paymentMethods.forEach(m => m.classList.remove('active'));
             this.classList.add('active');
             
-            // Show corresponding content
             const methodId = this.getAttribute('data-method');
             paymentContents.forEach(content => {
                 content.classList.remove('active');
@@ -2013,17 +2015,14 @@ $additionalScripts = '
                 }
             });
             
-            // Toggle required fields based on payment method
             toggleRequiredFields(methodId);
         });
     });
     
     // Hata gösterme fonksiyonu
     function showError(inputElement, message) {
-        // Mevcut hata mesajını temizle
         clearError(inputElement);
         
-        // Hata mesajı oluştur
         const errorElement = document.createElement('div');
         errorElement.className = 'error-message';
         errorElement.textContent = message;
@@ -2031,18 +2030,14 @@ $additionalScripts = '
         errorElement.style.fontSize = '0.875rem';
         errorElement.style.marginTop = '0.25rem';
         
-        // Input elementinin bulunduğu konteynerin sonuna ekle
         const parentElement = inputElement.closest('.form-group') || inputElement.closest('.terms-check');
         if (parentElement) {
             parentElement.appendChild(errorElement);
-            
-            // Input'a hata sınıfı ekle
             inputElement.classList.add('error-input');
             inputElement.style.borderColor = '#dc3545';
         }
     }
     
-    // Hata mesajını temizleme fonksiyonu
     function clearError(inputElement) {
         const parentElement = inputElement.closest('.form-group') || inputElement.closest('.terms-check');
         if (parentElement) {
@@ -2050,14 +2045,11 @@ $additionalScripts = '
             if (errorElement) {
                 parentElement.removeChild(errorElement);
             }
-            
-            // Input'tan hata sınıfını kaldır
             inputElement.classList.remove('error-input');
             inputElement.style.borderColor = '';
         }
     }
     
-    // Tüm hataları temizleme
     function clearAllErrors() {
         document.querySelectorAll('.error-message').forEach(error => error.remove());
         document.querySelectorAll('.error-input').forEach(input => {
@@ -2066,18 +2058,137 @@ $additionalScripts = '
         });
     }
     
-    // E-posta doğrulama
     function isValidEmail(email) {
         const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(String(email).toLowerCase());
     }
     
-    // Adım validasyonu
+    // AKILLI VALIDATION - Her tab'ı ayrı ayrı kontrol eder
+    function validateAllSteps() {
+        const errors = [];
+        
+        // 1. Booking Details Validation
+        const bookingDate = document.getElementById('booking_date');
+        if (!bookingDate?.value) {
+            errors.push({
+                tab: 'booking-details',
+                element: bookingDate,
+                message: __('date_required')
+            });
+        }
+        
+        // 2. Personal Info Validation
+        const firstName = document.getElementById('first_name');
+        const lastName = document.getElementById('last_name');
+        const email = document.getElementById('booking_email');
+        const phone = document.getElementById('booking_phone');
+        
+        if (!firstName?.value) {
+            errors.push({
+                tab: 'personal-info',
+                element: firstName,
+                message: __('first_name_required')
+            });
+        }
+        
+        if (!lastName?.value) {
+            errors.push({
+                tab: 'personal-info',
+                element: lastName,
+                message: __('last_name_required')
+            });
+        }
+        
+        if (!email?.value) {
+            errors.push({
+                tab: 'personal-info',
+                element: email,
+                message: __('email_required')
+            });
+        } else if (!isValidEmail(email.value)) {
+            errors.push({
+                tab: 'personal-info',
+                element: email,
+                message: __('invalid_email')
+            });
+        }
+        
+        if (!phone?.value) {
+            errors.push({
+                tab: 'personal-info',
+                element: phone,
+                message: __('phone_required')
+            });
+        }
+        
+        // 3. Payment Info Validation
+        const selectedPaymentMethodElement = document.querySelector('input[name="payment_method"]:checked');
+        if (!selectedPaymentMethodElement) {
+            errors.push({
+                tab: 'payment-info',
+                element: null,
+                message: 'Payment method required'
+            });
+        } else {
+            const selectedPaymentMethod = selectedPaymentMethodElement.value;
+            
+            // Sadece kredi kartı seçilmişse kart alanlarını doğrula
+            if (selectedPaymentMethod === 'card') {
+                const cardName = document.getElementById('card_name');
+                const cardNumber = document.getElementById('card_number');
+                const cardExpiry = document.getElementById('card_expiry');
+                const cardCvv = document.getElementById('card_cvv');
+                
+                if (cardName && !cardName.value) {
+                    errors.push({
+                        tab: 'payment-info',
+                        element: cardName,
+                        message: __('card_name_required')
+                    });
+                }
+                
+                if (cardNumber && !cardNumber.value) {
+                    errors.push({
+                        tab: 'payment-info',
+                        element: cardNumber,
+                        message: __('card_number_required')
+                    });
+                }
+                
+                if (cardExpiry && !cardExpiry.value) {
+                    errors.push({
+                        tab: 'payment-info',
+                        element: cardExpiry,
+                        message: __('card_expiry_required')
+                    });
+                }
+                
+                if (cardCvv && !cardCvv.value) {
+                    errors.push({
+                        tab: 'payment-info',
+                        element: cardCvv,
+                        message: __('card_cvv_required')
+                    });
+                }
+            }
+        }
+        
+        const termsCheck = document.getElementById('terms_check');
+        if (!termsCheck?.checked) {
+            errors.push({
+                tab: 'payment-info',
+                element: termsCheck,
+                message: __('terms_required')
+            });
+        }
+        
+        return errors;
+    }
+    
     function validateStep(stepId) {
         clearAllErrors();
         
         if (stepId === 'booking-details') {
-            // Booking details validasyonu
             const dateInput = document.getElementById('booking_date');
             if (!dateInput.value) {
                 showError(dateInput, __('date_required'));
@@ -2085,7 +2196,6 @@ $additionalScripts = '
             }
         }
         else if (stepId === 'personal-info') {
-            // Kişisel bilgi validasyonu
             const firstName = document.getElementById('first_name');
             const lastName = document.getElementById('last_name');
             const email = document.getElementById('booking_email');
@@ -2127,12 +2237,10 @@ $additionalScripts = '
         btn.addEventListener('click', function() {
             const currentTabId = this.closest('.tab-pane').id.replace('-tab', '');
             
-            // Mevcut adımı doğrula
             if (validateStep(currentTabId)) {
                 const nextTabId = this.getAttribute('data-next');
                 setActiveTab(nextTabId);
             } else {
-                // Sayfayı ilk hataya doğru kaydır
                 const firstError = document.querySelector('.error-input');
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2149,7 +2257,6 @@ $additionalScripts = '
         });
     });
     
-    // Input olaylarını dinle
     document.querySelectorAll('.form-control').forEach(input => {
         input.addEventListener('input', function() {
             clearError(this);
@@ -2161,43 +2268,20 @@ $additionalScripts = '
         });
     });
     
-    // Guest Counter
-    const counterBtns = document.querySelectorAll('.counter-btn');
-    
-    counterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const target = this.getAttribute('data-target');
-            const input = document.getElementById(target);
-            const currentValue = parseInt(input.value);
-            const min = parseInt(input.getAttribute('min'));
-            const max = parseInt(input.getAttribute('max'));
-            
-            if (this.classList.contains('increase-btn')) {
-                if (currentValue < max) {
-                    input.value = currentValue + 1;
-                }
-            } else {
-                if (currentValue > min) {
-                    input.value = currentValue - 1;
-                }
-            }
-            
-            // Update summary
-            updateSummary();
-        });
-    });
-    
     // Price Calculation & Summary
     function updateSummary() {
-        const adults = parseInt(document.getElementById('booking_adults').value);
-        const children = parseInt(document.getElementById('booking_children').value);
-        const basePrice = parseFloat(document.getElementById('booking_base_price').value);
-        const discountPrice = parseFloat(document.getElementById('booking_discount_price').value);
-        const currencySymbol = document.getElementById('currency_symbol').value;
+        const adults = parseInt(document.getElementById('booking_adults')?.value) || 1;
+        const children = parseInt(document.getElementById('booking_children')?.value) || 0;
+        const basePrice = parseFloat(document.getElementById('booking_base_price')?.value) || 0;
+        const discountPrice = parseFloat(document.getElementById('booking_discount_price')?.value) || 0;
+        const currencySymbol = document.getElementById('currency_symbol')?.value || '$';
         
         // Update summary participants
-        document.getElementById('summary_adults').textContent = adults;
-        document.getElementById('summary_children').textContent = children;
+        const summaryAdults = document.getElementById('summary_adults');
+        const summaryChildren = document.getElementById('summary_children');
+        
+        if (summaryAdults) summaryAdults.textContent = adults;
+        if (summaryChildren) summaryChildren.textContent = children;
         
         // Calculate total price
         const pricePerPerson = discountPrice > 0 ? discountPrice : basePrice;
@@ -2206,26 +2290,86 @@ $additionalScripts = '
         const totalPrice = totalAdults + totalChildren;
         
         // Update display
-        document.getElementById('total_price_display').textContent = currencySymbol + totalPrice.toFixed(2);
-        document.getElementById('booking_total_price').value = totalPrice.toFixed(2);
+        const totalDisplay = document.getElementById('total_price_display');
+        const totalInput = document.getElementById('booking_total_price');
+        
+        if (totalDisplay) totalDisplay.textContent = currencySymbol + totalPrice.toFixed(2);
+        if (totalInput) totalInput.value = totalPrice.toFixed(2);
+    }
+    
+    // Guest Counter - FIXED VERSION
+    document.querySelectorAll('.counter-btn').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('.counter-btn') && !e.target.closest('.counter-btn')) {
+            return;
+        }
+        
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        
+        const button = e.target.closest('.counter-btn');
+        const target = button.getAttribute('data-target');
+        const input = document.getElementById(target);
+        
+        if (!input) return;
+        
+        const currentValue = parseInt(input.value) || 0;
+        const min = parseInt(input.getAttribute('min')) || 0;
+        const max = parseInt(input.getAttribute('max')) || 10;
+        
+        let newValue = currentValue;
+        
+        if (button.classList.contains('increase-btn')) {
+            if (currentValue < max) {
+                newValue = currentValue + 1;
+            }
+        } else if (button.classList.contains('decrease-btn')) {
+            if (currentValue > min) {
+                newValue = currentValue - 1;
+            }
+        }
+        
+        if (newValue !== currentValue) {
+            input.value = newValue;
+            setTimeout(updateSummary, 10);
+        }
+    }, true);
+    
+    // Input değişikliklerini izle
+    const adultsInput = document.getElementById('booking_adults');
+    const childrenInput = document.getElementById('booking_children');
+    
+    if (adultsInput) {
+        const newAdultsInput = adultsInput.cloneNode(true);
+        adultsInput.parentNode.replaceChild(newAdultsInput, adultsInput);
+        
+        newAdultsInput.addEventListener('input', function() {
+            setTimeout(updateSummary, 10);
+        });
+    }
+    
+    if (childrenInput) {
+        const newChildrenInput = childrenInput.cloneNode(true);
+        childrenInput.parentNode.replaceChild(newChildrenInput, childrenInput);
+        
+        newChildrenInput.addEventListener('input', function() {
+            setTimeout(updateSummary, 10);
+        });
     }
     
     // Date Picker
     if (typeof flatpickr !== 'undefined') {
-        console.log('Flatpickr yüklendi ve çalışıyor');
-        
-        // Bugünün tarihini manuel olarak al
         const today = new Date();
-        console.log('Bugünün tarihi:', today);
-        
-        // URL'den gelen tarih varsa, öncelikle onu kullan
         let initialDate = today;
+        
         if (urlDate) {
             initialDate = new Date(urlDate);
-            console.log('URL\'den alınan tarih kullanılıyor:', initialDate);
         }
         
-        // Flatpickr yapılandırması
         const datePickerInstance = flatpickr("#booking_date", {
             minDate: today,
             defaultDate: initialDate,
@@ -2235,66 +2379,64 @@ $additionalScripts = '
             altFormat: "F j, Y",
             
             onReady: function(selectedDates, dateStr, instance) {
-                console.log('Flatpickr hazır, varsayılan tarih:', dateStr);
-                console.log('Takvim ayı:', instance.currentMonth, instance.currentYear);
-                
                 if (urlDate) {
-                    document.getElementById('summary_date').textContent = instance.formatDate(new Date(urlDate), "F j, Y");
+                    const summaryDate = document.getElementById('summary_date');
+                    if (summaryDate) {
+                        summaryDate.textContent = instance.formatDate(new Date(urlDate), "F j, Y");
+                    }
                 }
             },
             
             onChange: function(selectedDates, dateStr) {
-                console.log('Seçilen tarih:', dateStr);
-                document.getElementById('summary_date').textContent = dateStr;
+                const summaryDate = document.getElementById('summary_date');
+                if (summaryDate) {
+                    summaryDate.textContent = dateStr;
+                }
                 updateSummary();
                 clearError(document.getElementById('booking_date'));
             }
         });
         
-        // URL'den tarih parametresi varsa, date picker'ı ayarla
         if (urlDate) {
-            console.log('URL\'den alınan tarih ayarlanıyor:', urlDate);
             datePickerInstance.setDate(urlDate);
-            document.getElementById('summary_date').textContent = datePickerInstance.formatDate(new Date(urlDate), "F j, Y");
+            const summaryDate = document.getElementById('summary_date');
+            if (summaryDate) {
+                summaryDate.textContent = datePickerInstance.formatDate(new Date(urlDate), "F j, Y");
+            }
         }
         
-        // Mevcut ayı zorlayarak göster
         setTimeout(function() {
             if (urlDate) {
                 const urlDateObj = new Date(urlDate);
                 datePickerInstance.changeMonth(urlDateObj.getMonth());
-                console.log('Takvim ayı URL\'den gelen tarihe göre ayarlandı:', urlDateObj.getMonth());
             } else {
                 const currentDate = new Date();
                 datePickerInstance.changeMonth(currentDate.getMonth());
-                console.log('Takvim ayı bugüne göre ayarlandı:', currentDate.getMonth());
             }
         }, 100);
     }
     
-    // URL'den gelen katılımcı sayılarını ayarla
+    // URL parametrelerini ayarla
     if (urlAdults) {
-        const adultsInput = document.getElementById('booking_adults');
-        adultsInput.value = parseInt(urlAdults);
-        document.getElementById('summary_adults').textContent = urlAdults;
-        console.log('URL\'den alınan yetişkin sayısı:', urlAdults);
+        const adultsInputFresh = document.getElementById('booking_adults');
+        if (adultsInputFresh) {
+            adultsInputFresh.value = parseInt(urlAdults);
+            const summaryAdults = document.getElementById('summary_adults');
+            if (summaryAdults) summaryAdults.textContent = urlAdults;
+        }
     }
     
     if (urlChildren) {
-        const childrenInput = document.getElementById('booking_children');
-        childrenInput.value = parseInt(urlChildren);
-        document.getElementById('summary_children').textContent = urlChildren;
-        console.log('URL\'den alınan çocuk sayısı:', urlChildren);
-    }
-    
-    // URL'den gelen parametreler yüklendikten sonra özeti güncelle
-    if (urlAdults || urlChildren || urlDate) {
-        updateSummary();
+        const childrenInputFresh = document.getElementById('booking_children');
+        if (childrenInputFresh) {
+            childrenInputFresh.value = parseInt(urlChildren);
+            const summaryChildren = document.getElementById('summary_children');
+            if (summaryChildren) summaryChildren.textContent = urlChildren;
+        }
     }
     
     // Accordion
     const accordionHeaders = document.querySelectorAll('.accordion-header');
-    
     accordionHeaders.forEach(header => {
         header.addEventListener('click', function() {
             const accordionItem = this.parentElement;
@@ -2305,135 +2447,61 @@ $additionalScripts = '
     // Initial summary update
     updateSummary();
     
-    // Listen for changes in participant numbers
-    document.getElementById('booking_adults').addEventListener('change', updateSummary);
-    document.getElementById('booking_children').addEventListener('change', updateSummary);
-    
-    // Form Validation
+    // AKILLI FORM VALIDATION - HTML5 validation'ını devre dışı bırak
     const bookingForm = document.getElementById('booking_form');
     if (bookingForm) {
+        // HTML5 validation'ını kapat
+        bookingForm.setAttribute('novalidate', 'true');
+        
         bookingForm.addEventListener('submit', function(e) {
-            e.preventDefault(); // Önce formu durdur, geçerliyse sonra manuel gönder
+            e.preventDefault();
             
-            let isValid = true;
-            clearAllErrors();
+            console.log('Form submit attempt - starting validation...');
             
-            // Booking details validasyonu
-            const bookingDate = document.getElementById('booking_date').value;
-            if (!bookingDate) {
-                showError(document.getElementById('booking_date'), __('date_required'));
-                setActiveTab('booking-details');
-                isValid = false;
-                return;
-            }
+            // Tüm adımları kontrol et
+            const allErrors = validateAllSteps();
             
-            // Kişisel bilgiler validasyonu
-            const firstName = document.getElementById('first_name');
-            const lastName = document.getElementById('last_name');
-            const email = document.getElementById('booking_email');
-            const phone = document.getElementById('booking_phone');
-            
-            if (!firstName.value) {
-                showError(firstName, __('first_name_required'));
-                isValid = false;
-            }
-            
-            if (!lastName.value) {
-                showError(lastName, __('last_name_required'));
-                isValid = false;
-            }
-            
-            if (!email.value) {
-                showError(email, __('email_required'));
-                isValid = false;
-            } else if (!isValidEmail(email.value)) {
-                showError(email, __('invalid_email'));
-                isValid = false;
-            }
-            
-            if (!phone.value) {
-                showError(phone, __('phone_required'));
-                isValid = false;
-            }
-            
-            if (!isValid) {
-                setActiveTab('personal-info');
-                // İlk hataya odaklan
-                const firstError = document.querySelector('.error-input');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstError.focus();
-                }
-                return;
-            }
-            
-            // Ödeme yöntemi kontrolü - dinamik olarak seçilen yöntemi al
-            const selectedPaymentMethodElement = document.querySelector('input[name="payment_method"]:checked');
-            if (!selectedPaymentMethodElement) {
-                setActiveTab('payment-info');
-                return;
-            }
-            
-            const selectedPaymentMethod = selectedPaymentMethodElement.value;
-            
-            // Sadece kredi kartı seçilmişse kart alanlarını doğrula
-            if (selectedPaymentMethod === 'card') {
-                const cardName = document.getElementById('card_name');
-                const cardNumber = document.getElementById('card_number');
-                const cardExpiry = document.getElementById('card_expiry');
-                const cardCvv = document.getElementById('card_cvv');
+            if (allErrors.length > 0) {
+                console.log('Validation errors found:', allErrors);
                 
-                let cardValid = true;
+                // İlk hatanın bulunduğu tab'ı belirle
+                const firstError = allErrors[0];
                 
-                if (cardName && !cardName.value) {
-                    showError(cardName, __('card_name_required'));
-                    cardValid = false;
-                }
+                // O tab'a geç
+                setActiveTab(firstError.tab);
                 
-                if (cardNumber && !cardNumber.value) {
-                    showError(cardNumber, __('card_number_required'));
-                    cardValid = false;
-                }
-                
-                if (cardExpiry && !cardExpiry.value) {
-                    showError(cardExpiry, __('card_expiry_required'));
-                    cardValid = false;
-                }
-                
-                if (cardCvv && !cardCvv.value) {
-                    showError(cardCvv, __('card_cvv_required'));
-                    cardValid = false;
-                }
-                
-                if (!cardValid) {
-                    setActiveTab('payment-info');
-                    // İlk hataya odaklan
-                    const firstError = document.querySelector('.error-input');
-                    if (firstError) {
-                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        firstError.focus();
+                // Hataları göster
+                clearAllErrors();
+                allErrors.forEach(error => {
+                    if (error.element) {
+                        showError(error.element, error.message);
                     }
-                    return;
-                }
+                });
+                
+                // İlk hatalı elemente odaklan
+                setTimeout(() => {
+                    if (firstError.element) {
+                        firstError.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.element.focus();
+                    }
+                }, 300);
+                
+                return false;
             }
             
-            const termsCheck = document.getElementById('terms_check');
-            if (!termsCheck.checked) {
-                showError(termsCheck, __('terms_required'));
-                setActiveTab('payment-info');
-                return;
-            }
+            console.log('All validation passed - submitting form');
             
             // Tüm validasyonlar geçildiyse formu gönder
+            // HTML5 validation'ını geçici olarak tekrar aç
+            bookingForm.removeAttribute('novalidate');
             this.submit();
         });
     }
     
-    // Sayfa yüklendiğinde ilk aktif ödeme yöntemi için required özelliklerini ayarla
-    window.addEventListener('load', function() {
+    // Sayfa initialization
+    function initializePage() {
         setActiveTab('booking-details');
         
-        // Varsayılan ödeme yöntemi için required alanları ayarla
         const defaultPaymentMethod = document.querySelector('.payment-method.active');
         if (defaultPaymentMethod) {
             const methodId = defaultPaymentMethod.getAttribute('data-method');
@@ -2443,25 +2511,33 @@ $additionalScripts = '
         if (urlDate || urlAdults || urlChildren) {
             highlightPreselectedOptions();
         }
-    });
+    }
     
-    // Önceden seçilmiş parametreleri vurgulayan fonksiyon
     function highlightPreselectedOptions() {
         if (urlDate) {
             const dateInput = document.getElementById('booking_date');
-            dateInput.classList.add('preselected');
-            dateInput.parentElement.classList.add('highlight-preselected');
+            if (dateInput) {
+                dateInput.classList.add('preselected');
+                dateInput.parentElement.classList.add('highlight-preselected');
+            }
         }
         
         if (urlAdults) {
-            const adultsContainer = document.getElementById('booking_adults').closest('.guest-type');
-            adultsContainer.classList.add('highlight-preselected');
+            const adultsContainer = document.getElementById('booking_adults')?.closest('.guest-type');
+            if (adultsContainer) {
+                adultsContainer.classList.add('highlight-preselected');
+            }
         }
         
         if (urlChildren && parseInt(urlChildren) > 0) {
-            const childrenContainer = document.getElementById('booking_children').closest('.guest-type');
-            childrenContainer.classList.add('highlight-preselected');
+            const childrenContainer = document.getElementById('booking_children')?.closest('.guest-type');
+            if (childrenContainer) {
+                childrenContainer.classList.add('highlight-preselected');
+            }
         }
     }
+    
+    // Initialize everything
+    initializePage();
 });
 </script>
