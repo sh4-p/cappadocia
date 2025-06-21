@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Main Application Class
@@ -48,6 +47,25 @@ class App
     }
     
     /**
+     * Load a model
+     * 
+     * @param string $model Model name
+     * @return object Model instance
+     */
+    private function loadModel($model)
+    {
+        // Check if model file exists
+        $modelFile = BASE_PATH . '/app/models/' . $model . '.php';
+        
+        if (file_exists($modelFile)) {
+            require_once $modelFile;
+            return new $model($this->db);
+        }
+        
+        throw new Exception("Model '$model' not found");
+    }
+
+    /**
      * Detect browser language
      * 
      * @return string Language code
@@ -65,10 +83,147 @@ class App
     }
 
     /**
+     * Check if user is admin
+     * 
+     * @return bool Is admin
+     */
+    private function isAdmin()
+    {
+        return (bool) $this->session->get('user_id');
+    }
+
+    /**
+     * Check maintenance mode
+     */
+    private function checkMaintenanceMode()
+    {
+        // Load Settings model
+        $settingsModel = $this->loadModel('Settings');
+        $maintenanceMode = $settingsModel->getSetting('maintenance_mode', '0');
+        
+        // If maintenance mode is enabled and user is not admin
+        if ($maintenanceMode === '1' && !$this->isAdmin()) {
+            // Parse URL to check if we're trying to access admin
+            $url = $this->parseUrl();
+            
+            // Allow access to admin login
+            if (!empty($url) && $url[0] === 'admin') {
+                return; // Allow admin access
+            }
+            
+            // Show maintenance page for regular users
+            $this->showMaintenancePage();
+        }
+    }
+
+    /**
+     * Set debug mode
+     */
+    private function setDebugMode()
+    {
+        // Load Settings model
+        $settingsModel = $this->loadModel('Settings');
+        $debugMode = $settingsModel->getSetting('debug_mode', '0');
+        
+        if ($debugMode === '1') {
+            // Enable error reporting
+            error_reporting(E_ALL);
+            ini_set('display_errors', 1);
+            ini_set('display_startup_errors', 1);
+        } else {
+            // Disable error reporting for production
+            error_reporting(0);
+            ini_set('display_errors', 0);
+            ini_set('display_startup_errors', 0);
+        }
+    }
+
+    /**
+     * Show maintenance page
+     */
+    private function showMaintenancePage()
+    {
+        // Set HTTP status code
+        http_response_code(503);
+        
+        // Get current language
+        $langCode = $this->language->getCurrentLanguage();
+        
+        // Load Settings model
+        $settingsModel = $this->loadModel('Settings');
+        $settings = $settingsModel->getAllSettings();
+        
+        // Load Translation model
+        $translationModel = $this->loadModel('Translation');
+        $translations = $translationModel->getTranslationsForLanguage($langCode);
+        
+        // Make language instance available globally for LanguageHelper
+        global $language;
+        $language = $this->language;
+        
+        // Include language helper
+        require_once BASE_PATH . '/app/helpers/LanguageHelper.php';
+        
+        // Set data for maintenance page
+        $data = [
+            'settings' => $settings,
+            'translations' => $translations,
+            'appUrl' => APP_URL,
+            'cssUrl' => CSS_URL,
+            'jsUrl' => JS_URL,
+            'imgUrl' => IMG_URL,
+            'currentLang' => $langCode,
+            'pageTitle' => __('maintenance_mode_title'),
+            'metaDescription' => __('maintenance_mode_description')
+        ];
+        
+        // Extract data for view
+        extract($data);
+        
+        // Load maintenance view
+        $maintenanceFile = BASE_PATH . '/app/views/maintenance.php';
+        if (file_exists($maintenanceFile)) {
+            include $maintenanceFile;
+        } else {
+            // Fallback maintenance message
+            echo '<!DOCTYPE html>
+<html lang="' . $langCode . '">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>' . __('maintenance_mode_title') . '</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f5f5f5; }
+        .maintenance-container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .maintenance-icon { font-size: 64px; color: #ff6b35; margin-bottom: 20px; }
+        h1 { color: #333; margin-bottom: 20px; }
+        p { color: #666; font-size: 18px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="maintenance-icon">🔧</div>
+        <h1>' . __('maintenance_mode_title') . '</h1>
+        <p>' . __('maintenance_mode_message') . '</p>
+        <p>' . __('maintenance_mode_back_soon') . '</p>
+    </div>
+</body>
+</html>';
+        }
+        exit;
+    }
+
+    /**
      * Run the application
      */
     public function run()
     {
+        // Set debug mode first
+        $this->setDebugMode();
+        
+        // Check maintenance mode
+        $this->checkMaintenanceMode();
+        
         // Parse the URL
         $url = $this->parseUrl();
         
@@ -86,7 +241,7 @@ class App
                 $this->language->setLanguage($lang);
                 
                 // Only redirect if not in admin area
-                if ($url[0] !== 'admin') {
+                if (empty($url) || $url[0] !== 'admin') {
                     $requestUri = $_SERVER['REQUEST_URI'];
                     $redirectUrl = rtrim(APP_URL, '/') . '/' . $lang . $requestUri;
                     header('Location: ' . $redirectUrl);
