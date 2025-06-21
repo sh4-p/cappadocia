@@ -868,6 +868,93 @@
 </form>
 
 <style>
+
+    /* SMTP Configuration için ek stiller */
+    .smtp-config-section {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .smtp-config-section:not(.active) {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        opacity: 0;
+    }
+
+    .smtp-config-section.active {
+        max-height: none;
+        opacity: 1;
+    }
+
+    #smtp-auth-fields {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    #smtp-auth-fields:not(.show) {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        opacity: 0;
+    }
+
+    #smtp-auth-fields.show {
+        max-height: none;
+        opacity: 1;
+    }
+
+    /* Form elemanları için daha iyi spacing */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        margin-bottom: 0.5rem;
+        display: block;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .form-text {
+        margin-top: 0.25rem;
+        margin-bottom: 0;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    /* Text overlap prevention */
+    .card-description,
+    .section-description {
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+
+    .alert {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .form-row .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        .settings-nav-tabs {
+            flex-direction: row;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .settings-nav-tab {
+            flex-shrink: 0;
+            min-width: 150px;
+        }
+    }
     /* Payment Settings Specific Styles */
     .card-description {
         margin: 0;
@@ -1267,10 +1354,11 @@
 </style>
 
 <script>
-// Settings tabs manager
+// Settings Tabs ve SMTP Toggle için geliştirilmiş JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing settings tabs');
+    console.log('Settings page initialized');
     
+    // Settings Tabs Functionality
     const SettingsTabs = {
         init: function() {
             this.tabLinks = document.querySelectorAll('.settings-nav-tab');
@@ -1279,6 +1367,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.activateFirstTab();
             this.initImagePreviews();
             this.initPaymentToggles();
+            this.initSMTPToggle(); // SMTP toggle fonksiyonu ekledik
         },
         
         bindEvents: function() {
@@ -1492,6 +1581,133 @@ document.addEventListener('DOMContentLoaded', function() {
                     noPaymentWarning.remove();
                 }
             }
+        },
+        
+        // SMTP Toggle Functionality - YENİ EKLENDİ
+        initSMTPToggle: function() {
+            const smtpToggle = document.getElementById('smtp_enabled');
+            const smtpConfig = document.getElementById('smtp-config');
+            const smtpAuthToggle = document.getElementById('smtp_auth');
+            const smtpAuthFields = document.getElementById('smtp-auth-fields');
+            
+            if (smtpToggle && smtpConfig) {
+                // Initial state check
+                this.toggleSMTPConfig();
+                
+                // Toggle SMTP configuration visibility
+                smtpToggle.addEventListener('change', () => {
+                    this.toggleSMTPConfig();
+                });
+            }
+            
+            if (smtpAuthToggle && smtpAuthFields) {
+                // Initial state check
+                this.toggleSMTPAuth();
+                
+                smtpAuthToggle.addEventListener('change', () => {
+                    this.toggleSMTPAuth();
+                });
+            }
+            
+            // Test SMTP functionality
+            this.initSMTPTest();
+            
+            // Password visibility toggles
+            this.initPasswordToggles();
+        },
+        
+        toggleSMTPConfig: function() {
+            const smtpToggle = document.getElementById('smtp_enabled');
+            const smtpConfig = document.getElementById('smtp-config');
+            
+            if (smtpToggle && smtpConfig) {
+                if (smtpToggle.checked) {
+                    smtpConfig.style.display = 'block';
+                    smtpConfig.classList.add('active');
+                    console.log('SMTP configuration shown');
+                } else {
+                    smtpConfig.style.display = 'none';
+                    smtpConfig.classList.remove('active');
+                    console.log('SMTP configuration hidden');
+                }
+            }
+        },
+        
+        toggleSMTPAuth: function() {
+            const smtpAuthToggle = document.getElementById('smtp_auth');
+            const smtpAuthFields = document.getElementById('smtp-auth-fields');
+            
+            if (smtpAuthToggle && smtpAuthFields) {
+                if (smtpAuthToggle.checked) {
+                    smtpAuthFields.style.display = 'block';
+                    smtpAuthFields.classList.add('show');
+                    console.log('SMTP auth fields shown');
+                } else {
+                    smtpAuthFields.style.display = 'none';
+                    smtpAuthFields.classList.remove('show');
+                    console.log('SMTP auth fields hidden');
+                }
+            }
+        },
+        
+        initSMTPTest: function() {
+            const testSmtpBtn = document.querySelector('.test-smtp-btn');
+            const testEmailInput = document.getElementById('test_email');
+            const testResult = document.getElementById('smtp-test-result');
+            
+            if (testSmtpBtn && testEmailInput && testResult) {
+                testSmtpBtn.addEventListener('click', function() {
+                    const email = testEmailInput.value.trim();
+                    
+                    if (!email) {
+                        testResult.innerHTML = '<div class="alert alert-warning"><i class="material-icons">warning</i>Please enter a test email address</div>';
+                        return;
+                    }
+                    
+                    if (!isValidEmail(email)) {
+                        testResult.innerHTML = '<div class="alert alert-warning"><i class="material-icons">warning</i>Please enter a valid email address</div>';
+                        return;
+                    }
+                    
+                    // Show loading state
+                    const originalText = testSmtpBtn.innerHTML;
+                    testSmtpBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> Sending...';
+                    testSmtpBtn.disabled = true;
+                    
+                    // Simulate SMTP test (in production, replace with actual AJAX call)
+                    setTimeout(() => {
+                        testResult.innerHTML = '<div class="alert alert-success"><i class="material-icons">check_circle</i>Test email sent successfully to ' + email + '!</div>';
+                        testSmtpBtn.innerHTML = originalText;
+                        testSmtpBtn.disabled = false;
+                    }, 2000);
+                });
+            }
+            
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+        },
+        
+        initPasswordToggles: function() {
+            const passwordToggles = document.querySelectorAll('.toggle-password');
+            passwordToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const input = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    
+                    if (input && icon) {
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            icon.textContent = 'visibility_off';
+                        } else {
+                            input.type = 'password';
+                            icon.textContent = 'visibility';
+                        }
+                    }
+                });
+            });
         }
     };
     
