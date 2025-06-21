@@ -234,11 +234,11 @@
                     <i class="material-icons">send</i>
                     <?php _e('send_test_email'); ?>
                 </h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-dismiss="modal" onclick="closeTestModal()">
                     <span>&times;</span>
                 </button>
             </div>
-            <form action="<?php echo $adminUrl; ?>/email-templates/test-send/<?php echo $template['id']; ?>" method="POST">
+            <form action="<?php echo $adminUrl; ?>/email-templates/test-send/<?php echo $template['id']; ?>" method="POST" id="testEmailForm">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="test_email" class="form-label required">
@@ -249,10 +249,14 @@
                                placeholder="<?php _e('enter_test_email'); ?>" required>
                         <small class="form-help"><?php _e('test_email_help'); ?></small>
                     </div>
+                    <div class="alert alert-info">
+                        <i class="material-icons">info</i>
+                        <?php _e('test_email_sample_data_info'); ?>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><?php _e('cancel'); ?></button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-secondary" onclick="closeTestModal()"><?php _e('cancel'); ?></button>
+                    <button type="submit" class="btn btn-primary" id="sendTestBtn">
                         <i class="material-icons">send</i>
                         <?php _e('send_test'); ?>
                     </button>
@@ -339,12 +343,256 @@ function previewTemplate() {
     });
 }
 
+document.getElementById('testEmailForm').addEventListener('submit', function(e) {
+    const email = document.getElementById('test_email').value;
+    const btn = document.getElementById('sendTestBtn');
+    
+    if (!email) {
+        alert('<?php _e('please_enter_email_address'); ?>');
+        e.preventDefault();
+        return false;
+    }
+    
+    // Disable button to prevent double submission
+    btn.disabled = true;
+    btn.innerHTML = '<i class="material-icons">hourglass_empty</i> <?php _e('sending'); ?>...';
+    
+    return true;
+});
+
+// Close modal when clicking outside - EKLE
+document.getElementById('testModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeTestModal();
+    }
+});
+
+// ESC key handler - EKLE
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeTestModal();
+    }
+});
+
+// MEVCUT showTestModal FONKSIYONUNU DEĞİŞTİR:
 function showTestModal() {
-    $('#testModal').modal('show');
+    document.getElementById('testModal').style.display = 'block';
+    document.getElementById('testModal').classList.add('show');
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+// YENİ FONKSIYON EKLE:
+function closeTestModal() {
+    const modal = document.getElementById('testModal');
+    const btn = document.getElementById('sendTestBtn');
+    
+    // Reset modal state
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+    
+    // Reset form
+    document.getElementById('test_email').value = '';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="material-icons">send</i> <?php _e('send_test'); ?>';
 }
 </script>
 
 <style>
+
+/* Modal Fixes */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-dialog {
+    margin: 50px auto;
+    max-width: 500px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+}
+
+.close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close:hover {
+    background-color: #f8f9fa;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.alert-info {
+    background: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+.alert i {
+    font-size: 18px;
+    margin-top: -2px;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .modal-dialog {
+        margin: 20px;
+        max-width: none;
+    }
+    
+    .modal-content {
+        border-radius: 6px;
+    }
+}
 .email-template-form .form-group {
     margin-bottom: 20px;
 }
