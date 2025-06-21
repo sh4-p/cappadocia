@@ -79,10 +79,25 @@ class EmailTemplate extends Model
                 'description' => 'Email sent to customers when booking is confirmed',
                 'variables' => ['first_name', 'last_name', 'tour_name', 'booking_date', 'adults', 'children', 'total_price', 'special_requests', 'from_name']
             ],
+            'booking_status_confirmed' => [
+                'name' => 'Booking Confirmed',
+                'description' => 'Email sent when booking status is changed to confirmed',
+                'variables' => ['first_name', 'last_name', 'tour_name', 'booking_date', 'adults', 'children', 'total_price', 'booking_id']
+            ],
+            'booking_status_cancelled' => [
+                'name' => 'Booking Cancelled',
+                'description' => 'Email sent when booking status is changed to cancelled',
+                'variables' => ['first_name', 'last_name', 'tour_name', 'booking_date', 'adults', 'children', 'total_price', 'booking_id']
+            ],
             'contact_form' => [
                 'name' => 'Contact Form Submission',
                 'description' => 'Email sent to admin when contact form is submitted',
                 'variables' => ['name', 'email', 'phone', 'subject', 'message', 'timestamp']
+            ],
+            'contact_thank_you' => [
+                'name' => 'Contact Form Thank You',
+                'description' => 'Thank you email sent to contact form submitter',
+                'variables' => ['name', 'subject', 'timestamp']
             ],
             'booking_admin_notification' => [
                 'name' => 'New Booking Notification (Admin)',
@@ -98,6 +113,16 @@ class EmailTemplate extends Model
                 'name' => 'Welcome Email',
                 'description' => 'Email sent to new users when they register',
                 'variables' => ['first_name', 'last_name', 'username', 'activation_link']
+            ],
+            'newsletter_confirmation' => [
+                'name' => 'Newsletter Subscription',
+                'description' => 'Email sent when someone subscribes to newsletter',
+                'variables' => ['email', 'confirmation_link', 'unsubscribe_link']
+            ],
+            'booking_reminder' => [
+                'name' => 'Booking Reminder',
+                'description' => 'Email sent as reminder before tour date',
+                'variables' => ['first_name', 'last_name', 'tour_name', 'booking_date', 'total_price', 'special_requests']
             ]
         ];
     }

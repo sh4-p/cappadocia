@@ -219,7 +219,7 @@ class Email
         return $this->sendTemplate('contact_form', $adminEmail, $variables);
     }
     
-    /**
+        /**
      * Send booking admin notification
      * 
      * @param array $booking Booking data
@@ -234,9 +234,11 @@ class Email
             'booking_date' => $booking['booking_date'] ?? '',
             'adults' => $booking['adults'] ?? '0',
             'children' => $booking['children'] ?? '0',
-            'total_price' => number_format($booking['total_price'] ?? 0, 2),
+            'total_price' => $booking['total_price_formatted'] ?? number_format($booking['total_price'] ?? 0, 2),
             'email' => $booking['email'] ?? '',
-            'phone' => $booking['phone'] ?? ''
+            'phone' => $booking['phone'] ?? '',
+            'payment_method' => $booking['payment_method_formatted'] ?? $booking['payment_method'] ?? '',
+            'special_requests' => $booking['special_requests'] ?? ''
         ];
         
         // Send to admin
@@ -245,6 +247,86 @@ class Email
         $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
         
         return $this->sendTemplate('booking_admin_notification', $adminEmail, $variables);
+    }
+    /**
+     * Send booking status change email
+     * 
+     * @param string $status New status (confirmed, cancelled)
+     * @param string $toEmail Recipient email
+     * @param array $booking Booking data
+     * @return bool Success
+     */
+    public function sendBookingStatusEmail($status, $toEmail, $booking)
+    {
+        $variables = [
+            'first_name' => $booking['first_name'] ?? '',
+            'last_name' => $booking['last_name'] ?? '',
+            'tour_name' => $booking['tour_name'] ?? '',
+            'booking_date' => $booking['booking_date'] ?? '',
+            'adults' => $booking['adults'] ?? '0',
+            'children' => $booking['children'] ?? '0',
+            'total_price' => $booking['total_price'] ?? '0',
+            'booking_id' => $booking['booking_id'] ?? $booking['id'] ?? '',
+            'status' => ucfirst($status)
+        ];
+        
+        $templateKey = 'booking_status_' . $status;
+        return $this->sendTemplate($templateKey, $toEmail, $variables);
+    }
+    
+    /**
+     * Send welcome email to new user
+     * 
+     * @param array $user User data
+     * @return bool Success
+     */
+    public function sendWelcomeEmail($user)
+    {
+        $variables = [
+            'first_name' => $user['first_name'] ?? '',
+            'last_name' => $user['last_name'] ?? '',
+            'username' => $user['username'] ?? '',
+            'email' => $user['email'] ?? '',
+            'activation_link' => $user['activation_link'] ?? ''
+        ];
+        
+        return $this->sendTemplate('welcome_email', $user['email'], $variables);
+    }
+    
+    /**
+     * Send password reset email
+     * 
+     * @param array $user User data with reset link
+     * @return bool Success
+     */
+    public function sendPasswordReset($user)
+    {
+        $variables = [
+            'first_name' => $user['first_name'] ?? '',
+            'last_name' => $user['last_name'] ?? '',
+            'reset_link' => $user['reset_link'] ?? '',
+            'expiry_time' => $user['expiry_time'] ?? '24 hours'
+        ];
+        
+        return $this->sendTemplate('password_reset', $user['email'], $variables);
+    }
+    
+    /**
+     * Send newsletter subscription confirmation
+     * 
+     * @param string $email Subscriber email
+     * @param string $confirmationLink Confirmation link
+     * @return bool Success
+     */
+    public function sendNewsletterConfirmation($email, $confirmationLink)
+    {
+        $variables = [
+            'email' => $email,
+            'confirmation_link' => $confirmationLink,
+            'unsubscribe_link' => $confirmationLink // Can be different
+        ];
+        
+        return $this->sendTemplate('newsletter_confirmation', $email, $variables);
     }
     
     /**

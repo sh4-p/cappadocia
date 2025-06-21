@@ -2,7 +2,7 @@
 /**
  * Booking Controller
  * 
- * Handles the booking process
+ * Handles the booking process with email integration
  */
 class BookingController extends Controller
 {
@@ -277,8 +277,8 @@ class BookingController extends Controller
             $this->session->set('booking_id', $bookingId);
             $this->session->set('booking_data', array_merge($bookingData, ['tour_name' => $tour['name']]));
             
-            // Send confirmation email (can be implemented later)
-            $this->sendConfirmationEmail($bookingId);
+            // Send confirmation emails
+            $this->sendConfirmationEmails($bookingId, $bookingData, $tour);
             
             // Redirect to thank you page
             $this->redirect('booking/thank-you');
@@ -322,6 +322,127 @@ class BookingController extends Controller
     }
     
     /**
+     * Send booking confirmation emails
+     * 
+     * @param int $bookingId Booking ID
+     * @param array $bookingData Booking data
+     * @param array $tour Tour data
+     * @return bool Success
+     */
+    private function sendConfirmationEmails($bookingId, $bookingData, $tour)
+    {
+        try {
+            // Load Email class
+            require_once BASE_PATH . '/core/Email.php';
+            $email = new Email();
+            
+            // Send confirmation email to customer
+            $customerEmailSent = $this->sendCustomerConfirmationEmail($email, $bookingData, $tour);
+            
+            // Send notification email to admin
+            $adminEmailSent = $this->sendAdminNotificationEmail($email, $bookingData, $tour);
+            
+            // Log email results for debugging
+            if ($customerEmailSent) {
+                error_log("Booking #{$bookingId}: Customer confirmation email sent to {$bookingData['email']}");
+            } else {
+                error_log("Booking #{$bookingId}: Failed to send customer confirmation email to {$bookingData['email']}. Error: " . $email->getError());
+            }
+            
+            if ($adminEmailSent) {
+                error_log("Booking #{$bookingId}: Admin notification email sent");
+            } else {
+                error_log("Booking #{$bookingId}: Failed to send admin notification email. Error: " . $email->getError());
+            }
+            
+            return $customerEmailSent || $adminEmailSent; // Return true if at least one email was sent
+            
+        } catch (Exception $e) {
+            error_log("Booking #{$bookingId}: Email sending failed with exception: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Send confirmation email to customer
+     * 
+     * @param Email $email Email instance
+     * @param array $bookingData Booking data
+     * @param array $tour Tour data
+     * @return bool Success
+     */
+    private function sendCustomerConfirmationEmail($email, $bookingData, $tour)
+    {
+        // Get settings for currency
+        $settings = $this->settingsModel->getAllSettings();
+        $currencySymbol = $settings['currency_symbol'] ?? '€';
+        
+        // Prepare booking data for email
+        $emailBookingData = array_merge($bookingData, [
+            'tour_name' => $tour['name'],
+            'total_price_formatted' => $currencySymbol . number_format($bookingData['total_price'], 2),
+            'booking_date_formatted' => date('l, F j, Y', strtotime($bookingData['booking_date'])),
+            'payment_method_formatted' => $this->formatPaymentMethod($bookingData['payment_method'])
+        ]);
+        
+        return $email->sendBookingConfirmation($emailBookingData);
+    }
+    
+    /**
+     * Send notification email to admin
+     * 
+     * @param Email $email Email instance
+     * @param array $bookingData Booking data
+     * @param array $tour Tour data
+     * @return bool Success
+     */
+    private function sendAdminNotificationEmail($email, $bookingData, $tour)
+    {
+        // Get settings for admin email
+        $settings = $this->settingsModel->getAllSettings();
+        
+        // Check if admin notifications are enabled
+        if (!isset($settings['email_notification_booking']) || $settings['email_notification_booking'] != '1') {
+            return true; // Not enabled, but don't consider this a failure
+        }
+        
+        // Get currency symbol
+        $currencySymbol = $settings['currency_symbol'] ?? '€';
+        
+        // Prepare booking data for admin email
+        $emailBookingData = array_merge($bookingData, [
+            'tour_name' => $tour['name'],
+            'total_price_formatted' => $currencySymbol . number_format($bookingData['total_price'], 2),
+            'booking_date_formatted' => date('l, F j, Y', strtotime($bookingData['booking_date'])),
+            'payment_method_formatted' => $this->formatPaymentMethod($bookingData['payment_method'])
+        ]);
+        
+        return $email->sendBookingAdminNotification($emailBookingData);
+    }
+    
+    /**
+     * Format payment method for display
+     * 
+     * @param string $paymentMethod Payment method
+     * @return string Formatted payment method
+     */
+    private function formatPaymentMethod($paymentMethod)
+    {
+        switch ($paymentMethod) {
+            case 'card':
+                return __('credit_card');
+            case 'paypal':
+                return __('paypal');
+            case 'bank':
+                return __('bank_transfer');
+            case 'cash':
+                return __('cash_payment');
+            default:
+                return ucfirst($paymentMethod);
+        }
+    }
+    
+    /**
      * Get available booking dates
      * 
      * @return array Available dates
@@ -339,18 +460,5 @@ class BookingController extends Controller
         }
         
         return $availableDates;
-    }
-    
-    /**
-     * Send booking confirmation email
-     * 
-     * @param int $bookingId Booking ID
-     * @return bool Success
-     */
-    private function sendConfirmationEmail($bookingId)
-    {
-        // In a real application, this would send an email
-        // For now, just return true
-        return true;
     }
 }

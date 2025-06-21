@@ -141,8 +141,9 @@ class AdminBookingsController extends Controller
         // Load booking model
         $bookingModel = $this->loadModel('Booking');
         
-        // Get booking
-        $booking = $bookingModel->get($id);
+        // Get booking with tour details
+        $langCode = $this->language->getCurrentLanguage();
+        $booking = $bookingModel->getWithTourDetails($id, $langCode);
         
         // Check if booking exists
         if (!$booking) {
@@ -150,10 +151,18 @@ class AdminBookingsController extends Controller
             $this->redirect('admin/bookings');
         }
         
+        // Store old status for email notification
+        $oldStatus = $booking['status'];
+        
         // Update status
         $result = $bookingModel->updateStatus($id, $status);
         
         if ($result) {
+            // Send email notification if status changed to confirmed or cancelled
+            if ($oldStatus !== $status && in_array($status, ['confirmed', 'cancelled'])) {
+                $this->sendStatusChangeEmail($booking, $status);
+            }
+            
             $this->session->setFlash('success', __('status_updated'));
         } else {
             $this->session->setFlash('error', __('status_update_failed'));
@@ -161,6 +170,61 @@ class AdminBookingsController extends Controller
         
         // Redirect back
         $this->redirect('admin/bookings');
+    }
+
+    /**
+     * Send status change email notification
+     * 
+     * @param array $booking Booking data
+     * @param string $newStatus New status
+     */
+    private function sendStatusChangeEmail($booking, $newStatus)
+    {
+        try {
+            // Load Email class
+            require_once BASE_PATH . '/core/Email.php';
+            $email = new Email();
+            
+            // Load settings
+            $settingsModel = $this->loadModel('Settings');
+            $settings = $settingsModel->getAllSettings();
+            
+            // Check if booking status notifications are enabled
+            if (!isset($settings['email_notification_booking_status']) || $settings['email_notification_booking_status'] != '1') {
+                return; // Notifications disabled
+            }
+            
+            // Get currency symbol
+            $currencySymbol = $settings['currency_symbol'] ?? '€';
+            
+            // Prepare email variables
+            $variables = [
+                'first_name' => $booking['first_name'],
+                'last_name' => $booking['last_name'],
+                'tour_name' => $booking['tour_name'],
+                'booking_date' => date('l, F j, Y', strtotime($booking['booking_date'])),
+                'adults' => $booking['adults'],
+                'children' => $booking['children'],
+                'total_price' => $currencySymbol . number_format($booking['total_price'], 2),
+                'status' => ucfirst($newStatus),
+                'booking_id' => $booking['id']
+            ];
+            
+            // Choose appropriate template key
+            $templateKey = 'booking_status_' . $newStatus;
+            
+            // Send email
+            $result = $email->sendTemplate($templateKey, $booking['email'], $variables);
+            
+            if ($result) {
+                error_log("Booking #{$booking['id']}: Status change email sent to {$booking['email']} (status: {$newStatus})");
+            } else {
+                error_log("Booking #{$booking['id']}: Failed to send status change email. Error: " . $email->getError());
+            }
+            
+        } catch (Exception $e) {
+            error_log("Booking status email error: " . $e->getMessage());
+        }
     }
     
     /**
