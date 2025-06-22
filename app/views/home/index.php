@@ -94,7 +94,7 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
 </section>
 
 <!-- Featured Tours Section - Enhanced Card Design -->
-<section class="section" id="featured-tours">
+<section class="section" id="featured-tours" >
     <div class="container">
         <div class="section-header" data-aos="fade-up">
             <h2 class="section-title"><?php _e('featured_tours'); ?></h2>
@@ -291,7 +291,7 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
 </section>
 
 <!-- Why Choose Us Section - Enhanced Visual Design -->
-<section class="section why-choose-us" style="background-color: var(--light-color); position: relative; z-index: 1;">
+<section class="section why-choose-us" style="background-color: var(--gray-300); position: relative; z-index: 1;">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
             <h2 class="section-title"><?php _e('why_choose_us'); ?></h2>
@@ -451,6 +451,107 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
 
 <!-- Additional Styles for Homepage -->
 <style>
+    /* About Section Enhancements - Desktop optimized */
+    .about-section {
+        position: relative;
+        background-position: center;
+        background-size: cover;
+        padding: var(--spacing-xxl) 0;
+    }
+    
+    .about-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(38, 70, 83, 0.75);
+    }
+    
+    .about-section .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .about-section .row {
+        align-items: center;
+        min-height: 600px;
+    }
+    
+    .about-image-container {
+        position: relative;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        min-height: 500px;
+        padding: var(--spacing-lg);
+    }
+    
+    .about-image {
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        width: 100%;
+        position: relative;
+    }
+    
+    .main-image {
+        width: 85%;
+        height: 400px;
+        z-index: 2;
+        position: relative;
+    }
+    
+    .secondary-image {
+        position: absolute;
+        width: 65%;
+        height: 280px;
+        bottom: 15%;
+        right: -5%;
+        z-index: 1;
+        box-shadow: var(--shadow-xl);
+    }
+    
+    .main-image img,
+    .secondary-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .experience-badge {
+        position: absolute;
+        bottom: 25px;
+        right: 25px;
+        width: 140px;
+        height: 140px;
+        background-color: var(--primary-color);
+        color: var(--white-color);
+        border-radius: var(--border-radius-circle);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: var(--font-weight-bold);
+        box-shadow: var(--shadow-lg);
+        z-index: 3;
+        border: 4px solid var(--white-color);
+    }
+    
+    .experience-badge .years {
+        font-size: 2.8rem;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+    
+    .experience-badge .text {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
     /* Hero Section Enhancements */
     .hero-section {
         height: 100vh;
@@ -891,6 +992,10 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
+        }
+
+        .hero-section{
+            height: 127vh;
         }
         
         .stats-grid {

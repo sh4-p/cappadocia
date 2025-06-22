@@ -884,6 +884,7 @@ textarea.form-control {
     position: relative;
     height: 260px;
     overflow: hidden;
+    width: 100%;
 }
 
 .tour-image img {
@@ -891,6 +892,7 @@ textarea.form-control {
     height: 100%;
     object-fit: cover;
     transition: transform var(--transition-slow);
+    display: block;
 }
 
 .tour-card:hover .tour-image img {
@@ -907,14 +909,18 @@ textarea.form-control {
     border-radius: var(--border-radius-md);
     font-weight: var(--font-weight-semibold);
     box-shadow: var(--shadow-sm);
-    z-index: 1;
+    z-index: 2;
+    font-size: var(--font-size-sm);
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
 .tour-price del {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     font-weight: var(--font-weight-regular);
     margin-right: 0.5rem;
     opacity: 0.8;
+    display: block;
 }
 
 .tour-category {
@@ -1503,13 +1509,6 @@ textarea.form-control {
 
 .recent-tours a:hover {
     color: var(--primary-color);
-}
-
-.tour-image {
-    width: 70px;
-    height: 70px;
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
 }
 
 .tour-info h4 {

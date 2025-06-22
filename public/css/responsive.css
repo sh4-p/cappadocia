@@ -213,8 +213,34 @@
         flex-direction: column-reverse;
     }
     
-    .about-image {
+    .about-image-container {
         margin-top: var(--spacing-xl);
+        min-height: 300px;
+    }
+    
+    .about-image-container .main-image {
+        width: 100%;
+        height: 280px;
+        position: relative;
+    }
+    
+    .about-image-container .secondary-image {
+        display: none;
+    }
+    
+    .experience-badge {
+        bottom: 20px;
+        right: 20px;
+        width: 100px;
+        height: 100px;
+    }
+    
+    .experience-badge .years {
+        font-size: 2rem;
+    }
+    
+    .experience-badge .text {
+        font-size: 0.8rem;
     }
 }
 
@@ -224,6 +250,10 @@
         --font-size-3xl: 1.625rem;
         --font-size-4xl: 1.875rem;
         --font-size-5xl: 2.25rem;
+    }
+
+    .glass-card.dark {
+        margin-left: 1.5rem;
     }
     
     .container {

@@ -938,6 +938,47 @@ function galleryInit() {
 }
 
 /**
+ * Ensure equal card heights
+ */
+function equalizeCardHeights() {
+    const cards = document.querySelectorAll('.tour-card');
+    if (!cards.length) return;
+    
+    // Reset heights first
+    cards.forEach(card => {
+        card.style.height = 'auto';
+        // Reset tour image heights too
+        const tourImage = card.querySelector('.tour-image');
+        if (tourImage && window.innerWidth <= 767) {
+            tourImage.style.height = '200px';
+        }
+    });
+    
+    // Only equalize on desktop
+    if (window.innerWidth >= 768) {
+        // Get max card height
+        let maxHeight = 0;
+        cards.forEach(card => {
+            if (card.offsetHeight > maxHeight) {
+                maxHeight = card.offsetHeight;
+            }
+        });
+        
+        // Apply max height to all cards
+        cards.forEach(card => {
+            card.style.height = maxHeight + 'px';
+        });
+    }
+    
+    // Ensure proper spacing on mobile
+    if (window.innerWidth <= 767) {
+        cards.forEach(card => {
+            card.style.marginBottom = 'var(--spacing-lg)';
+        });
+    }
+}
+
+/**
  * Initialize dropdowns
  */
 function dropdownInit() {
