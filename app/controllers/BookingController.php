@@ -1,8 +1,8 @@
 <?php
 /**
- * Booking Controller
+ * Booking Controller - Updated with Tracking System
  * 
- * Handles the booking process with email integration
+ * Handles the booking process with email integration and tracking
  */
 class BookingController extends Controller
 {
@@ -273,9 +273,15 @@ class BookingController extends Controller
         $bookingId = $this->bookingModel->insert($bookingData);
         
         if ($bookingId) {
+            // Get the created booking with tracking token
+            $createdBooking = $this->bookingModel->getWithTourDetails($bookingId, $langCode);
+            
             // Set booking data in session for thank you page
             $this->session->set('booking_id', $bookingId);
-            $this->session->set('booking_data', array_merge($bookingData, ['tour_name' => $tour['name']]));
+            $this->session->set('booking_data', array_merge($bookingData, [
+                'tour_name' => $tour['name'],
+                'tracking_token' => $createdBooking['tracking_token']
+            ]));
             
             // Send confirmation emails
             $this->sendConfirmationEmails($bookingId, $bookingData, $tour);
@@ -309,8 +315,8 @@ class BookingController extends Controller
         $data = [
             'bookingId' => $bookingId,
             'bookingData' => $bookingData,
-            'pageTitle' => __('booking_confirmed'),
-            'metaDescription' => __('booking_confirmed_description')
+            'pageTitle' => __('booking_received'),
+            'metaDescription' => __('booking_received_description')
         ];
         
         // Render view
@@ -319,6 +325,103 @@ class BookingController extends Controller
         // Clear booking data from session
         $this->session->remove('booking_id');
         $this->session->remove('booking_data');
+    }
+    
+    /**
+     * Track redirect action - redirect to search if no token provided
+     */
+    public function trackRedirect()
+    {
+        // Set informative message
+        $this->session->setFlash('info', __('track_link_required'));
+        
+        // Redirect to search page
+        $this->redirect('booking/search');
+    }
+    
+    /**
+     * Track action - display booking tracking page by token
+     * 
+     * @param string $token Tracking token
+     */
+    public function track($token = null)
+    {
+        // Security check: if no token provided or invalid format, redirect to search
+        if (empty($token) || !preg_match('/^[A-Z0-9]{16}$/', $token)) {
+            $this->session->setFlash('error', __('invalid_tracking_token'));
+            $this->redirect('booking/search');
+            return;
+        }
+        
+        // Get current language
+        $langCode = $this->language->getCurrentLanguage();
+        
+        // Get booking by tracking token
+        $booking = $this->bookingModel->getByTrackingToken($token, $langCode);
+        
+        if (!$booking) {
+            // Set error message and redirect
+            $this->session->setFlash('error', __('booking_not_found_token'));
+            $this->redirect('booking/search');
+            return;
+        }
+        
+        // Get booking status history
+        $statusHistory = $this->bookingModel->getStatusHistory($booking['id']);
+        
+        // Get settings for currency and contact info
+        $settings = $this->settingsModel->getAllSettings();
+        
+        // Set page data
+        $data = [
+            'booking' => $booking,
+            'statusHistory' => $statusHistory,
+            'settings' => $settings,
+            'pageTitle' => sprintf(__('booking_tracking'), Booking::formatReference($booking['id'])),
+            'metaDescription' => __('track_your_booking_status')
+        ];
+        
+        // Render view
+        $this->render('booking/track', $data);
+    }
+    
+    /**
+     * Search action - display booking search page
+     */
+    public function search()
+    {
+        // Check if form is submitted
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = $this->post('email');
+            $reference = $this->post('reference');
+            
+            // Validate inputs
+            if (empty($email) || empty($reference)) {
+                $this->session->setFlash('error', __('email_and_reference_required'));
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->session->setFlash('error', __('invalid_email'));
+            } else {
+                // Search for booking
+                $langCode = $this->language->getCurrentLanguage();
+                $booking = $this->bookingModel->searchByEmailAndReference($email, $reference, $langCode);
+                
+                if ($booking) {
+                    // Redirect to tracking page using token
+                    $this->redirect('booking/track/' . $booking['tracking_token']);
+                } else {
+                    $this->session->setFlash('error', __('booking_not_found_with_details'));
+                }
+            }
+        }
+        
+        // Set page data
+        $data = [
+            'pageTitle' => __('find_your_booking'),
+            'metaDescription' => __('search_booking_description')
+        ];
+        
+        // Render view
+        $this->render('booking/search', $data);
     }
     
     /**
@@ -377,12 +480,21 @@ class BookingController extends Controller
         $settings = $this->settingsModel->getAllSettings();
         $currencySymbol = $settings['currency_symbol'] ?? '€';
         
+        // Get current language
+        $langCode = $this->language->getCurrentLanguage();
+        
+        // Get created booking to get tracking token
+        $createdBooking = $this->bookingModel->getByEmail($bookingData['email'], $langCode);
+        $trackingToken = !empty($createdBooking) ? $createdBooking[0]['tracking_token'] : '';
+        
         // Prepare booking data for email
         $emailBookingData = array_merge($bookingData, [
             'tour_name' => $tour['name'],
             'total_price_formatted' => $currencySymbol . number_format($bookingData['total_price'], 2),
             'booking_date_formatted' => date('l, F j, Y', strtotime($bookingData['booking_date'])),
-            'payment_method_formatted' => $this->formatPaymentMethod($bookingData['payment_method'])
+            'payment_method_formatted' => $this->formatPaymentMethod($bookingData['payment_method']),
+            'tracking_url' => $this->getTrackingUrl($trackingToken),
+            'booking_reference' => Booking::formatReference($bookingData['id'] ?? 0)
         ]);
         
         return $email->sendBookingConfirmation($emailBookingData);
@@ -414,7 +526,8 @@ class BookingController extends Controller
             'tour_name' => $tour['name'],
             'total_price_formatted' => $currencySymbol . number_format($bookingData['total_price'], 2),
             'booking_date_formatted' => date('l, F j, Y', strtotime($bookingData['booking_date'])),
-            'payment_method_formatted' => $this->formatPaymentMethod($bookingData['payment_method'])
+            'payment_method_formatted' => $this->formatPaymentMethod($bookingData['payment_method']),
+            'booking_reference' => Booking::formatReference($bookingData['id'] ?? 0)
         ]);
         
         return $email->sendBookingAdminNotification($emailBookingData);
@@ -440,6 +553,20 @@ class BookingController extends Controller
             default:
                 return ucfirst($paymentMethod);
         }
+    }
+    
+    /**
+     * Get tracking URL for booking
+     * 
+     * @param string $trackingToken Tracking token
+     * @return string Tracking URL
+     */
+    private function getTrackingUrl($trackingToken)
+    {
+        $currentLang = $this->language->getCurrentLanguage();
+        $appUrl = defined('APP_URL') ? APP_URL : 'https://yourwebsite.com';
+        
+        return $appUrl . '/' . $currentLang . '/booking/track/' . $trackingToken;
     }
     
     /**

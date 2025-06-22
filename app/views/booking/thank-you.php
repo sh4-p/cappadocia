@@ -1,6 +1,6 @@
 <?php
 /**
- * Booking Thank You/Confirmation View
+ * Booking Thank You/Confirmation View - Updated Messages
  */
 
 // Hero arka plan görseli
@@ -15,17 +15,29 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
             <!-- Success Icon -->
             <div class="success-icon-wrapper" data-aos="zoom-in">
                 <div class="success-icon">
-                    <i class="material-icons">check_circle</i>
+                    <i class="material-icons">receipt</i>
                 </div>
             </div>
             
-            <h1 class="hero-title" data-aos="fade-up" data-aos-delay="200"><?php _e('booking_confirmed'); ?></h1>
-            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="300"><?php _e('booking_confirmation_message'); ?></p>
+            <h1 class="hero-title" data-aos="fade-up" data-aos-delay="200"><?php _e('booking_received'); ?></h1>
+            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="300"><?php _e('booking_received_message'); ?></p>
             
             <!-- Booking ID -->
             <div class="booking-id-badge" data-aos="fade-up" data-aos-delay="400">
-                <span class="booking-id-label"><?php _e('booking_id'); ?>:</span>
+                <span class="booking-id-label"><?php _e('booking_reference'); ?>:</span>
                 <span class="booking-id-number">#<?php echo str_pad($bookingId, 6, '0', STR_PAD_LEFT); ?></span>
+            </div>
+            
+            <!-- Tracking Link Notice -->
+            <div class="tracking-notice" data-aos="fade-up" data-aos-delay="500">
+                <i class="material-icons">bookmark</i>
+                <p><?php _e('save_tracking_link_message'); ?></p>
+                <div class="tracking-link-box">
+                    <input type="text" id="tracking-link" readonly value="<?php echo $appUrl . '/' . $currentLang . '/booking/track/' . $bookingData['tracking_token']; ?>">
+                    <button type="button" id="copy-link" class="btn-copy">
+                        <i class="material-icons">content_copy</i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -46,6 +58,17 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
                     </div>
                     
                     <div class="card-body">
+                        <!-- Status Alert -->
+                        <div class="status-alert">
+                            <div class="alert alert-info">
+                                <i class="material-icons">info</i>
+                                <div class="alert-content">
+                                    <h4><?php _e('booking_pending_title'); ?></h4>
+                                    <p><?php _e('booking_pending_message'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="booking-info">
                             <!-- Tour Information -->
                             <div class="info-section">
@@ -129,7 +152,7 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
                                     <div class="info-item">
                                         <div class="info-label"><?php _e('booking_status'); ?></div>
                                         <div class="info-value">
-                                            <span class="status-badge status-pending"><?php _e('pending_confirmation'); ?></span>
+                                            <span class="status-badge status-pending"><?php _e('awaiting_confirmation'); ?></span>
                                         </div>
                                     </div>
                                 </div>
@@ -162,50 +185,60 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
                     <div class="card-body">
                         <div class="steps-list">
                             <div class="step-item">
-                                <div class="step-icon">
-                                    <i class="material-icons">email</i>
+                                <div class="step-icon completed">
+                                    <i class="material-icons">check</i>
                                 </div>
                                 <div class="step-content">
-                                    <h5><?php _e('confirmation_email'); ?></h5>
-                                    <p><?php _e('confirmation_email_text'); ?></p>
+                                    <h5><?php _e('booking_received_step'); ?></h5>
+                                    <p><?php _e('booking_received_step_text'); ?></p>
                                 </div>
                             </div>
                             
                             <div class="step-item">
-                                <div class="step-icon">
+                                <div class="step-icon pending">
+                                    <i class="material-icons">email</i>
+                                </div>
+                                <div class="step-content">
+                                    <h5><?php _e('team_review_step'); ?></h5>
+                                    <p><?php _e('team_review_step_text'); ?></p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-icon pending">
                                     <i class="material-icons">person</i>
                                 </div>
                                 <div class="step-content">
-                                    <h5><?php _e('team_contact'); ?></h5>
-                                    <p><?php _e('team_contact_text'); ?></p>
+                                    <h5><?php _e('confirmation_contact_step'); ?></h5>
+                                    <p><?php _e('confirmation_contact_step_text'); ?></p>
                                 </div>
                             </div>
                             
                             <!-- Payment-specific steps -->
                             <?php if ($bookingData['payment_method'] === 'bank'): ?>
                                 <div class="step-item">
-                                    <div class="step-icon">
+                                    <div class="step-icon pending">
                                         <i class="material-icons">account_balance</i>
                                     </div>
                                     <div class="step-content">
                                         <h5><?php _e('bank_transfer_instructions'); ?></h5>
-                                        <p><?php _e('bank_transfer_instructions_text'); ?></p>
+                                        <p><?php _e('bank_transfer_next_step_text'); ?></p>
                                     </div>
                                 </div>
                             <?php elseif ($bookingData['payment_method'] === 'cash'): ?>
                                 <div class="step-item">
-                                    <div class="step-icon">
+                                    <div class="step-icon pending">
                                         <i class="material-icons">money</i>
                                     </div>
                                     <div class="step-content">
                                         <h5><?php _e('cash_payment_instructions'); ?></h5>
-                                        <p><?php _e('cash_payment_instructions_text'); ?></p>
+                                        <p><?php _e('cash_payment_next_step_text'); ?></p>
                                     </div>
                                 </div>
                             <?php endif; ?>
                             
                             <div class="step-item">
-                                <div class="step-icon">
+                                <div class="step-icon pending">
                                     <i class="material-icons">explore</i>
                                 </div>
                                 <div class="step-content">
@@ -219,6 +252,33 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
             </div>
             
             <div class="confirmation-sidebar">
+                <!-- Tracking Card -->
+                <div class="sidebar-card highlight-card">
+                    <h4 class="sidebar-card-title">
+                        <i class="material-icons">track_changes</i>
+                        <?php _e('track_your_booking'); ?>
+                    </h4>
+                    
+                    <p><?php _e('track_booking_text'); ?></p>
+                    
+                    <div class="tracking-info">
+                        <div class="tracking-reference">
+                            <label><?php _e('your_reference'); ?>:</label>
+                            <span class="reference-number">#<?php echo str_pad($bookingId, 6, '0', STR_PAD_LEFT); ?></span>
+                        </div>
+                        
+                        <a href="<?php echo $appUrl . '/' . $currentLang . '/booking/track/' . $bookingData['tracking_token']; ?>" class="btn btn-primary btn-block tracking-btn">
+                            <i class="material-icons">visibility</i>
+                            <?php _e('view_booking_status'); ?>
+                        </a>
+                        
+                        <div class="tracking-note">
+                            <i class="material-icons">info</i>
+                            <small><?php _e('bookmark_this_page'); ?></small>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Contact Card -->
                 <div class="sidebar-card">
                     <h4 class="sidebar-card-title">
@@ -260,33 +320,6 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
                     </a>
                 </div>
                 
-                <!-- Social Share Card -->
-                <div class="sidebar-card">
-                    <h4 class="sidebar-card-title">
-                        <i class="material-icons">share</i>
-                        <?php _e('share_excitement'); ?>
-                    </h4>
-                    
-                    <p><?php _e('share_excitement_text'); ?></p>
-                    
-                    <div class="social-share">
-                        <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($appUrl); ?>" target="_blank" class="social-btn facebook">
-                            <i class="fab fa-facebook-f"></i>
-                            Facebook
-                        </a>
-                        
-                        <a href="https://twitter.com/intent/tweet?text=<?php echo urlencode(__('share_twitter_text')); ?>&url=<?php echo urlencode($appUrl); ?>" target="_blank" class="social-btn twitter">
-                            <i class="fab fa-twitter"></i>
-                            Twitter
-                        </a>
-                        
-                        <a href="https://www.instagram.com/" target="_blank" class="social-btn instagram">
-                            <i class="fab fa-instagram"></i>
-                            Instagram
-                        </a>
-                    </div>
-                </div>
-                
                 <!-- Actions Card -->
                 <div class="sidebar-card">
                     <h4 class="sidebar-card-title">
@@ -317,6 +350,157 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
 </section>
 
 <style>
+/* Updated styles for new elements */
+.tracking-notice {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    backdrop-filter: blur(10px);
+    text-align: center;
+}
+
+.tracking-notice i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--white-color);
+}
+
+.tracking-notice p {
+    margin-bottom: var(--spacing-md);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.tracking-link-box {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.tracking-link-box input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius-md);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--white-color);
+    font-size: var(--font-size-sm);
+    backdrop-filter: blur(5px);
+}
+
+.btn-copy {
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius-md);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--white-color);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-copy:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.status-alert {
+    margin-bottom: var(--spacing-lg);
+}
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid;
+}
+
+.alert-info {
+    background-color: rgba(67, 97, 238, 0.1);
+    border-left-color: var(--primary-color);
+}
+
+.alert i {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.alert-content h4 {
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.alert-content p {
+    margin: 0;
+    color: var(--gray-700);
+}
+
+.step-icon.completed {
+    background-color: var(--success-color);
+    color: var(--white-color);
+}
+
+.step-icon.pending {
+    background-color: var(--gray-300);
+    color: var(--gray-600);
+}
+
+.highlight-card {
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(67, 97, 238, 0.05));
+    border: 2px solid var(--primary-color);
+}
+
+.tracking-info {
+    margin: var(--spacing-md) 0;
+}
+
+.tracking-reference {
+    background-color: var(--gray-100);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.tracking-reference label {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin-bottom: 0.25rem;
+}
+
+.reference-number {
+    font-family: monospace;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-color);
+}
+
+.tracking-btn {
+    margin: var(--spacing-md) 0;
+}
+
+.tracking-note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    justify-content: center;
+    color: var(--gray-600);
+}
+
+.tracking-note i {
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tracking-link-box {
+        flex-direction: column;
+    }
+}
 /* Confirmation Hero */
 .confirmation-hero {
     height: 60vh;
@@ -731,3 +915,34 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
     }
 }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Copy tracking link functionality
+    const copyBtn = document.getElementById('copy-link');
+    const trackingInput = document.getElementById('tracking-link');
+    
+    if (copyBtn && trackingInput) {
+        copyBtn.addEventListener('click', function() {
+            trackingInput.select();
+            trackingInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                
+                // Visual feedback
+                const originalIcon = this.querySelector('i');
+                originalIcon.textContent = 'check';
+                this.style.backgroundColor = 'rgba(40, 167, 69, 0.3)';
+                
+                setTimeout(() => {
+                    originalIcon.textContent = 'content_copy';
+                    this.style.backgroundColor = '';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        });
+    }
+});
+</script>

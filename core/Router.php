@@ -54,11 +54,14 @@ class Router
         $this->addRoute($this->adminPrefix . '/categories/toggle-status/([0-9]+)', 'AdminCategories', 'toggleStatus', ['id']);
         $this->addRoute($this->adminPrefix . '/categories/update-order', 'AdminCategories', 'updateOrder');
         
-        // Booking routes
+        // Booking routes - UPDATED WITH TRACKING
         $this->addRoute('booking', 'Booking', 'index');
         $this->addRoute('booking/tour/([0-9]+)', 'Booking', 'tour', ['id']);
         $this->addRoute('booking/confirm', 'Booking', 'confirm');
         $this->addRoute('booking/thank-you', 'Booking', 'thankYou');
+        $this->addRoute('booking/search', 'Booking', 'search');                                    // NEW: Search booking page
+        $this->addRoute('booking/track/([A-Z0-9]{16})', 'Booking', 'track', ['token']);           // NEW: Track booking by token (must come before general track route)
+        $this->addRoute('booking/track/?.*', 'Booking', 'trackRedirect');                         // NEW: Redirect to search if no token or invalid token
         
         // Admin booking routes
         $this->addRoute($this->adminPrefix . '/bookings', 'AdminBookings', 'index');

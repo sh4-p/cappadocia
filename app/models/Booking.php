@@ -1,6 +1,6 @@
 <?php
 /**
- * Booking Model
+ * Booking Model - Updated with Tracking System
  */
 class Booking extends Model
 {
@@ -82,6 +82,69 @@ class Booking extends Model
     }
     
     /**
+     * Get booking by tracking token
+     * 
+     * @param string $token Tracking token
+     * @param string $langCode Language code
+     * @return array|false Booking
+     */
+    public function getByTrackingToken($token, $langCode = DEFAULT_LANGUAGE)
+    {
+        $sql = "SELECT b.*, 
+                       t.id as tour_id, 
+                       t.price, 
+                       t.discount_price, 
+                       t.featured_image,
+                       td.name as tour_name, 
+                       td.slug as tour_slug,
+                       td.description as tour_description
+                FROM {$this->table} b
+                LEFT JOIN tours t ON b.tour_id = t.id
+                LEFT JOIN tour_details td ON t.id = td.tour_id
+                LEFT JOIN languages l ON td.language_id = l.id
+                WHERE b.tracking_token = :token AND l.code = :langCode";
+        
+        return $this->db->getRow($sql, [
+            'token' => $token,
+            'langCode' => $langCode
+        ]);
+    }
+    
+    /**
+     * Search bookings by email and booking reference
+     * 
+     * @param string $email Customer email
+     * @param string $reference Booking reference (ID)
+     * @param string $langCode Language code
+     * @return array|false Booking
+     */
+    public function searchByEmailAndReference($email, $reference, $langCode = DEFAULT_LANGUAGE)
+    {
+        // Clean reference - remove # and leading zeros
+        $bookingId = ltrim(str_replace('#', '', $reference), '0');
+        
+        $sql = "SELECT b.*, 
+                       t.id as tour_id, 
+                       t.price, 
+                       t.discount_price, 
+                       t.featured_image,
+                       td.name as tour_name, 
+                       td.slug as tour_slug,
+                       td.description as tour_description
+                FROM {$this->table} b
+                LEFT JOIN tours t ON b.tour_id = t.id
+                LEFT JOIN tour_details td ON t.id = td.tour_id
+                LEFT JOIN languages l ON td.language_id = l.id
+                WHERE b.email = :email AND b.id = :booking_id AND l.code = :langCode";
+        
+        return $this->db->getRow($sql, [
+            'email' => $email,
+            'booking_id' => $bookingId,
+            'langCode' => $langCode
+        ]);
+    }
+    
+    /**
      * Get recent bookings
      * 
      * @param int $limit Limit
@@ -158,6 +221,63 @@ class Booking extends Model
     public function updateStatus($id, $status)
     {
         return $this->update(['status' => $status], ['id' => $id]);
+    }
+    
+    /**
+     * Get booking status history
+     * 
+     * @param int $bookingId Booking ID
+     * @return array Status history
+     */
+    public function getStatusHistory($bookingId)
+    {
+        // This would require a separate status_history table
+        // For now, we'll return a simple array based on current status
+        $booking = $this->getById($bookingId);
+        if (!$booking) {
+            return [];
+        }
+        
+        $history = [];
+        
+        // Always starts with pending
+        $history[] = [
+            'status' => 'pending',
+            'created_at' => $booking['created_at'],
+            'message' => __('booking_created')
+        ];
+        
+        // If status is not pending, add current status
+        if ($booking['status'] !== 'pending') {
+            $history[] = [
+                'status' => $booking['status'],
+                'created_at' => $booking['updated_at'] ?: $booking['created_at'],
+                'message' => __('status_changed_to_' . $booking['status'])
+            ];
+        }
+        
+        return $history;
+    }
+    
+    /**
+     * Generate unique tracking token
+     * 
+     * @return string Tracking token
+     */
+    public function generateTrackingToken()
+    {
+        do {
+            // Generate a unique token: timestamp + random string
+            $token = strtoupper(substr(md5(time() . uniqid() . mt_rand()), 0, 16));
+            
+            // Check if token already exists
+            $existing = $this->db->getRow(
+                "SELECT id FROM {$this->table} WHERE tracking_token = :token",
+                ['token' => $token]
+            );
+        } while ($existing);
+        
+        return $token;
     }
     
     /**
@@ -285,7 +405,7 @@ class Booking extends Model
     }
     
     /**
-     * Insert booking with validation
+     * Insert booking with validation and tracking token
      * 
      * @param array $data Booking data
      * @return int|false Booking ID or false
@@ -310,6 +430,11 @@ class Booking extends Model
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
         
+        // Generate tracking token if not provided
+        if (!isset($data['tracking_token']) || empty($data['tracking_token'])) {
+            $data['tracking_token'] = $this->generateTrackingToken();
+        }
+        
         // Insert booking
         return parent::insert($data);
     }
@@ -327,5 +452,52 @@ class Booking extends Model
         $data['updated_at'] = date('Y-m-d H:i:s');
         
         return parent::update($data, $conditions);
+    }
+    
+    /**
+     * Get formatted booking reference
+     * 
+     * @param int $bookingId Booking ID
+     * @return string Formatted reference
+     */
+    public static function formatReference($bookingId)
+    {
+        return '#' . str_pad($bookingId, 6, '0', STR_PAD_LEFT);
+    }
+    
+    /**
+     * Get booking status label
+     * 
+     * @param string $status Status
+     * @return string Status label
+     */
+    public static function getStatusLabel($status)
+    {
+        $labels = [
+            'pending' => __('awaiting_confirmation'),
+            'confirmed' => __('confirmed'),
+            'cancelled' => __('cancelled'),
+            'completed' => __('completed')
+        ];
+        
+        return isset($labels[$status]) ? $labels[$status] : ucfirst($status);
+    }
+    
+    /**
+     * Get booking status color
+     * 
+     * @param string $status Status
+     * @return string Status color class
+     */
+    public static function getStatusColor($status)
+    {
+        $colors = [
+            'pending' => 'warning',
+            'confirmed' => 'success',
+            'cancelled' => 'danger',
+            'completed' => 'primary'
+        ];
+        
+        return isset($colors[$status]) ? $colors[$status] : 'secondary';
     }
 }
