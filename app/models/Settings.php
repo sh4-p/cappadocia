@@ -162,6 +162,7 @@ class Settings extends Model
     
     /**
      * Get setting with default value for file paths
+     * Checks if file exists before returning the value
      *
      * @param string $key Setting key
      * @param string $defaultFileName Default filename
@@ -170,6 +171,72 @@ class Settings extends Model
     public function getFileSetting($key, $defaultFileName = '')
     {
         $value = $this->getSetting($key, $defaultFileName);
-        return !empty($value) ? $value : $defaultFileName;
+        
+        // If we have a value, check if the file exists
+        if (!empty($value) && $value !== $defaultFileName) {
+            $filePath = BASE_PATH . '/public/img/' . $value;
+            if (file_exists($filePath)) {
+                return $value;
+            } else {
+                error_log("File not found for setting $key: $filePath");
+                // File doesn't exist, return empty string to prevent 404s
+                return '';
+            }
+        }
+        
+        return $value;
+    }
+    
+    /**
+     * Get logo setting with fallback
+     *
+     * @return string Logo filename or empty string
+     */
+    public function getLogoSetting()
+    {
+        return $this->getFileSetting('logo', '');
+    }
+    
+    /**
+     * Get favicon setting with fallback
+     *
+     * @return string Favicon filename or empty string
+     */
+    public function getFaviconSetting()
+    {
+        return $this->getFileSetting('favicon', '');
+    }
+    
+    /**
+     * Check if a file setting exists and is valid
+     *
+     * @param string $key Setting key
+     * @return bool True if file exists
+     */
+    public function fileSettingExists($key)
+    {
+        $value = $this->getSetting($key);
+        if (empty($value)) {
+            return false;
+        }
+        
+        $filePath = BASE_PATH . '/public/img/' . $value;
+        return file_exists($filePath);
+    }
+    
+    /**
+     * Clean up orphaned file settings
+     * Removes settings for files that no longer exist
+     */
+    public function cleanupFileSettings()
+    {
+        $fileSettings = ['logo', 'favicon', 'hero_bg', 'about_bg'];
+        
+        foreach ($fileSettings as $key) {
+            if (!$this->fileSettingExists($key)) {
+                $this->saveSetting($key, '');
+                error_log("Cleaned up orphaned file setting: $key");
+            }
+        }
     }
 }

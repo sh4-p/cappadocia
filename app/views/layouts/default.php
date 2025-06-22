@@ -6,9 +6,19 @@
     <title><?php echo isset($pageTitle) ? $pageTitle . ' | ' . $settings['site_title'] : $settings['site_title']; ?></title>
     <meta name="description" content="<?php echo isset($metaDescription) ? $metaDescription : $settings['site_description']; ?>">
     
-    <!-- Favicon -->
-    <link rel="icon" href="<?php echo $imgUrl; ?>/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="<?php echo $imgUrl; ?>/favicon.ico" type="image/x-icon">
+    <!-- Favicon - Settings'den dinamik olarak -->
+    <?php 
+    $faviconFile = $settings['favicon'] ?? 'favicon.ico';
+    $faviconPath = $imgUrl . '/' . $faviconFile;
+    // Dosya var mı kontrol et
+    $faviconExists = file_exists(BASE_PATH . '/public/img/' . $faviconFile);
+    ?>
+    <?php if ($faviconExists): ?>
+        <link rel="icon" href="<?php echo $faviconPath; ?>" type="image/x-icon">
+        <link rel="shortcut icon" href="<?php echo $faviconPath; ?>" type="image/x-icon">
+    <?php else: ?>
+        <!-- Varsayılan favicon yoksa hiçbir şey ekleme, 404 isteklerini önle -->
+    <?php endif; ?>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -53,10 +63,21 @@
     <header class="site-header">
         <div class="container">
             <div class="header-wrapper">
-                <!-- Logo -->
+                <!-- Logo - Settings'den dinamik olarak -->
                 <div class="logo">
                     <a href="<?php echo $appUrl . '/' . $currentLang; ?>">
-                        <img src="<?php echo $imgUrl; ?>/logo.png" alt="<?php echo $settings['site_title']; ?>">
+                        <?php 
+                        $logoFile = $settings['logo'] ?? 'logo.png';
+                        $logoPath = $imgUrl . '/' . $logoFile;
+                        // Dosya var mı kontrol et
+                        $logoExists = file_exists(BASE_PATH . '/public/img/' . $logoFile);
+                        ?>
+                        <?php if ($logoExists): ?>
+                            <img src="<?php echo $logoPath; ?>" alt="<?php echo $settings['site_title']; ?>" class="main-logo">
+                        <?php else: ?>
+                            <!-- Varsayılan logo text -->
+                            <span class="logo-text"><?php echo $settings['site_title']; ?></span>
+                        <?php endif; ?>
                     </a>
                 </div>
                 
@@ -162,7 +183,27 @@
                     <div class="footer-widget">
                         <h3 class="widget-title"><?php _e('about_us'); ?></h3>
                         <div class="about-widget">
-                            <img src="<?php echo $imgUrl; ?>/logo-white.png" alt="<?php echo $settings['site_title']; ?>" class="footer-logo">
+                            <?php 
+                            // Footer logo - beyaz versiyonu tercih et
+                            $footerLogoFile = $settings['logo'] ?? 'logo.png';
+                            $footerLogoPath = $imgUrl . '/' . $footerLogoFile;
+                            $footerLogoExists = file_exists(BASE_PATH . '/public/img/' . $footerLogoFile);
+                            
+                            // Beyaz versiyon var mı kontrol et
+                            $whiteLogoFile = str_replace('.png', '-white.png', $footerLogoFile);
+                            $whiteLogoFile = str_replace('.jpg', '-white.jpg', $whiteLogoFile);
+                            $whiteLogoPath = $imgUrl . '/' . $whiteLogoFile;
+                            $whiteLogoExists = file_exists(BASE_PATH . '/public/img/' . $whiteLogoFile);
+                            ?>
+                            
+                            <?php if ($whiteLogoExists): ?>
+                                <img src="<?php echo $whiteLogoPath; ?>" alt="<?php echo $settings['site_title']; ?>" class="footer-logo">
+                            <?php elseif ($footerLogoExists): ?>
+                                <img src="<?php echo $footerLogoPath; ?>" alt="<?php echo $settings['site_title']; ?>" class="footer-logo footer-logo-invert">
+                            <?php else: ?>
+                                <div class="footer-logo-text"><?php echo $settings['site_title']; ?></div>
+                            <?php endif; ?>
+                            
                             <p><?php echo $settings['site_description']; ?></p>
                             <div class="social-links">
                                 <?php if (!empty($settings['facebook'])): ?>

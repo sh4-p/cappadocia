@@ -130,7 +130,7 @@ class AdminSettingsController extends Controller
                 // Get file extension
                 $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                 
-                // Validate file type
+                // Validate file type and generate filename
                 if ($key === 'logo') {
                     $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg'];
                     if (!in_array($fileExtension, $allowedTypes)) {
@@ -138,7 +138,16 @@ class AdminSettingsController extends Controller
                         $this->redirect('admin/settings');
                         return;
                     }
+                    
+                    // Validate file size (max 5MB)
+                    if ($file['size'] > 5 * 1024 * 1024) {
+                        $this->session->setFlash('error', __('logo_file_too_large'));
+                        $this->redirect('admin/settings');
+                        return;
+                    }
+                    
                     $fileName = 'logo.' . $fileExtension;
+                    
                 } elseif ($key === 'favicon') {
                     $allowedTypes = ['ico', 'png'];
                     if (!in_array($fileExtension, $allowedTypes)) {
@@ -146,14 +155,26 @@ class AdminSettingsController extends Controller
                         $this->redirect('admin/settings');
                         return;
                     }
+                    
+                    // Validate file size (max 1MB)
+                    if ($file['size'] > 1024 * 1024) {
+                        $this->session->setFlash('error', __('favicon_file_too_large'));
+                        $this->redirect('admin/settings');
+                        return;
+                    }
+                    
                     $fileName = 'favicon.' . $fileExtension;
                 }
                 
                 $uploadPath = $uploadDir . $fileName;
                 
-                // Delete old file if exists
-                if (file_exists($uploadPath)) {
-                    unlink($uploadPath);
+                // Delete old file if exists (different extension)
+                $existingFiles = glob($uploadDir . pathinfo($fileName, PATHINFO_FILENAME) . '.*');
+                foreach ($existingFiles as $existingFile) {
+                    if (file_exists($existingFile)) {
+                        unlink($existingFile);
+                        error_log("Deleted old file: " . basename($existingFile));
+                    }
                 }
                 
                 // Upload file
@@ -162,6 +183,11 @@ class AdminSettingsController extends Controller
                     
                     // Log successful upload
                     error_log("File uploaded successfully: " . $fileName . " to " . $uploadPath);
+                    
+                    // Set flash message for successful upload
+                    $uploadType = $key === 'logo' ? 'Logo' : 'Favicon';
+                    $this->session->setFlash('success', $uploadType . ' uploaded successfully!');
+                    
                 } else {
                     $this->session->setFlash('error', __('file_upload_failed') . ': ' . $key);
                     $this->redirect('admin/settings');
@@ -191,12 +217,20 @@ class AdminSettingsController extends Controller
                         continue; // Skip invalid files
                     }
                     
+                    // Validate file size (max 10MB)
+                    if ($homepageImages['size'][$key] > 10 * 1024 * 1024) {
+                        continue; // Skip large files
+                    }
+                    
                     $fileName = $key . '.' . $fileExtension;
                     $uploadPath = $uploadDir . $fileName;
                     
-                    // Delete old file if exists
-                    if (file_exists($uploadPath)) {
-                        unlink($uploadPath);
+                    // Delete old file if exists (different extension)
+                    $existingFiles = glob($uploadDir . $key . '.*');
+                    foreach ($existingFiles as $existingFile) {
+                        if (file_exists($existingFile)) {
+                            unlink($existingFile);
+                        }
                     }
                     
                     // Upload file
@@ -342,5 +376,57 @@ class AdminSettingsController extends Controller
         } catch (Exception $e) {
             $this->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
+    }
+    
+    /**
+     * Generate default files if they don't exist
+     */
+    public function generateDefaults()
+    {
+        $imgDir = BASE_PATH . '/public/img/';
+        
+        // Create directory if not exists
+        if (!is_dir($imgDir)) {
+            mkdir($imgDir, 0755, true);
+        }
+        
+        // Generate default favicon if not exists
+        $faviconPath = $imgDir . 'favicon.ico';
+        if (!file_exists($faviconPath)) {
+            // Create a simple 16x16 favicon
+            $this->generateDefaultFavicon($faviconPath);
+        }
+        
+        // You can also generate a default logo here if needed
+        
+        $this->session->setFlash('success', 'Default files generated successfully');
+        $this->redirect('admin/settings');
+    }
+    
+    /**
+     * Generate a simple default favicon
+     */
+    private function generateDefaultFavicon($path)
+    {
+        // Create a 16x16 image
+        $image = imagecreate(16, 16);
+        
+        // Allocate colors
+        $bg = imagecolorallocate($image, 255, 107, 53); // Primary color
+        $fg = imagecolorallocate($image, 255, 255, 255); // White
+        
+        // Fill background
+        imagefill($image, 0, 0, $bg);
+        
+        // Add a simple "T" for travel
+        imagestring($image, 2, 4, 2, 'T', $fg);
+        
+        // Output as ICO format (simplified - you might want to use a proper ICO library)
+        // For now, save as PNG and rename
+        $tempPath = $path . '.png';
+        imagepng($image, $tempPath);
+        rename($tempPath, $path);
+        
+        imagedestroy($image);
     }
 }

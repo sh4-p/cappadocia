@@ -55,14 +55,51 @@
     z-index: 1001;
 }
 
-.logo img {
+/* Logo Düzeltmeleri */
+.logo .main-logo {
     height: 48px;
+    max-width: 200px;
+    width: auto;
     transition: all var(--transition-medium);
+    /* Beyaz filter'ı kaldırdık */
+}
+
+.logo .logo-text {
+    color: var(--white-color);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    text-decoration: none;
+    transition: all var(--transition-medium);
+}
+
+.scrolled .logo .main-logo {
+    height: 42px;
+}
+
+.scrolled .logo .logo-text {
+    color: var(--white-color);
+}
+
+/* Eğer logo çok koyu ise, scroll edildiğinde ters çevir */
+.scrolled .logo .main-logo.logo-dark {
     filter: brightness(0) invert(1);
 }
 
-.scrolled .logo img {
-    height: 42px;
+/* Footer Logo Düzeltmeleri */
+.footer-logo {
+    height: 50px;
+    max-width: 200px;
+    width: auto;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Footer'da koyu logo varsa beyaza çevir */
+
+.footer-logo-text {
+    color: var(--white-color);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-md);
 }
 
 .main-nav {
@@ -335,14 +372,19 @@
         height: 40px;
     }
 }
+
 /* Language Dropdown - Mobil Uyumlu Hale Getirme */
 @media (max-width: 576px) {
     .site-header {
         padding: 0.5rem 1rem;
     }
     
-    .logo img {
+    .logo .main-logo {
         height: 40px;
+    }
+    
+    .logo .logo-text {
+        font-size: var(--font-size-lg);
     }
     
     /* Language Dropdown İçin Düzeltmeler */
