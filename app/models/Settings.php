@@ -71,17 +71,26 @@ class Settings extends Model
      */
     public function saveSetting($key, $value)
     {
-        $setting = $this->getOne(['setting_key' => $key]);
-       
-        if ($setting) {
-            // Update existing setting
-            return $this->update(['setting_value' => $value], ['id' => $setting['id']]);
-        } else {
-            // Insert new setting
-            return $this->insert([
-                'setting_key' => $key,
-                'setting_value' => $value
-            ]);
+        try {
+            $setting = $this->getOne(['setting_key' => $key]);
+           
+            if ($setting) {
+                // Update existing setting
+                $result = $this->update(['setting_value' => $value], ['id' => $setting['id']]);
+                error_log("Updated setting: $key = $value, Result: " . ($result ? 'success' : 'failed'));
+                return $result;
+            } else {
+                // Insert new setting
+                $result = $this->insert([
+                    'setting_key' => $key,
+                    'setting_value' => $value
+                ]);
+                error_log("Inserted new setting: $key = $value, Result: " . ($result ? 'success' : 'failed'));
+                return $result;
+            }
+        } catch (Exception $e) {
+            error_log("Error saving setting $key: " . $e->getMessage());
+            return false;
         }
     }
    
@@ -104,17 +113,30 @@ class Settings extends Model
      */
     public function saveMultipleSettings($settings)
     {
-        $this->db->beginTransaction();
-       
         try {
+            $this->db->beginTransaction();
+            
+            $successCount = 0;
+            $totalCount = count($settings);
+            
             foreach ($settings as $key => $value) {
-                $this->saveSetting($key, $value);
+                if ($this->saveSetting($key, $value)) {
+                    $successCount++;
+                }
             }
            
-            $this->db->endTransaction();
-            return true;
+            if ($successCount === $totalCount) {
+                $this->db->endTransaction();
+                error_log("Successfully saved all $totalCount settings");
+                return true;
+            } else {
+                $this->db->cancelTransaction();
+                error_log("Failed to save all settings. Success: $successCount/$totalCount");
+                return false;
+            }
         } catch (Exception $e) {
             $this->db->cancelTransaction();
+            error_log("Exception in saveMultipleSettings: " . $e->getMessage());
             return false;
         }
     }
@@ -136,5 +158,18 @@ class Settings extends Model
         }
        
         return $result;
+    }
+    
+    /**
+     * Get setting with default value for file paths
+     *
+     * @param string $key Setting key
+     * @param string $defaultFileName Default filename
+     * @return string Setting value or default
+     */
+    public function getFileSetting($key, $defaultFileName = '')
+    {
+        $value = $this->getSetting($key, $defaultFileName);
+        return !empty($value) ? $value : $defaultFileName;
     }
 }

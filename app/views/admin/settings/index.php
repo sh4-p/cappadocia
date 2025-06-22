@@ -127,12 +127,22 @@
                                     <div class="form-group">
                                         <label for="hero_bg" class="form-label"><?php _e('hero_bg_image'); ?></label>
                                         <div class="image-preview">
-                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['hero_bg'] ?? 'hero-bg.jpg'); ?>" alt="<?php _e('hero_bg_image'); ?>" id="hero_bg_preview">
+                                            <?php 
+                                            $heroBgFile = $settings['hero_bg'] ?? 'hero-bg.jpg';
+                                            $heroBgPath = $imgUrl . '/' . $heroBgFile;
+                                            $heroBgSrc = file_exists(BASE_PATH . '/public/img/' . $heroBgFile) ? $heroBgPath : $imgUrl . '/hero-bg.jpg';
+                                            ?>
+                                            <img src="<?php echo $heroBgSrc; ?>" alt="<?php _e('hero_bg_image'); ?>" id="hero_bg_preview" onerror="this.src='<?php echo $imgUrl; ?>/hero-bg.jpg'">
                                         </div>
                                         <div class="mt-3">
                                             <input type="file" id="hero_bg" name="homepage_images[hero_bg]" class="form-control" accept="image/*">
                                             <small class="form-text"><?php _e('recommended_size'); ?>: 1920x1080px</small>
                                         </div>
+                                        <?php if (!empty($settings['hero_bg']) && $settings['hero_bg'] !== 'hero-bg.jpg'): ?>
+                                            <div class="mt-2">
+                                                <small class="text-muted"><?php _e('current_file'); ?>: <?php echo htmlspecialchars($settings['hero_bg']); ?></small>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
 
@@ -141,12 +151,22 @@
                                     <div class="form-group">
                                         <label for="about_bg" class="form-label"><?php _e('about_bg_image'); ?></label>
                                         <div class="image-preview">
-                                            <img src="<?php echo $imgUrl; ?>/<?php echo htmlspecialchars($settings['about_bg'] ?? 'about-bg.jpg'); ?>" alt="<?php _e('about_bg_image'); ?>" id="about_bg_preview">
+                                            <?php 
+                                            $aboutBgFile = $settings['about_bg'] ?? 'about-bg.jpg';
+                                            $aboutBgPath = $imgUrl . '/' . $aboutBgFile;
+                                            $aboutBgSrc = file_exists(BASE_PATH . '/public/img/' . $aboutBgFile) ? $aboutBgPath : $imgUrl . '/about-bg.jpg';
+                                            ?>
+                                            <img src="<?php echo $aboutBgSrc; ?>" alt="<?php _e('about_bg_image'); ?>" id="about_bg_preview" onerror="this.src='<?php echo $imgUrl; ?>/about-bg.jpg'">
                                         </div>
                                         <div class="mt-3">
                                             <input type="file" id="about_bg" name="homepage_images[about_bg]" class="form-control" accept="image/*">
                                             <small class="form-text"><?php _e('recommended_size'); ?>: 1920x1200px</small>
                                         </div>
+                                        <?php if (!empty($settings['about_bg']) && $settings['about_bg'] !== 'about-bg.jpg'): ?>
+                                            <div class="mt-2">
+                                                <small class="text-muted"><?php _e('current_file'); ?>: <?php echo htmlspecialchars($settings['about_bg']); ?></small>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -166,12 +186,23 @@
                                     <div class="form-group">
                                         <label for="logo" class="form-label"><?php _e('logo'); ?></label>
                                         <div class="image-preview">
-                                            <img src="<?php echo $imgUrl; ?>/logo.png" alt="<?php _e('logo'); ?>" id="logo_preview">
+                                            <?php 
+                                            $logoFile = $settings['logo'] ?? 'logo.png';
+                                            $logoPath = $imgUrl . '/' . $logoFile;
+                                            // Check if file exists, if not use default
+                                            $logoSrc = file_exists(BASE_PATH . '/public/img/' . $logoFile) ? $logoPath : $imgUrl . '/logo.png';
+                                            ?>
+                                            <img src="<?php echo $logoSrc; ?>" alt="<?php _e('logo'); ?>" id="logo_preview" onerror="this.src='<?php echo $imgUrl; ?>/logo.png'">
                                         </div>
                                         <div class="mt-3">
                                             <input type="file" id="logo" name="logo" class="form-control" accept="image/*">
                                             <small class="form-text"><?php _e('logo_help'); ?></small>
                                         </div>
+                                        <?php if (!empty($settings['logo']) && $settings['logo'] !== 'logo.png'): ?>
+                                            <div class="mt-2">
+                                                <small class="text-muted"><?php _e('current_file'); ?>: <?php echo htmlspecialchars($settings['logo']); ?></small>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 
@@ -179,12 +210,23 @@
                                     <div class="form-group">
                                         <label for="favicon" class="form-label"><?php _e('favicon'); ?></label>
                                         <div class="image-preview">
-                                            <img src="<?php echo $imgUrl; ?>/favicon.ico" alt="<?php _e('favicon'); ?>" id="favicon_preview">
+                                            <?php 
+                                            $faviconFile = $settings['favicon'] ?? 'favicon.ico';
+                                            $faviconPath = $imgUrl . '/' . $faviconFile;
+                                            // Check if file exists, if not use default
+                                            $faviconSrc = file_exists(BASE_PATH . '/public/img/' . $faviconFile) ? $faviconPath : $imgUrl . '/favicon.ico';
+                                            ?>
+                                            <img src="<?php echo $faviconSrc; ?>" alt="<?php _e('favicon'); ?>" id="favicon_preview" onerror="this.src='<?php echo $imgUrl; ?>/favicon.ico'">
                                         </div>
                                         <div class="mt-3">
                                             <input type="file" id="favicon" name="favicon" class="form-control" accept="image/x-icon,image/png">
                                             <small class="form-text"><?php _e('favicon_help'); ?></small>
                                         </div>
+                                        <?php if (!empty($settings['favicon']) && $settings['favicon'] !== 'favicon.ico'): ?>
+                                            <div class="mt-2">
+                                                <small class="text-muted"><?php _e('current_file'); ?>: <?php echo htmlspecialchars($settings['favicon']); ?></small>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -1354,7 +1396,7 @@
 </style>
 
 <script>
-// Settings Tabs ve SMTP Toggle için geliştirilmiş JavaScript
+// Settings Tabs ve File Upload için geliştirilmiş JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Settings page initialized');
     
@@ -1367,7 +1409,8 @@ document.addEventListener('DOMContentLoaded', function() {
             this.activateFirstTab();
             this.initImagePreviews();
             this.initPaymentToggles();
-            this.initSMTPToggle(); // SMTP toggle fonksiyonu ekledik
+            this.initSMTPToggle();
+            this.initFileUploadValidation();
         },
         
         bindEvents: function() {
@@ -1414,11 +1457,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (logoInput && logoPreview) {
                 logoInput.addEventListener('change', function() {
                     if (this.files && this.files[0]) {
+                        // Validate file type
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml'];
+                        if (!allowedTypes.includes(this.files[0].type)) {
+                            alert('Please select a valid image file (JPEG, PNG, GIF, or SVG)');
+                            this.value = '';
+                            return;
+                        }
+                        
+                        // Validate file size (max 5MB)
+                        if (this.files[0].size > 5 * 1024 * 1024) {
+                            alert('File size should be less than 5MB');
+                            this.value = '';
+                            return;
+                        }
+                        
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             logoPreview.src = e.target.result;
                         }
                         reader.readAsDataURL(this.files[0]);
+                        
+                        console.log('Logo file selected:', this.files[0].name);
                     }
                 });
             }
@@ -1430,11 +1490,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (faviconInput && faviconPreview) {
                 faviconInput.addEventListener('change', function() {
                     if (this.files && this.files[0]) {
+                        // Validate file type
+                        const allowedTypes = ['image/x-icon', 'image/png'];
+                        if (!allowedTypes.includes(this.files[0].type)) {
+                            alert('Please select a valid favicon file (ICO or PNG)');
+                            this.value = '';
+                            return;
+                        }
+                        
+                        // Validate file size (max 1MB)
+                        if (this.files[0].size > 1024 * 1024) {
+                            alert('Favicon file size should be less than 1MB');
+                            this.value = '';
+                            return;
+                        }
+                        
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             faviconPreview.src = e.target.result;
                         }
                         reader.readAsDataURL(this.files[0]);
+                        
+                        console.log('Favicon file selected:', this.files[0].name);
                     }
                 });
             }
@@ -1451,15 +1528,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (input && preview) {
                     input.addEventListener('change', function() {
                         if (this.files && this.files[0]) {
+                            // Validate file type
+                            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                            if (!allowedTypes.includes(this.files[0].type)) {
+                                alert('Please select a valid image file (JPEG, PNG, or GIF)');
+                                this.value = '';
+                                return;
+                            }
+                            
+                            // Validate file size (max 10MB for background images)
+                            if (this.files[0].size > 10 * 1024 * 1024) {
+                                alert('Image file size should be less than 10MB');
+                                this.value = '';
+                                return;
+                            }
+                            
                             const reader = new FileReader();
                             reader.onload = function(e) {
                                 preview.src = e.target.result;
                             }
                             reader.readAsDataURL(this.files[0]);
+                            
+                            console.log('Homepage image selected:', id, this.files[0].name);
                         }
                     });
                 }
             });
+        },
+        
+        initFileUploadValidation: function() {
+            // Add form submission validation
+            const settingsForm = document.querySelector('.settings-form');
+            if (settingsForm) {
+                settingsForm.addEventListener('submit', function(e) {
+                    // Show loading state
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> Saving...';
+                        submitBtn.disabled = true;
+                        
+                        // Re-enable button after form submission (fallback)
+                        setTimeout(() => {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }, 5000);
+                    }
+                });
+            }
         },
         
         initPaymentToggles: function() {
@@ -1583,7 +1699,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         },
         
-        // SMTP Toggle Functionality - YENİ EKLENDİ
+        // SMTP Toggle Functionality
         initSMTPToggle: function() {
             const smtpToggle = document.getElementById('smtp_enabled');
             const smtpConfig = document.getElementById('smtp-config');
@@ -1674,12 +1790,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     testSmtpBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> Sending...';
                     testSmtpBtn.disabled = true;
                     
-                    // Simulate SMTP test (in production, replace with actual AJAX call)
-                    setTimeout(() => {
-                        testResult.innerHTML = '<div class="alert alert-success"><i class="material-icons">check_circle</i>Test email sent successfully to ' + email + '!</div>';
+                    // Get SMTP settings from form
+                    const smtpSettings = {
+                        test_email: email,
+                        smtp_enabled: document.getElementById('smtp_enabled').checked ? '1' : '0',
+                        smtp_host: document.getElementById('smtp_host').value,
+                        smtp_port: document.getElementById('smtp_port').value,
+                        smtp_security: document.getElementById('smtp_security').value,
+                        smtp_auth: document.getElementById('smtp_auth').checked ? '1' : '0',
+                        smtp_username: document.getElementById('smtp_username').value,
+                        smtp_password: document.getElementById('smtp_password').value,
+                        smtp_timeout: document.getElementById('smtp_timeout').value,
+                        email_from_address: document.getElementById('email_from_address').value,
+                        email_from_name: document.getElementById('email_from_name').value,
+                        email_reply_to: document.getElementById('email_reply_to').value
+                    };
+                    
+                    // Send AJAX request to test email endpoint
+                    fetch(window.location.origin + '/admin/settings/testEmail', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(smtpSettings)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            testResult.innerHTML = '<div class="alert alert-success"><i class="material-icons">check_circle</i>' + data.message + '</div>';
+                        } else {
+                            testResult.innerHTML = '<div class="alert alert-danger"><i class="material-icons">error</i>' + data.message + '</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        testResult.innerHTML = '<div class="alert alert-danger"><i class="material-icons">error</i>Failed to send test email. Please try again.</div>';
+                    })
+                    .finally(() => {
                         testSmtpBtn.innerHTML = originalText;
                         testSmtpBtn.disabled = false;
-                    }, 2000);
+                    });
                 });
             }
             
@@ -1713,5 +1863,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize settings tabs
     SettingsTabs.init();
+    
+    // Show success/error messages if they exist
+    const flashMessages = document.querySelectorAll('.flash-message');
+    flashMessages.forEach(message => {
+        setTimeout(() => {
+            message.style.opacity = '0';
+            setTimeout(() => {
+                message.remove();
+            }, 300);
+        }, 5000);
+    });
 });
 </script>

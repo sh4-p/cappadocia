@@ -110,7 +110,7 @@ class AdminSettingsController extends Controller
             }
         }
         
-        // Handle regular file uploads
+        // Handle regular file uploads (logo, favicon)
         $uploadedFiles = [
             'logo' => $this->file('logo'),
             'favicon' => $this->file('favicon')
@@ -119,18 +119,53 @@ class AdminSettingsController extends Controller
         // Process file uploads
         foreach ($uploadedFiles as $key => $file) {
             if ($file && $file['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = BASE_PATH . '/public/uploads/';
+                // Define upload directory
+                $uploadDir = BASE_PATH . '/public/img/';
                 
                 // Create directory if not exists
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
                 
-                $fileName = $key . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+                // Get file extension
+                $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                
+                // Validate file type
+                if ($key === 'logo') {
+                    $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'svg'];
+                    if (!in_array($fileExtension, $allowedTypes)) {
+                        $this->session->setFlash('error', __('invalid_logo_format'));
+                        $this->redirect('admin/settings');
+                        return;
+                    }
+                    $fileName = 'logo.' . $fileExtension;
+                } elseif ($key === 'favicon') {
+                    $allowedTypes = ['ico', 'png'];
+                    if (!in_array($fileExtension, $allowedTypes)) {
+                        $this->session->setFlash('error', __('invalid_favicon_format'));
+                        $this->redirect('admin/settings');
+                        return;
+                    }
+                    $fileName = 'favicon.' . $fileExtension;
+                }
+                
+                $uploadPath = $uploadDir . $fileName;
+                
+                // Delete old file if exists
+                if (file_exists($uploadPath)) {
+                    unlink($uploadPath);
+                }
                 
                 // Upload file
-                if (move_uploaded_file($file['tmp_name'], $uploadDir . $fileName)) {
+                if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
                     $settings[$key] = $fileName;
+                    
+                    // Log successful upload
+                    error_log("File uploaded successfully: " . $fileName . " to " . $uploadPath);
+                } else {
+                    $this->session->setFlash('error', __('file_upload_failed') . ': ' . $key);
+                    $this->redirect('admin/settings');
+                    return;
                 }
             }
         }
@@ -149,12 +184,25 @@ class AdminSettingsController extends Controller
                         mkdir($uploadDir, 0755, true);
                     }
                     
-                    $fileExtension = pathinfo($name, PATHINFO_EXTENSION);
+                    $fileExtension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+                    
+                    if (!in_array($fileExtension, $allowedTypes)) {
+                        continue; // Skip invalid files
+                    }
+                    
                     $fileName = $key . '.' . $fileExtension;
+                    $uploadPath = $uploadDir . $fileName;
+                    
+                    // Delete old file if exists
+                    if (file_exists($uploadPath)) {
+                        unlink($uploadPath);
+                    }
                     
                     // Upload file
-                    if (move_uploaded_file($homepageImages['tmp_name'][$key], $uploadDir . $fileName)) {
+                    if (move_uploaded_file($homepageImages['tmp_name'][$key], $uploadPath)) {
                         $settings[$key] = $fileName;
+                        error_log("Homepage image uploaded: " . $fileName);
                     }
                 }
             }
@@ -180,12 +228,19 @@ class AdminSettingsController extends Controller
         }
         
         // Save settings
-        $result = $settingsModel->saveMultipleSettings($settings);
-        
-        if ($result) {
-            $this->session->setFlash('success', __('settings_updated'));
-        } else {
-            $this->session->setFlash('error', __('settings_update_failed'));
+        try {
+            $result = $settingsModel->saveMultipleSettings($settings);
+            
+            if ($result) {
+                $this->session->setFlash('success', __('settings_updated'));
+                error_log("Settings saved successfully. Settings count: " . count($settings));
+            } else {
+                $this->session->setFlash('error', __('settings_update_failed'));
+                error_log("Failed to save settings");
+            }
+        } catch (Exception $e) {
+            $this->session->setFlash('error', __('settings_update_failed') . ': ' . $e->getMessage());
+            error_log("Exception saving settings: " . $e->getMessage());
         }
         
         // Redirect back to settings page
