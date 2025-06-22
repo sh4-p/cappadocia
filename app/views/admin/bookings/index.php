@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
+    margin-top: 2.5rem;
 }
 
 .stat-item {

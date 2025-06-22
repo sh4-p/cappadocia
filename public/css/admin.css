@@ -123,7 +123,7 @@ body {
     font-size: var(--font-size-md);
     line-height: 1.6;
     color: var(--gray-700);
-    background-color: var(--gray-100);
+    background-color: #e0e0e0;
     overflow-x: hidden;
 }
 
@@ -592,6 +592,7 @@ button {
     box-shadow: var(--shadow-md);
     overflow: hidden;
     margin-bottom: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
     transition: transform var(--transition-medium), box-shadow var(--transition-medium);
 }
 
@@ -796,6 +797,7 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination li.paginate_button:
     border: 1px solid var(--gray-300);
     border-radius: var(--border-radius-md);
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    margin-top: 0.5rem;
 }
 
 .form-control:focus {
@@ -919,6 +921,7 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination li.paginate_button:
     box-shadow: var(--shadow-md);
     position: relative;
     overflow: hidden;
+    margin-top: 0.5rem;
 }
 
 .btn::after {
