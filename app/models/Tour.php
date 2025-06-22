@@ -483,4 +483,24 @@ class Tour extends Model
             return false;
         }
     }
+
+    /**
+     * Get active tours for admin booking form
+     * 
+     * @param string $langCode Language code
+     * @return array Active tours
+     */
+    public function getActiveTours($langCode = DEFAULT_LANGUAGE)
+    {
+        $sql = "SELECT t.id, t.price, t.discount_price, td.name, td.slug
+                FROM {$this->table} t
+                LEFT JOIN tour_details td ON t.id = td.tour_id
+                LEFT JOIN languages l ON td.language_id = l.id
+                WHERE t.is_active = 1 AND l.code = :langCode
+                ORDER BY td.name ASC";
+        
+        return $this->db->getRows($sql, [
+            'langCode' => $langCode
+        ]);
+    }
 }

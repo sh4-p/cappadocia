@@ -7,6 +7,10 @@
 <div class="page-header">
     <h1 class="page-title"><?php _e('bookings'); ?></h1>
     <div class="page-actions">
+        <a href="<?php echo $adminUrl; ?>/bookings/create" class="btn btn-primary">
+            <i class="material-icons">add</i>
+            <span><?php _e('add_booking'); ?></span>
+        </a>
         <div class="filter-dropdown dropdown">
             <button class="btn btn-light dropdown-toggle">
                 <i class="material-icons">filter_list</i>

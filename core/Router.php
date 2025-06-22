@@ -62,8 +62,11 @@ class Router
         
         // Admin booking routes
         $this->addRoute($this->adminPrefix . '/bookings', 'AdminBookings', 'index');
+        $this->addRoute($this->adminPrefix . '/bookings/create', 'AdminBookings', 'create');
         $this->addRoute($this->adminPrefix . '/bookings/view/([0-9]+)', 'AdminBookings', 'view', ['id']);
         $this->addRoute($this->adminPrefix . '/bookings/status/([0-9]+)/([a-z]+)', 'AdminBookings', 'status', ['id', 'status']);
+        $this->addRoute($this->adminPrefix . '/bookings/list-by-customer/([^/]+)', 'AdminBookings', 'listByCustomer', ['email']);
+        $this->addRoute($this->adminPrefix . '/bookings/get-tour-price/([0-9]+)', 'AdminBookings', 'getTourPrice', ['id']);
         $this->addRoute($this->adminPrefix . '/bookings/export', 'AdminBookings', 'export');
         
         // Gallery routes

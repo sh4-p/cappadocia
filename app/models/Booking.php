@@ -305,6 +305,8 @@ class Booking extends Model
         $data['children'] = isset($data['children']) ? (int)$data['children'] : 0;
         $data['status'] = isset($data['status']) ? $data['status'] : 'pending';
         $data['payment_method'] = isset($data['payment_method']) ? $data['payment_method'] : 'card';
+        $data['notes'] = isset($data['notes']) ? $data['notes'] : '';
+        $data['created_by_admin'] = isset($data['created_by_admin']) ? (int)$data['created_by_admin'] : 0;
         $data['created_at'] = date('Y-m-d H:i:s');
         $data['updated_at'] = date('Y-m-d H:i:s');
         

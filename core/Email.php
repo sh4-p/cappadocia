@@ -24,6 +24,11 @@ class Email
         
         // Load email template model
         try {
+            // Include required classes if not already loaded
+            if (!class_exists('EmailTemplate')) {
+                require_once BASE_PATH . '/app/models/EmailTemplate.php';
+            }
+            
             $db = new Database();
             $this->emailTemplateModel = new EmailTemplate($db);
         } catch (Exception $e) {
@@ -37,6 +42,11 @@ class Email
     private function loadDefaultSettings()
     {
         try {
+            // Include required classes if not already loaded
+            if (!class_exists('Settings')) {
+                require_once BASE_PATH . '/app/models/Settings.php';
+            }
+            
             $db = new Database();
             $settingsModel = new Settings($db);
             $settings = $settingsModel->getAllSettings();
@@ -61,6 +71,7 @@ class Email
         } catch (Exception $e) {
             // Fallback if settings can't be loaded
             $this->error = 'Could not load email settings: ' . $e->getMessage();
+            error_log('Email settings error: ' . $e->getMessage());
         }
     }
     
@@ -125,8 +136,8 @@ class Email
     public function sendTemplate($templateKey, $toEmail, $variables = [])
     {
         if (!$this->emailTemplateModel) {
-            $this->error = 'Email template model not available';
-            return false;
+            // Fallback to hardcoded templates
+            return $this->sendLegacyTemplate($templateKey, $toEmail, $variables);
         }
         
         // Get template from database
@@ -212,14 +223,23 @@ class Email
         ];
         
         // Send to admin
-        $db = new Database();
-        $settingsModel = new Settings($db);
-        $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
-        
-        return $this->sendTemplate('contact_form', $adminEmail, $variables);
+        try {
+            if (!class_exists('Settings')) {
+                require_once BASE_PATH . '/app/models/Settings.php';
+            }
+            
+            $db = new Database();
+            $settingsModel = new Settings($db);
+            $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
+            
+            return $this->sendTemplate('contact_form', $adminEmail, $variables);
+        } catch (Exception $e) {
+            $this->error = 'Could not load admin email setting: ' . $e->getMessage();
+            return false;
+        }
     }
     
-        /**
+    /**
      * Send booking admin notification
      * 
      * @param array $booking Booking data
@@ -242,12 +262,22 @@ class Email
         ];
         
         // Send to admin
-        $db = new Database();
-        $settingsModel = new Settings($db);
-        $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
-        
-        return $this->sendTemplate('booking_admin_notification', $adminEmail, $variables);
+        try {
+            if (!class_exists('Settings')) {
+                require_once BASE_PATH . '/app/models/Settings.php';
+            }
+            
+            $db = new Database();
+            $settingsModel = new Settings($db);
+            $adminEmail = $settingsModel->getSetting('email_admin', $this->fromEmail);
+            
+            return $this->sendTemplate('booking_admin_notification', $adminEmail, $variables);
+        } catch (Exception $e) {
+            $this->error = 'Could not load admin email setting: ' . $e->getMessage();
+            return false;
+        }
     }
+    
     /**
      * Send booking status change email
      * 
@@ -350,9 +380,24 @@ class Email
                 $message = $this->getBookingEmailBody($variables);
                 break;
                 
+            case 'booking_status_confirmed':
+                $subject = 'Booking Confirmed - ' . ($variables['tour_name'] ?? 'Tour');
+                $message = $this->getBookingStatusEmailBody($variables, 'confirmed');
+                break;
+                
+            case 'booking_status_cancelled':
+                $subject = 'Booking Cancelled - ' . ($variables['tour_name'] ?? 'Tour');
+                $message = $this->getBookingStatusEmailBody($variables, 'cancelled');
+                break;
+                
             case 'contact_form':
                 $subject = 'New Contact Form Submission';
                 $message = $this->getContactEmailBody($variables);
+                break;
+                
+            case 'booking_admin_notification':
+                $subject = 'New Booking Received - ' . ($variables['tour_name'] ?? 'Tour');
+                $message = $this->getBookingAdminEmailBody($variables);
                 break;
                 
             default:
@@ -726,6 +771,53 @@ class Email
     }
     
     /**
+     * Get booking status change email body (legacy fallback)
+     * 
+     * @param array $booking Booking data
+     * @param string $status New status
+     * @return string HTML email body
+     */
+    private function getBookingStatusEmailBody($booking, $status)
+    {
+        $statusMessage = $status === 'confirmed' ? 'confirmed' : 'cancelled';
+        $statusColor = $status === 'confirmed' ? '#28a745' : '#dc3545';
+        
+        return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Booking {$statusMessage}</title>
+        </head>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                <h2 style='color: {$statusColor};'>Booking " . ucfirst($statusMessage) . "</h2>
+                <p>Dear {$booking['first_name']} {$booking['last_name']},</p>
+                <p>Your booking has been <strong style='color: {$statusColor};'>" . $statusMessage . "</strong>.</p>
+                
+                <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <p><strong>Booking ID:</strong> {$booking['booking_id']}</p>
+                    <p><strong>Tour:</strong> {$booking['tour_name']}</p>
+                    <p><strong>Date:</strong> {$booking['booking_date']}</p>
+                    <p><strong>Adults:</strong> {$booking['adults']}</p>
+                    <p><strong>Children:</strong> {$booking['children']}</p>
+                    <p><strong>Total Price:</strong> {$booking['total_price']}</p>
+                </div>
+                
+                " . ($status === 'confirmed' ? 
+                    "<p>We look forward to seeing you on your tour!</p>" : 
+                    "<p>We apologize for any inconvenience caused.</p>") . "
+                
+                <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;'>
+                    Best regards,<br>
+                    {$this->fromName}
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+    
+    /**
      * Get contact form email body (legacy fallback)
      * 
      * @param array $contact Contact form data
@@ -758,6 +850,54 @@ class Email
                 
                 <div style='margin-top: 20px; font-size: 12px; color: #666;'>
                     Submitted at: " . date('Y-m-d H:i:s') . "
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+    
+    /**
+     * Get booking admin notification email body (legacy fallback)
+     * 
+     * @param array $booking Booking data
+     * @return string HTML email body
+     */
+    private function getBookingAdminEmailBody($booking)
+    {
+        return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>New Booking Received</title>
+        </head>
+        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                <h2 style='color: #4361ee;'>New Booking Received</h2>
+                <p>A new booking has been received through your website.</p>
+                
+                <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <h3>Customer Details:</h3>
+                    <p><strong>Name:</strong> {$booking['first_name']} {$booking['last_name']}</p>
+                    <p><strong>Email:</strong> {$booking['email']}</p>
+                    <p><strong>Phone:</strong> {$booking['phone']}</p>
+                </div>
+                
+                <div style='background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                    <h3>Booking Details:</h3>
+                    <p><strong>Tour:</strong> {$booking['tour_name']}</p>
+                    <p><strong>Date:</strong> {$booking['booking_date']}</p>
+                    <p><strong>Adults:</strong> {$booking['adults']}</p>
+                    <p><strong>Children:</strong> {$booking['children']}</p>
+                    <p><strong>Total Price:</strong> {$booking['total_price']}</p>
+                    <p><strong>Payment Method:</strong> {$booking['payment_method']}</p>
+                    " . (!empty($booking['special_requests']) ? "<p><strong>Special Requests:</strong> " . nl2br(htmlspecialchars($booking['special_requests'])) . "</p>" : "") . "
+                </div>
+                
+                <p>Please review and process this booking in your admin panel.</p>
+                
+                <div style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;'>
+                    This is an automated notification from your booking system.
                 </div>
             </div>
         </body>
