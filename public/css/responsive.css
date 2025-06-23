@@ -253,7 +253,7 @@
     }
 
     .glass-card.dark {
-        margin-left: 0.5rem;
+        margin-left: 1.5rem;
     }
     
     .container {
@@ -555,6 +555,7 @@ html, body {
         height: 100vh;
         padding-top: 100px;
         z-index: 1000;
+        border-radius: 22px;
     }
     
     /* Formlar için düzeltmeler */
