@@ -37,7 +37,7 @@
                 <label for="search" class="form-label"><?php _e('search'); ?></label>
                 <input type="text" name="search" id="search" class="form-control" 
                        placeholder="<?php _e('search_email_or_name'); ?>" 
-                       value="<?php echo htmlspecialchars($search); ?>">
+                       value="<?php echo htmlspecialchars($search ?? ''); ?>">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary">
@@ -104,9 +104,9 @@
                                        class="form-check-input subscriber-checkbox">
                             </td>
                             <td>
-                                <strong><?php echo htmlspecialchars($subscriber['email']); ?></strong>
+                                <strong><?php echo htmlspecialchars($subscriber['email'] ?? ''); ?></strong>
                             </td>
-                            <td><?php echo htmlspecialchars($subscriber['name'] ?: '-'); ?></td>
+                            <td><?php echo htmlspecialchars($subscriber['name'] ?? '-'); ?></td>
                             <td>
                                 <span class="badge badge-<?php 
                                     echo $subscriber['status'] === 'active' ? 'success' : 
@@ -117,7 +117,7 @@
                                 </span>
                             </td>
                             <td>
-                                <?php if ($subscriber['subscribed_at']): ?>
+                                <?php if (!empty($subscriber['subscribed_at'])): ?>
                                     <?php echo date('d/m/Y H:i', strtotime($subscriber['subscribed_at'])); ?>
                                 <?php else: ?>
                                     <span class="text-muted">-</span>
@@ -154,7 +154,7 @@
         <ul class="pagination justify-content-center">
             <?php if ($currentPage > 1): ?>
                 <li class="page-item">
-                    <a class="page-link" href="?page=<?php echo $currentPage - 1; ?><?php echo $status ? '&status=' . $status : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
+                    <a class="page-link" href="?page=<?php echo $currentPage - 1; ?><?php echo $status ? '&status=' . urlencode($status) : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
                         <?php _e('previous'); ?>
                     </a>
                 </li>
@@ -167,7 +167,7 @@
             
             <?php for ($i = $start; $i <= $end; $i++): ?>
                 <li class="page-item <?php echo $i === $currentPage ? 'active' : ''; ?>">
-                    <a class="page-link" href="?page=<?php echo $i; ?><?php echo $status ? '&status=' . $status : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
+                    <a class="page-link" href="?page=<?php echo $i; ?><?php echo $status ? '&status=' . urlencode($status) : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
                         <?php echo $i; ?>
                     </a>
                 </li>
@@ -175,7 +175,7 @@
             
             <?php if ($currentPage < $totalPages): ?>
                 <li class="page-item">
-                    <a class="page-link" href="?page=<?php echo $currentPage + 1; ?><?php echo $status ? '&status=' . $status : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
+                    <a class="page-link" href="?page=<?php echo $currentPage + 1; ?><?php echo $status ? '&status=' . urlencode($status) : ''; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
                         <?php _e('next'); ?>
                     </a>
                 </li>
@@ -212,26 +212,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const bulkActions = document.querySelector('.bulk-actions');
     
     // Select all functionality
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            toggleBulkActions();
         });
-        toggleBulkActions();
-    });
+    }
     
     // Individual checkbox changes
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const checkedCount = document.querySelectorAll('.subscriber-checkbox:checked').length;
-            selectAll.checked = checkedCount === checkboxes.length;
-            selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+            if (selectAll) {
+                selectAll.checked = checkedCount === checkboxes.length;
+                selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+            }
             toggleBulkActions();
         });
     });
     
     function toggleBulkActions() {
         const checkedCount = document.querySelectorAll('.subscriber-checkbox:checked').length;
-        bulkActions.style.display = checkedCount > 0 ? 'block' : 'none';
+        if (bulkActions) {
+            bulkActions.style.display = checkedCount > 0 ? 'block' : 'none';
+        }
     }
 });
 </script>
