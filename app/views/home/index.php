@@ -405,7 +405,7 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
     </div>
 </section>
 
-<!-- Newsletter Section - New Element -->
+<!-- Newsletter Section - Updated for System -->
 <section class="newsletter-section">
     <div class="container">
         <div class="newsletter-content" data-aos="fade-up">
@@ -414,17 +414,87 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
             </div>
             <h2 class="newsletter-title"><?php _e('subscribe_newsletter'); ?></h2>
             <p class="newsletter-text"><?php _e('newsletter_text'); ?></p>
-            <form action="<?php echo $appUrl . '/' . $currentLang; ?>/newsletter/subscribe" method="post" class="newsletter-form">
-                <div class="newsletter-form-row">
-                    <div class="newsletter-input-wrap">
-                        <input type="email" name="email" placeholder="<?php _e('your_email'); ?>" required class="newsletter-input">
+            
+            <!-- Newsletter Alert Messages -->
+            <div id="newsletter-alerts" class="newsletter-alerts">
+                <?php if ($session->getFlash('newsletter_success')): ?>
+                    <div class="alert alert-success">
+                        <i class="material-icons">check_circle</i>
+                        <?php echo $session->getFlash('newsletter_success'); ?>
                     </div>
-                    <button type="submit" class="btn btn-primary newsletter-button">
-                        <i class="material-icons">send</i>
-                        <?php _e('subscribe'); ?>
+                <?php endif; ?>
+                
+                <?php if ($session->getFlash('newsletter_error')): ?>
+                    <div class="alert alert-error">
+                        <i class="material-icons">error</i>
+                        <?php echo $session->getFlash('newsletter_error'); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Newsletter Subscription Form -->
+            <form action="<?php echo $appUrl . '/' . $currentLang; ?>/newsletter/subscribe" method="post" class="newsletter-form" id="newsletter-form">
+                <div class="newsletter-form-group">
+                    <div class="newsletter-input-row">
+                        <div class="newsletter-input-wrap">
+                            <input type="email" 
+                                   name="email" 
+                                   id="newsletter_email"
+                                   placeholder="<?php _e('your_email'); ?>" 
+                                   required 
+                                   class="newsletter-input"
+                                   autocomplete="email">
+                            <label for="newsletter_email" class="newsletter-label"><?php _e('email_address'); ?></label>
+                        </div>
+                        
+                        <div class="newsletter-input-wrap">
+                            <input type="text" 
+                                   name="name" 
+                                   id="newsletter_name"
+                                   placeholder="<?php _e('your_name_optional'); ?>" 
+                                   class="newsletter-input"
+                                   autocomplete="name">
+                            <label for="newsletter_name" class="newsletter-label"><?php _e('name_optional'); ?></label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary newsletter-button" id="newsletter-submit">
+                        <span class="button-text">
+                            <i class="material-icons">send</i>
+                            <?php _e('subscribe'); ?>
+                        </span>
+                        <span class="button-loading" style="display: none;">
+                            <i class="material-icons spinning">hourglass_empty</i>
+                            <?php _e('sending'); ?>...
+                        </span>
                     </button>
                 </div>
+                
+                <!-- Privacy Notice -->
+                <div class="newsletter-privacy">
+                    <small class="privacy-text">
+                        <i class="material-icons">lock</i>
+                        <?php _e('newsletter_privacy_notice'); ?>
+                        <a href="<?php echo $appUrl . '/' . $currentLang; ?>/privacy" target="_blank"><?php _e('privacy_policy'); ?></a>
+                    </small>
+                </div>
             </form>
+            
+            <!-- Newsletter Features -->
+            <div class="newsletter-features">
+                <div class="newsletter-feature">
+                    <i class="material-icons">notifications</i>
+                    <span><?php _e('latest_tour_updates'); ?></span>
+                </div>
+                <div class="newsletter-feature">
+                    <i class="material-icons">local_offer</i>
+                    <span><?php _e('exclusive_discounts'); ?></span>
+                </div>
+                <div class="newsletter-feature">
+                    <i class="material-icons">event</i>
+                    <span><?php _e('seasonal_offers'); ?></span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -766,64 +836,268 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
         z-index: 1;
     }
     
-    /* Newsletter Section */
+    /* Newsletter Section Base Styles */
     .newsletter-section {
-        background-color: var(--secondary-color);
-        padding: var(--spacing-xl) 0;
+        background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+        padding: var(--spacing-xxl) 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .newsletter-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+        animation: float 20s ease-in-out infinite;
+        pointer-events: none;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
     }
     
     .newsletter-content {
         text-align: center;
-        max-width: 700px;
+        max-width: 800px;
         margin: 0 auto;
+        position: relative;
+        z-index: 1;
     }
     
     .newsletter-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto var(--spacing-md);
-        background-color: rgba(255, 255, 255, 0.1);
+        width: 100px;
+        height: 100px;
+        margin: 0 auto var(--spacing-lg);
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
         border-radius: var(--border-radius-circle);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
+        font-size: 2.5rem;
         color: var(--white-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
     .newsletter-title {
         font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
         margin-bottom: var(--spacing-md);
         color: var(--white-color);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
     .newsletter-text {
         color: rgba(255, 255, 255, 0.9);
+        font-size: var(--font-size-lg);
+        margin-bottom: var(--spacing-xl);
+        line-height: 1.6;
+    }
+    
+    /* Alert Messages */
+    .newsletter-alerts {
         margin-bottom: var(--spacing-lg);
     }
     
-    .newsletter-form-row {
+    .newsletter-alerts .alert {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        font-size: var(--font-size-md);
+        font-weight: var(--font-weight-medium);
+        box-shadow: var(--shadow-md);
+        margin-bottom: var(--spacing-md);
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    .alert-success {
+        background-color: #10b981;
+        color: var(--white-color);
+    }
+    
+    .alert-error {
+        background-color: #ef4444;
+        color: var(--white-color);
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Form Styles */
+    .newsletter-form {
+        max-width: 600px;
+        margin: 0 auto var(--spacing-xl);
+    }
+    
+    .newsletter-form-group {
         display: flex;
-        max-width: 500px;
-        margin: 0 auto;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+    
+    .newsletter-input-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
     }
     
     .newsletter-input-wrap {
-        flex: 1;
+        position: relative;
     }
     
     .newsletter-input {
-        height: 54px;
-        border: none;
-        background-color: var(--white-color);
-        border-radius: var(--border-radius-lg) 0 0 var(--border-radius-lg);
+        width: 100%;
+        height: 60px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius-lg);
         padding: 0 var(--spacing-lg);
         font-size: var(--font-size-md);
-        width: 100%;
+        color: var(--white-color);
+        transition: all var(--transition-medium);
+        outline: none;
+    }
+    
+    .newsletter-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .newsletter-input:focus {
+        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+    }
+    
+    .newsletter-input:valid {
+        border-color: rgba(16, 185, 129, 0.5);
+    }
+    
+    .newsletter-label {
+        position: absolute;
+        top: -8px;
+        left: var(--spacing-md);
+        background: var(--primary-color);
+        color: var(--white-color);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-medium);
+        padding: 2px 8px;
+        border-radius: var(--border-radius-sm);
+        opacity: 0;
+        transform: translateY(5px);
+        transition: all var(--transition-fast);
+        pointer-events: none;
+    }
+    
+    .newsletter-input:focus + .newsletter-label,
+    .newsletter-input:valid + .newsletter-label {
+        opacity: 1;
+        transform: translateY(0);
     }
     
     .newsletter-button {
-        border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+        height: 60px;
+        border-radius: var(--border-radius-lg);
+        background: var(--white-color);
+        color: var(--primary-color);
+        border: none;
+        font-size: var(--font-size-md);
+        font-weight: var(--font-weight-semibold);
+        transition: all var(--transition-medium);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .newsletter-button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .newsletter-button:active {
+        transform: translateY(0);
+    }
+    
+    .newsletter-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .spinning {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Privacy Notice */
+    .newsletter-privacy {
+        text-align: center;
+        margin-top: var(--spacing-md);
+    }
+    
+    .privacy-text {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: var(--font-size-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        flex-wrap: wrap;
+    }
+    
+    .privacy-text a {
+        color: var(--white-color);
+        text-decoration: underline;
+        font-weight: var(--font-weight-medium);
+    }
+    
+    .privacy-text a:hover {
+        text-decoration: none;
+    }
+    
+    /* Newsletter Features */
+    .newsletter-features {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-xl);
+        flex-wrap: wrap;
+        margin-top: var(--spacing-lg);
+    }
+    
+    .newsletter-feature {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+    }
+    
+    .newsletter-feature i {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.8);
     }
     
     /* CTA Section Enhancements */
@@ -1003,17 +1277,33 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
             gap: var(--spacing-lg);
         }
         
-        .newsletter-form-row {
+        .newsletter-input-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .newsletter-title {
+            font-size: var(--font-size-2xl);
+        }
+        
+        .newsletter-text {
+            font-size: var(--font-size-md);
+        }
+        
+        .newsletter-features {
             flex-direction: column;
-            gap: var(--spacing-sm);
+            align-items: center;
+            gap: var(--spacing-md);
         }
         
-        .newsletter-input {
-            border-radius: var(--border-radius-lg);
+        .newsletter-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
         }
         
-        .newsletter-button {
-            border-radius: var(--border-radius-lg);
+        .privacy-text {
+            flex-direction: column;
+            gap: var(--spacing-xs);
         }
         
         .cta-buttons {
@@ -1035,7 +1325,7 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
         }
     }
     
-    @media (max-width: 576px) {
+    @media (max-width: 480px) {
         .hero-section {
             min-height: 700px;
         }
@@ -1046,6 +1336,19 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
         
         .hero-subtitle {
             font-size: 1.1rem;
+        }
+        
+        .newsletter-section {
+            padding: var(--spacing-xl) 0;
+        }
+        
+        .newsletter-input,
+        .newsletter-button {
+            height: 50px;
+        }
+        
+        .newsletter-button {
+            font-size: var(--font-size-sm);
         }
     }
 </style>
@@ -1244,5 +1547,159 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Newsletter form handling
+    const newsletterForm = document.getElementById('newsletter-form');
+    const submitButton = document.getElementById('newsletter-submit');
+    const buttonText = submitButton ? submitButton.querySelector('.button-text') : null;
+    const buttonLoading = submitButton ? submitButton.querySelector('.button-loading') : null;
+    const alertsContainer = document.getElementById('newsletter-alerts');
+    
+    if (newsletterForm) {
+        // Enhanced form submission with AJAX fallback
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const email = formData.get('email');
+            const name = formData.get('name');
+            
+            // Basic validation
+            if (!email || !validateEmail(email)) {
+                showAlert('error', '<?php _e("please_enter_valid_email"); ?>');
+                return;
+            }
+            
+            // Set loading state
+            setLoadingState(true);
+            
+            // Try AJAX first, fallback to normal submission
+            fetch(this.action.replace('/subscribe', '/ajax-subscribe'), {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                setLoadingState(false);
+                
+                if (data.success) {
+                    showAlert('success', data.message);
+                    newsletterForm.reset();
+                    
+                    // Optional: Track subscription event
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'newsletter_subscription', {
+                            'event_category': 'engagement',
+                            'event_label': 'newsletter'
+                        });
+                    }
+                } else {
+                    showAlert('error', data.message);
+                }
+            })
+            .catch(error => {
+                console.warn('AJAX submission failed, falling back to regular form submission:', error);
+                setLoadingState(false);
+                
+                // Fallback to regular form submission
+                this.submit();
+            });
+        });
+        
+        // Real-time email validation
+        const emailInput = document.getElementById('newsletter_email');
+        if (emailInput) {
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email && !validateEmail(email)) {
+                    this.setCustomValidity('<?php _e("please_enter_valid_email"); ?>');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            emailInput.addEventListener('input', function() {
+                this.setCustomValidity('');
+            });
+        }
+    }
+    
+    function setLoadingState(loading) {
+        if (!submitButton || !buttonText || !buttonLoading) return;
+        
+        if (loading) {
+            submitButton.disabled = true;
+            buttonText.style.display = 'none';
+            buttonLoading.style.display = 'flex';
+        } else {
+            submitButton.disabled = false;
+            buttonText.style.display = 'flex';
+            buttonLoading.style.display = 'none';
+        }
+    }
+    
+    function showAlert(type, message) {
+        if (!alertsContainer) return;
+        
+        // Remove existing alerts
+        alertsContainer.innerHTML = '';
+        
+        // Create new alert
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.innerHTML = `
+            <i class="material-icons">${type === 'success' ? 'check_circle' : 'error'}</i>
+            ${message}
+        `;
+        
+        alertsContainer.appendChild(alert);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.style.animation = 'slideUp 0.3s ease-out forwards';
+                setTimeout(() => alert.remove(), 300);
+            }
+        }, 5000);
+        
+        // Scroll to alert
+        alertsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+    
+    // Auto-hide flash messages after 5 seconds
+    if (alertsContainer) {
+        setTimeout(function() {
+            const existingAlerts = alertsContainer.querySelectorAll('.alert');
+            existingAlerts.forEach(function(alert) {
+                alert.style.animation = 'slideUp 0.3s ease-out forwards';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    }
 });
+
+// Add slideUp animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideUp {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+`;
+document.head.appendChild(style);
 </script>
