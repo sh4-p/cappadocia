@@ -62,6 +62,26 @@ class Router
         $this->addRoute('booking/search', 'Booking', 'search');                                    // NEW: Search booking page
         $this->addRoute('booking/track/([A-Z0-9]{16})', 'Booking', 'track', ['token']);           // NEW: Track booking by token (must come before general track route)
         $this->addRoute('booking/track/?.*', 'Booking', 'trackRedirect');                         // NEW: Redirect to search if no token or invalid token
+
+        // Newsletter subscription routes
+        $this->addRoute('newsletter/subscribe', 'Newsletter', 'subscribe');
+        $this->addRoute('newsletter/ajax-subscribe', 'Newsletter', 'ajaxSubscribe');
+        $this->addRoute('newsletter/confirm/([a-zA-Z0-9]{64})', 'Newsletter', 'confirm', ['token']);
+        $this->addRoute('newsletter/unsubscribe/([a-zA-Z0-9]{64})', 'Newsletter', 'unsubscribe', ['token']);
+
+        // Admin newsletter routes
+        $this->addRoute($this->adminPrefix . '/newsletter', 'AdminNewsletter', 'index');
+        $this->addRoute($this->adminPrefix . '/newsletter/subscribers', 'AdminNewsletter', 'subscribers');
+        $this->addRoute($this->adminPrefix . '/newsletter/add-subscriber', 'AdminNewsletter', 'addSubscriber');
+        $this->addRoute($this->adminPrefix . '/newsletter/edit-subscriber/([0-9]+)', 'AdminNewsletter', 'editSubscriber', ['id']);
+        $this->addRoute($this->adminPrefix . '/newsletter/delete-subscriber/([0-9]+)', 'AdminNewsletter', 'deleteSubscriber', ['id']);
+        $this->addRoute($this->adminPrefix . '/newsletter/bulk-action', 'AdminNewsletter', 'bulkAction');
+        $this->addRoute($this->adminPrefix . '/newsletter/export-subscribers', 'AdminNewsletter', 'exportSubscribers');
+        $this->addRoute($this->adminPrefix . '/newsletter/import-subscribers', 'AdminNewsletter', 'importSubscribers');
+        $this->addRoute($this->adminPrefix . '/newsletter/campaigns', 'AdminNewsletter', 'campaigns');
+        $this->addRoute($this->adminPrefix . '/newsletter/create-campaign', 'AdminNewsletter', 'createCampaign');
+        $this->addRoute($this->adminPrefix . '/newsletter/send-campaign/([0-9]+)', 'AdminNewsletter', 'sendCampaign', ['id']);
+        $this->addRoute($this->adminPrefix . '/newsletter/clean-inactive', 'AdminNewsletter', 'cleanInactive');
         
         // Admin booking routes
         $this->addRoute($this->adminPrefix . '/bookings', 'AdminBookings', 'index');
