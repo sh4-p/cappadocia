@@ -1,6 +1,6 @@
 <?php
 /**
- * Newsletter Model
+ * Newsletter Model - Updated with Tracking Token Support
  */
 class Newsletter extends Model
 {
@@ -8,7 +8,7 @@ class Newsletter extends Model
     protected $primaryKey = 'id';
     
     /**
-     * Subscribe email address
+     * Subscribe email address with tracking token
      * 
      * @param string $email Email address
      * @param string $name Name (optional)
@@ -22,17 +22,29 @@ class Newsletter extends Model
         if ($existing) {
             // If already active, return existing
             if ($existing['status'] === 'active') {
+                // Ensure tracking token exists for existing active users
+                if (empty($existing['tracking_token'])) {
+                    $trackingToken = $this->generateTrackingToken();
+                    $this->update([
+                        'tracking_token' => $trackingToken
+                    ], ['id' => $existing['id']]);
+                    $existing['tracking_token'] = $trackingToken;
+                }
                 return $existing;
             }
             
             // If unsubscribed or inactive, reactivate
             if (in_array($existing['status'], ['unsubscribed', 'inactive'])) {
-                $token = $this->generateToken();
+                $token = $this->generateConfirmationToken();
+                $trackingToken = empty($existing['tracking_token']) ? $this->generateTrackingToken() : $existing['tracking_token'];
+                
                 $result = $this->update([
                     'status' => 'pending',
                     'token' => $token,
+                    'tracking_token' => $trackingToken,
                     'name' => $name ?: $existing['name'],
-                    'unsubscribed_at' => null
+                    'unsubscribed_at' => null,
+                    'updated_at' => date('Y-m-d H:i:s')
                 ], ['id' => $existing['id']]);
                 
                 if ($result) {
@@ -41,23 +53,35 @@ class Newsletter extends Model
                 return false;
             }
             
-            // If pending, update name and return
+            // If pending, update name and ensure tracking token exists
             if ($existing['status'] === 'pending') {
-                $this->update([
-                    'name' => $name ?: $existing['name']
-                ], ['id' => $existing['id']]);
+                $updateData = [
+                    'name' => $name ?: $existing['name'],
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
                 
+                // Add tracking token if missing
+                if (empty($existing['tracking_token'])) {
+                    $updateData['tracking_token'] = $this->generateTrackingToken();
+                    $existing['tracking_token'] = $updateData['tracking_token'];
+                }
+                
+                $this->update($updateData, ['id' => $existing['id']]);
                 return $existing;
             }
         }
         
         // Create new subscription
-        $token = $this->generateToken();
+        $token = $this->generateConfirmationToken();
+        $trackingToken = $this->generateTrackingToken();
+        
         $data = [
             'email' => $email,
             'name' => $name,
             'status' => 'pending',
-            'token' => $token
+            'token' => $token,
+            'tracking_token' => $trackingToken,
+            'created_at' => date('Y-m-d H:i:s')
         ];
         
         $id = $this->insert($data);
@@ -70,14 +94,18 @@ class Newsletter extends Model
     }
     
     /**
-     * Confirm subscription by token
+     * Confirm subscription by token (supports both confirmation and tracking tokens)
      * 
-     * @param string $token Confirmation token
+     * @param string $token Confirmation token or tracking token
      * @return bool Success
      */
     public function confirmSubscription($token)
     {
+        // Try confirmation token first (64 chars), then tracking token (32 chars)
         $subscriber = $this->getByToken($token);
+        if (!$subscriber) {
+            $subscriber = $this->getByTrackingToken($token);
+        }
         
         if (!$subscriber || $subscriber['status'] !== 'pending') {
             return false;
@@ -85,19 +113,24 @@ class Newsletter extends Model
         
         return $this->update([
             'status' => 'active',
-            'subscribed_at' => date('Y-m-d H:i:s')
+            'subscribed_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ], ['id' => $subscriber['id']]);
     }
     
     /**
-     * Unsubscribe by token
+     * Unsubscribe by token (supports both confirmation and tracking tokens)
      * 
-     * @param string $token Unsubscribe token
+     * @param string $token Unsubscribe token or tracking token
      * @return bool Success
      */
     public function unsubscribe($token)
     {
+        // Try confirmation token first (64 chars), then tracking token (32 chars)
         $subscriber = $this->getByToken($token);
+        if (!$subscriber) {
+            $subscriber = $this->getByTrackingToken($token);
+        }
         
         if (!$subscriber || $subscriber['status'] === 'unsubscribed') {
             return false;
@@ -105,7 +138,8 @@ class Newsletter extends Model
         
         return $this->update([
             'status' => 'unsubscribed',
-            'unsubscribed_at' => date('Y-m-d H:i:s')
+            'unsubscribed_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ], ['id' => $subscriber['id']]);
     }
     
@@ -121,14 +155,43 @@ class Newsletter extends Model
     }
     
     /**
-     * Get subscriber by token
+     * Get subscriber by confirmation token (64 characters)
      * 
-     * @param string $token Token
+     * @param string $token Confirmation token
      * @return array|false Subscriber
      */
     public function getByToken($token)
     {
         return $this->getOne(['token' => $token]);
+    }
+    
+    /**
+     * Get subscriber by tracking token (32 characters)
+     * 
+     * @param string $token Tracking token
+     * @return array|false Subscriber
+     */
+    public function getByTrackingToken($token)
+    {
+        return $this->getOne(['tracking_token' => $token]);
+    }
+    
+    /**
+     * Get subscriber by any token type (auto-detect)
+     * 
+     * @param string $token Token (either confirmation or tracking)
+     * @return array|false Subscriber
+     */
+    public function getByAnyToken($token)
+    {
+        // Auto-detect token type by length
+        if (strlen($token) === 64) {
+            return $this->getByToken($token);
+        } elseif (strlen($token) === 32) {
+            return $this->getByTrackingToken($token);
+        }
+        
+        return false;
     }
     
     /**
@@ -229,6 +292,11 @@ class Newsletter extends Model
         $result = $this->querySingle($sql);
         $stats['recent'] = $result ? reset($result) : 0;
         
+        // Get subscribers without tracking tokens (for migration)
+        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE tracking_token IS NULL OR tracking_token = ''";
+        $result = $this->querySingle($sql);
+        $stats['missing_tracking_token'] = $result ? reset($result) : 0;
+        
         return $stats;
     }
     
@@ -253,7 +321,10 @@ class Newsletter extends Model
      */
     public function updateStatus($id, $status)
     {
-        $data = ['status' => $status];
+        $data = [
+            'status' => $status,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
         
         if ($status === 'active' && !$this->getById($id)['subscribed_at']) {
             $data['subscribed_at'] = date('Y-m-d H:i:s');
@@ -322,7 +393,14 @@ class Newsletter extends Model
                 
                 if ($existing) {
                     if ($updateExisting && !empty($name)) {
-                        $this->update(['name' => $name], ['id' => $existing['id']]);
+                        $updateData = ['name' => $name, 'updated_at' => date('Y-m-d H:i:s')];
+                        
+                        // Add tracking token if missing
+                        if (empty($existing['tracking_token'])) {
+                            $updateData['tracking_token'] = $this->generateTrackingToken();
+                        }
+                        
+                        $this->update($updateData, ['id' => $existing['id']]);
                         $results['updated']++;
                     } else {
                         $results['skipped']++;
@@ -341,18 +419,54 @@ class Newsletter extends Model
     }
     
     /**
-     * Generate unique token
+     * Generate unique confirmation token (64 characters)
      * 
-     * @return string Token
+     * @return string Confirmation token
      */
-    private function generateToken()
+    private function generateConfirmationToken()
     {
         do {
-            $token = bin2hex(random_bytes(32));
+            $token = bin2hex(random_bytes(32)); // 64 characters
             $existing = $this->getByToken($token);
         } while ($existing);
         
         return $token;
+    }
+    
+    /**
+     * Generate unique tracking token (32 characters)
+     * 
+     * @return string Tracking token
+     */
+    private function generateTrackingToken()
+    {
+        do {
+            $token = strtolower(substr(md5(time() . uniqid() . mt_rand()), 0, 32)); // 32 characters
+            $existing = $this->getByTrackingToken($token);
+        } while ($existing);
+        
+        return $token;
+    }
+    
+    /**
+     * Migrate existing subscribers to add tracking tokens
+     * 
+     * @return int Number of updated subscribers
+     */
+    public function migrateTrackingTokens()
+    {
+        $sql = "SELECT id FROM {$this->table} WHERE tracking_token IS NULL OR tracking_token = ''";
+        $subscribers = $this->query($sql);
+        
+        $updated = 0;
+        foreach ($subscribers as $subscriber) {
+            $trackingToken = $this->generateTrackingToken();
+            if ($this->update(['tracking_token' => $trackingToken], ['id' => $subscriber['id']])) {
+                $updated++;
+            }
+        }
+        
+        return $updated;
     }
     
     /**

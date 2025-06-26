@@ -1,6 +1,6 @@
 <?php
 /**
- * Newsletter Controller - Updated with Anti-Bot Protection
+ * Newsletter Controller - Updated with Anti-Bot Protection and Tracking Token Support
  * 
  * Handles newsletter subscription, confirmation and unsubscription with bot protection
  */
@@ -307,20 +307,21 @@ class NewsletterController extends Controller
     }
     
     /**
-     * Confirm action - confirm newsletter subscription with additional validation
+     * Confirm action - confirm newsletter subscription with enhanced validation
+     * Support both tracking tokens (32 chars) and confirmation tokens (64 chars)
      * 
-     * @param string $token Confirmation token
+     * @param string $token Confirmation/tracking token
      */
     public function confirm($token)
     {
-        // Validate token format
-        if (empty($token) || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+        // Validate token format (support both 32 and 64 character tokens)
+        if (empty($token) || !preg_match('/^[a-f0-9]{32,64}$/', $token)) {
             $this->session->setFlash('error', __('invalid_confirmation_link'));
             $this->redirect('');
         }
         
-        // Get subscriber by token
-        $subscriber = $this->newsletterModel->getByToken($token);
+        // Get subscriber by token (try both types)
+        $subscriber = $this->newsletterModel->getByAnyToken($token);
         
         if (!$subscriber) {
             // Log invalid token attempt
@@ -342,7 +343,7 @@ class NewsletterController extends Controller
             $message = __('email_unsubscribed');
             $type = 'info';
         } else {
-            // Confirm subscription
+            // Confirm subscription using the provided token
             $result = $this->newsletterModel->confirmSubscription($token);
             
             if ($result) {
@@ -377,20 +378,21 @@ class NewsletterController extends Controller
     }
     
     /**
-     * Unsubscribe action - unsubscribe from newsletter with validation
+     * Unsubscribe action - unsubscribe from newsletter with enhanced validation
+     * Support both tracking tokens (32 chars) and confirmation tokens (64 chars)
      * 
-     * @param string $token Unsubscribe token
+     * @param string $token Unsubscribe/tracking token
      */
     public function unsubscribe($token)
     {
-        // Validate token format
-        if (empty($token) || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+        // Validate token format (support both 32 and 64 character tokens)
+        if (empty($token) || !preg_match('/^[a-f0-9]{32,64}$/', $token)) {
             $this->session->setFlash('error', __('invalid_unsubscribe_link'));
             $this->redirect('');
         }
         
-        // Get subscriber by token
-        $subscriber = $this->newsletterModel->getByToken($token);
+        // Get subscriber by token (try both types)
+        $subscriber = $this->newsletterModel->getByAnyToken($token);
         
         if (!$subscriber) {
             // Log invalid token attempt
@@ -408,7 +410,7 @@ class NewsletterController extends Controller
             $confirm = $this->post('confirm');
             
             if ($confirm) {
-                // Unsubscribe
+                // Unsubscribe using the provided token
                 $result = $this->newsletterModel->unsubscribe($token);
                 
                 if ($result) {
@@ -453,7 +455,7 @@ class NewsletterController extends Controller
     }
     
     /**
-     * Send confirmation email with enhanced security
+     * Send confirmation email with enhanced security - UPDATED with tracking token support
      * 
      * @param array $subscriber Subscriber data
      * @return bool Success
@@ -473,15 +475,24 @@ class NewsletterController extends Controller
             // Get current language
             $langCode = $this->language->getCurrentLanguage();
             
+            // Use tracking_token if available, fallback to confirmation token
+            $linkToken = !empty($subscriber['tracking_token']) ? $subscriber['tracking_token'] : $subscriber['token'];
+            
+            // If still no token, something is wrong
+            if (empty($linkToken)) {
+                error_log("Newsletter confirmation email: No token available for subscriber " . $subscriber['email']);
+                return false;
+            }
+            
             // Generate confirmation link
-            $confirmationLink = $this->generateConfirmationLink($subscriber['tracking_token']);
+            $confirmationLink = $this->generateConfirmationLink($linkToken);
             
             // Prepare variables for email template
             $variables = [
                 'email' => $subscriber['email'],
                 'name' => $subscriber['name'] ?: $subscriber['email'],
                 'confirmation_link' => $confirmationLink,
-                'unsubscribe_link' => $this->generateUnsubscribeLink($subscriber['tracking_token']),
+                'unsubscribe_link' => $this->generateUnsubscribeLink($linkToken),
                 'ip_address' => $_SERVER['REMOTE_ADDR'], // For security info
                 'timestamp' => date('Y-m-d H:i:s')
             ];
@@ -496,7 +507,7 @@ class NewsletterController extends Controller
     }
     
     /**
-     * Send welcome email
+     * Send welcome email - UPDATED with tracking token support
      * 
      * @param array $subscriber Subscriber data
      * @return bool Success
@@ -508,11 +519,14 @@ class NewsletterController extends Controller
             require_once BASE_PATH . '/core/Email.php';
             $email = new Email();
             
+            // Use tracking_token if available, fallback to confirmation token
+            $linkToken = !empty($subscriber['tracking_token']) ? $subscriber['tracking_token'] : $subscriber['token'];
+            
             // Prepare variables for email template
             $variables = [
                 'email' => $subscriber['email'],
                 'name' => $subscriber['name'] ?: $subscriber['email'],
-                'unsubscribe_link' => $this->generateUnsubscribeLink($subscriber['tracking_token'])
+                'unsubscribe_link' => $this->generateUnsubscribeLink($linkToken)
             ];
             
             // Send email using template
@@ -553,9 +567,9 @@ class NewsletterController extends Controller
     }
     
     /**
-     * Generate confirmation link
+     * Generate confirmation link - UPDATED to handle both token types
      * 
-     * @param string $token Token
+     * @param string $token Token (tracking_token veya confirmation token)
      * @return string Confirmation link
      */
     private function generateConfirmationLink($token)
@@ -565,9 +579,9 @@ class NewsletterController extends Controller
     }
     
     /**
-     * Generate unsubscribe link
+     * Generate unsubscribe link - UPDATED to handle both token types
      * 
-     * @param string $token Token
+     * @param string $token Token (tracking_token veya confirmation token)
      * @return string Unsubscribe link
      */
     private function generateUnsubscribeLink($token)
