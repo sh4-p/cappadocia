@@ -82,6 +82,21 @@ class Router
         $this->addRoute($this->adminPrefix . '/newsletter/create-campaign', 'AdminNewsletter', 'createCampaign');
         $this->addRoute($this->adminPrefix . '/newsletter/send-campaign/([0-9]+)', 'AdminNewsletter', 'sendCampaign', ['id']);
         $this->addRoute($this->adminPrefix . '/newsletter/clean-inactive', 'AdminNewsletter', 'cleanInactive');
+
+        // Admin anti-bot routes
+        $this->addRoute($this->adminPrefix . '/antibot', 'AdminAntiBot', 'index');
+        $this->addRoute($this->adminPrefix . '/antibot/settings', 'AdminAntiBot', 'settings');
+        $this->addRoute($this->adminPrefix . '/antibot/attempts', 'AdminAntiBot', 'attempts');
+        $this->addRoute($this->adminPrefix . '/antibot/blocks', 'AdminAntiBot', 'blocks');
+        $this->addRoute($this->adminPrefix . '/antibot/statistics', 'AdminAntiBot', 'statistics');
+        $this->addRoute($this->adminPrefix . '/antibot/add-block', 'AdminAntiBot', 'addBlock');
+        $this->addRoute($this->adminPrefix . '/antibot/remove-block/([0-9]+)', 'AdminAntiBot', 'removeBlock', ['id']);
+        $this->addRoute($this->adminPrefix . '/antibot/extend-block/([0-9]+)', 'AdminAntiBot', 'extendBlock', ['id']);
+        $this->addRoute($this->adminPrefix . '/antibot/bulk-remove-blocks', 'AdminAntiBot', 'bulkRemoveBlocks');
+        $this->addRoute($this->adminPrefix . '/antibot/clean-expired', 'AdminAntiBot', 'cleanExpired');
+        $this->addRoute($this->adminPrefix . '/antibot/clean', 'AdminAntiBot', 'clean');
+        $this->addRoute($this->adminPrefix . '/antibot/test', 'AdminAntiBot', 'test');
+        $this->addRoute($this->adminPrefix . '/antibot/export', 'AdminAntiBot', 'export');
         
         // Admin booking routes
         $this->addRoute($this->adminPrefix . '/bookings', 'AdminBookings', 'index');
