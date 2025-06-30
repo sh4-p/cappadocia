@@ -45,6 +45,8 @@ class Router
         $this->addRoute($this->adminPrefix . '/tours/delete/([0-9]+)', 'AdminTours', 'delete', ['id']);
         $this->addRoute($this->adminPrefix . '/tours/toggle-status/([0-9]+)', 'AdminTours', 'toggleStatus', ['id']);
         $this->addRoute($this->adminPrefix . '/tours/toggle-featured/([0-9]+)', 'AdminTours', 'toggleFeatured', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/ajaxDeleteGalleryImage/([0-9]+)', 'AdminTours', 'ajaxDeleteGalleryImage', ['id']);
+        $this->addRoute($this->adminPrefix . '/tours/deleteGalleryImage/([0-9]+)/([0-9]+)', 'AdminTours', 'deleteGalleryImage', ['id', 'tourId']);
         
         // Categories routes
         $this->addRoute($this->adminPrefix . '/categories', 'AdminCategories', 'index');

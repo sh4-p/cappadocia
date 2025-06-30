@@ -164,18 +164,26 @@
                     <?php if (!empty($galleryItems)): ?>
                         <div class="existing-gallery">
                             <h5><?php _e('existing_images'); ?></h5>
+                            <!-- Success/Error Messages Container -->
+                            <div id="gallery-messages" style="display: none;"></div>
+                            
                             <div class="existing-gallery-grid">
                                 <?php foreach ($galleryItems as $image): ?>
                                     <div class="existing-gallery-item" data-image-id="<?php echo $image['id']; ?>">
                                         <div class="existing-gallery-image">
-                                            <img src="<?php echo $uploadsUrl . '/gallery/' . $image['image']; ?>" alt="<?php echo $image['title']; ?>">
+                                            <img src="<?php echo $uploadsUrl . '/gallery/' . $image['image']; ?>" alt="<?php echo htmlspecialchars($image['title'] ?: 'Gallery Image'); ?>">
                                             <div class="existing-gallery-actions">
-                                                <a href="<?php echo $adminUrl; ?>/tours/deleteGalleryImage/<?php echo $image['id']; ?>/<?php echo $tour['id']; ?>" class="gallery-action-btn delete-btn" title="<?php _e('delete'); ?>" data-confirm="<?php _e('delete_image_confirm'); ?>">
+                                                <!-- SADECE AJAX DELETE BUTTON - ESKİ LİNK KALDIRILDI -->
+                                                <button type="button" 
+                                                        class="gallery-action-btn delete-btn ajax-delete-btn" 
+                                                        data-image-id="<?php echo $image['id']; ?>"
+                                                        data-image-name="<?php echo htmlspecialchars($image['title'] ?: 'Untitled Image'); ?>"
+                                                        title="<?php _e('delete'); ?>">
                                                     <i class="material-icons">delete</i>
-                                                </a>
+                                                </button>
                                             </div>
                                         </div>
-                                        <div class="existing-gallery-title"><?php echo $image['title'] ?: __('no_title'); ?></div>
+                                        <div class="existing-gallery-title"><?php echo htmlspecialchars($image['title'] ?: __('no_title')); ?></div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -359,8 +367,98 @@
     </div>
 </form>
 
+<!-- Success/Error Messages Container -->
+<div id="gallery-messages" style="display: none;"></div>
+
 <!-- Same styles as create.php -->
 <style>
+/* Gallery Delete Animation */
+.existing-gallery-item.deleting {
+    opacity: 0.5;
+    pointer-events: none;
+    position: relative;
+}
+
+.existing-gallery-item.deleting::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.existing-gallery-item.deleting::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    z-index: 11;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.existing-gallery-item.fade-out {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* Message Styles */
+.gallery-message {
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gallery-message.success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    color: var(--success-color);
+}
+
+.gallery-message.error {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    color: var(--danger-color);
+}
+
+.gallery-message i {
+    font-size: 1.2rem;
+}
+
+/* Disable pointer events during deletion */
+.ajax-delete-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* İtinerary Builder Styles */
 .itinerary-builder {
     border: 1px solid #e0e0e0;
@@ -506,7 +604,7 @@ input[readonly] {
     text-overflow: ellipsis;
 }
 
-/* Gallery Upload Styles (same as create.php) */
+/* Gallery Upload Styles */
 .gallery-upload-section {
     margin-bottom: var(--spacing-lg);
 }
@@ -541,6 +639,121 @@ input[readonly] {
 .dropzone-content p {
     color: var(--gray-500);
     margin-bottom: 1.5rem;
+}
+
+.gallery-preview-grid {
+    margin-top: var(--spacing-lg);
+}
+
+.preview-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.preview-item {
+    position: relative;
+    background: var(--white-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.preview-image-container {
+    position: relative;
+    height: 120px;
+    background: var(--gray-100);
+}
+
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.preview-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--border-radius-circle);
+    border: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.preview-action-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.preview-action-btn.delete-btn:hover {
+    background: var(--danger-color);
+}
+
+.preview-info {
+    padding: 0.75rem;
+    font-size: var(--font-size-sm);
+}
+
+.preview-filename {
+    font-weight: var(--font-weight-medium);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.preview-filesize {
+    color: var(--gray-500);
+    font-size: var(--font-size-xs);
+}
+
+.drop-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(67, 97, 238, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.drop-overlay-content {
+    text-align: center;
+    color: white;
+}
+
+.drop-overlay-content i {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.drop-overlay-content h3 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
 .stat-item {
@@ -651,7 +864,9 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php endforeach; ?>
     };
     
-    // Language Tabs
+    // =============================================================================
+    // LANGUAGE TABS FUNCTIONALITY
+    // =============================================================================
     const langTabBtns = document.querySelectorAll('.language-tab-btn');
     const langTabContents = document.querySelectorAll('.language-tab-content');
     
@@ -667,7 +882,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Duration Selection Logic
+    // =============================================================================
+    // DURATION SELECTION LOGIC
+    // =============================================================================
     const durationSelect = document.getElementById('duration_type');
     const customDurationGroup = document.getElementById('custom-duration-group');
     const durationDaysInput = document.getElementById('duration_days');
@@ -716,7 +933,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Itinerary Management
+    // =============================================================================
+    // ITINERARY MANAGEMENT FUNCTIONS
+    // =============================================================================
     function updateItineraryDays() {
         const days = parseInt(durationDaysInput.value) || 1;
         
@@ -756,19 +975,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         dayElement.innerHTML = `
             <div class="day-header">
-                <h5>Day ${dayNumber}</h5>
+                <h5><?php _e('day'); ?> ${dayNumber}</h5>
                 <button type="button" class="btn btn-sm btn-danger remove-day">
                     <i class="material-icons">delete</i>
                 </button>
             </div>
             <div class="day-content">
                 <div class="form-group">
-                    <label>Day Title</label>
-                    <input type="text" name="details[${langId}][itinerary][${dayNumber}][title]" class="form-control" placeholder="e.g., Arrival & City Tour">
+                    <label><?php _e('day_title'); ?></label>
+                    <input type="text" name="details[${langId}][itinerary][${dayNumber}][title]" class="form-control" placeholder="<?php _e('day_title_placeholder'); ?>">
                 </div>
                 <div class="form-group">
-                    <label>Day Description</label>
-                    <textarea name="details[${langId}][itinerary][${dayNumber}][description]" class="form-control" rows="4" placeholder="Describe what happens on this day..."></textarea>
+                    <label><?php _e('day_description'); ?></label>
+                    <textarea name="details[${langId}][itinerary][${dayNumber}][description]" class="form-control" rows="4" placeholder="<?php _e('day_description_placeholder'); ?>"></textarea>
                 </div>
             </div>
         `;
@@ -810,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', function() {
         days.forEach((day, index) => {
             const dayNumber = index + 1;
             day.setAttribute('data-day', dayNumber);
-            day.querySelector('.day-header h5').textContent = `Day ${dayNumber}`;
+            day.querySelector('.day-header h5').textContent = `<?php _e('day'); ?> ${dayNumber}`;
             
             const titleInput = day.querySelector('input[type="text"]');
             const descInput = day.querySelector('textarea');
@@ -857,7 +1076,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateRemoveButtons(langCode);
     });
     
-    // Featured Image Preview
+    // =============================================================================
+    // FEATURED IMAGE PREVIEW
+    // =============================================================================
     const featuredImageInput = document.getElementById('featured_image');
     const featuredPreview = document.getElementById('featured-preview');
     
@@ -873,22 +1094,144 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Delete confirmation for existing images
-    const deleteBtns = document.querySelectorAll('.delete-btn');
+    // =============================================================================
+    // AJAX GALLERY DELETE FUNCTIONALITY
+    // =============================================================================
     
-    deleteBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
+    // Show message function
+    function showGalleryMessage(message, type = 'success') {
+        const messagesContainer = document.getElementById('gallery-messages');
+        if (!messagesContainer) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `gallery-message ${type}`;
+        
+        const icon = type === 'success' ? 'check_circle' : 'error';
+        messageDiv.innerHTML = `
+            <i class="material-icons">${icon}</i>
+            <span>${message}</span>
+        `;
+        
+        messagesContainer.innerHTML = '';
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.style.display = 'block';
+        
+        // Auto hide after 3 seconds
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.remove();
+                        if (messagesContainer.children.length === 0) {
+                            messagesContainer.style.display = 'none';
+                        }
+                    }
+                }, 300);
+            }
+        }, 3000);
+    }
+    
+    // AJAX Delete Function
+    function deleteGalleryImage(imageId, imageName, buttonElement) {
+        const galleryItem = buttonElement.closest('.existing-gallery-item');
+        if (!galleryItem) return;
+        
+        // Add deleting state
+        galleryItem.classList.add('deleting');
+        buttonElement.disabled = true;
+        
+        // Make AJAX request
+        fetch(`<?php echo $adminUrl; ?>/tours/ajaxDeleteGalleryImage/${imageId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Remove deleting state and add fade out animation
+                galleryItem.classList.remove('deleting');
+                galleryItem.classList.add('fade-out');
+                
+                // Show success message
+                showGalleryMessage(data.message || '<?php _e("gallery_item_deleted"); ?>', 'success');
+                
+                // Remove element after animation
+                setTimeout(() => {
+                    galleryItem.remove();
+                    
+                    // Check if no more images exist
+                    const remainingImages = document.querySelectorAll('.existing-gallery-item');
+                    if (remainingImages.length === 0) {
+                        const existingGallery = document.querySelector('.existing-gallery');
+                        if (existingGallery) {
+                            existingGallery.style.display = 'none';
+                            const hr = existingGallery.nextElementSibling;
+                            if (hr && hr.tagName === 'HR') {
+                                hr.style.display = 'none';
+                            }
+                        }
+                    }
+                }, 500);
+            } else {
+                // Remove deleting state
+                galleryItem.classList.remove('deleting');
+                buttonElement.disabled = false;
+                
+                // Show error message
+                showGalleryMessage(data.message || '<?php _e("gallery_item_delete_failed"); ?>', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
             
-            const confirmMessage = this.dataset.confirm || '<?php _e("delete_confirm"); ?>';
+            // Remove deleting state
+            galleryItem.classList.remove('deleting');
+            buttonElement.disabled = false;
+            
+            // Show error message
+            showGalleryMessage('<?php _e("delete_error_occurred"); ?>', 'error');
+        });
+    }
+    
+    // Add event listeners to delete buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.ajax-delete-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const button = e.target.closest('.ajax-delete-btn');
+            const imageId = button.dataset.imageId;
+            const imageName = button.dataset.imageName || 'this image';
+            
+            // Confirm deletion
+            const confirmMessage = `<?php _e("delete_image_confirm"); ?>: "${imageName}"?`;
             
             if (confirm(confirmMessage)) {
-                window.location.href = this.getAttribute('href');
+                deleteGalleryImage(imageId, imageName, button);
             }
-        });
+        }
     });
     
-    // Gallery upload system (same as create.php)
+    // Prevent clicking on image during deletion
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.existing-gallery-item.deleting')) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+    
+    // =============================================================================
+    // GALLERY UPLOAD SYSTEM (NEW IMAGES)
+    // =============================================================================
     const galleryDropzone = document.getElementById('gallery-dropzone');
     const galleryInput = document.getElementById('gallery-images');
     const selectImagesBtn = document.getElementById('select-images-btn');
@@ -899,9 +1242,171 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedFiles = [];
     let dragCounter = 0;
     
-    // (Gallery upload code same as create.php...)
+    if (galleryDropzone && galleryInput && selectImagesBtn) {
+        // Click to select images
+        selectImagesBtn.addEventListener('click', function() {
+            galleryInput.click();
+        });
+        
+        galleryDropzone.addEventListener('click', function() {
+            galleryInput.click();
+        });
+        
+        // File input change
+        galleryInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            galleryDropzone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Global drag enter/leave for full page overlay
+        document.addEventListener('dragenter', function(e) {
+            dragCounter++;
+            if (dragCounter === 1) {
+                showDropOverlay();
+            }
+        });
+        
+        document.addEventListener('dragleave', function(e) {
+            dragCounter--;
+            if (dragCounter === 0) {
+                hideDropOverlay();
+            }
+        });
+        
+        document.addEventListener('drop', function(e) {
+            dragCounter = 0;
+            hideDropOverlay();
+        });
+        
+        galleryDropzone.addEventListener('dragover', function() {
+            galleryDropzone.classList.add('dragover');
+        });
+        
+        galleryDropzone.addEventListener('dragleave', function() {
+            galleryDropzone.classList.remove('dragover');
+        });
+        
+        galleryDropzone.addEventListener('drop', function(e) {
+            galleryDropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        function showDropOverlay() {
+            if (!document.querySelector('.drop-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'drop-overlay';
+                overlay.innerHTML = `
+                    <div class="drop-overlay-content">
+                        <i class="material-icons">cloud_upload</i>
+                        <h3><?php _e('drop_images_here'); ?></h3>
+                        <p><?php _e('release_to_upload'); ?></p>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+        }
+        
+        function hideDropOverlay() {
+            const overlay = document.querySelector('.drop-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+        
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    // Check if file already exists
+                    const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                    if (!exists) {
+                        selectedFiles.push(file);
+                    }
+                }
+            });
+            
+            updateFileInput();
+            renderPreview();
+        }
+        
+        function updateFileInput() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            galleryInput.files = dt.files;
+        }
+        
+        function renderPreview() {
+            if (selectedFiles.length === 0) {
+                if (previewSection) previewSection.style.display = 'none';
+                return;
+            }
+            
+            if (previewSection) previewSection.style.display = 'block';
+            if (previewGrid) previewGrid.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <div class="preview-image-container">
+                            <img src="${e.target.result}" alt="${file.name}">
+                            <div class="preview-actions">
+                                <button type="button" class="preview-action-btn delete-btn" onclick="removeFile(${index})">
+                                    <i class="material-icons">delete</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-info">
+                            <div class="preview-filename">${file.name}</div>
+                            <div class="preview-filesize">${formatFileSize(file.size)}</div>
+                        </div>
+                    `;
+                    if (previewGrid) previewGrid.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Global function for removing files
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            updateFileInput();
+            renderPreview();
+        }
+        
+        // Clear all files
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', function() {
+                selectedFiles = [];
+                updateFileInput();
+                renderPreview();
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    }
     
-    // Initialize rich text editors
+    // =============================================================================
+    // RICH TEXT EDITORS INITIALIZATION
+    // =============================================================================
     const editors = document.querySelectorAll('.editor');
     
     if (editors.length > 0 && typeof ClassicEditor !== 'undefined') {

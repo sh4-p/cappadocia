@@ -863,4 +863,56 @@ class AdminToursController extends Controller
             'query' => '%' . $query . '%'
         ]);
     }
+    /**
+     * AJAX Delete gallery image
+     * 
+     * @param int $id Gallery item ID
+     */
+    public function ajaxDeleteGalleryImage($id = null)
+    {
+        // Get ID from URL parameters if not passed directly
+        if (!$id) {
+            $id = $this->get('id');
+        }
+        
+        if (!$id) {
+            $this->json(['success' => false, 'message' => 'Image ID required'], 400);
+        }
+        // Check if request is AJAX
+        if (!$this->isAjax()) {
+            $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
+        
+        // Load gallery model
+        $galleryModel = $this->loadModel('Gallery');
+        
+        // Get gallery item
+        $galleryItem = $galleryModel->getById($id);
+        
+        // Check if gallery item exists
+        if (!$galleryItem) {
+            $this->json(['success' => false, 'message' => __('gallery_item_not_found')], 404);
+        }
+        
+        // Delete gallery item
+        $result = $galleryModel->deleteWithDetails($id);
+        
+        if ($result) {
+            // Delete gallery image file
+            if ($galleryItem['image']) {
+                $imagePath = BASE_PATH . '/public/uploads/gallery/' . $galleryItem['image'];
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+            
+            $this->json([
+                'success' => true, 
+                'message' => __('gallery_item_deleted'),
+                'image_id' => $id
+            ]);
+        } else {
+            $this->json(['success' => false, 'message' => __('gallery_item_delete_failed')], 500);
+        }
+    }
 }

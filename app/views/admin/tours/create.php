@@ -117,7 +117,7 @@
                 </div>
             </div>
 
-            <!-- Tour Gallery Section (önceki kodla aynı) -->
+            <!-- Tour Gallery Section -->
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title"><?php _e('tour_gallery'); ?></h3>
@@ -269,8 +269,6 @@
 </form>
 
 <style>
-/* Önceki stillere ek olarak */
-
 /* İtinerary Builder Styles */
 .itinerary-builder {
     border: 1px solid #e0e0e0;
@@ -334,7 +332,7 @@ input[readonly] {
     cursor: not-allowed;
 }
 
-/* Language Tabs (önceki stillerin devamı) */
+/* Language Tabs */
 .language-tabs {
     margin-bottom: var(--spacing-lg);
 }
@@ -398,7 +396,7 @@ input[readonly] {
     gap: var(--spacing-md);
 }
 
-/* Gallery Upload Styles (önceki kodla aynı) */
+/* Gallery Upload Styles */
 .gallery-upload-section {
     margin-bottom: var(--spacing-lg);
 }
@@ -804,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Gallery Upload System (önceki kodla aynı)
+    // Gallery Upload System - FIXED VERSION
     const galleryDropzone = document.getElementById('gallery-dropzone');
     const galleryInput = document.getElementById('gallery-images');
     const selectImagesBtn = document.getElementById('select-images-btn');
@@ -815,162 +813,182 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedFiles = [];
     let dragCounter = 0;
     
-    // Click to select images
-    selectImagesBtn.addEventListener('click', function() {
-        galleryInput.click();
-    });
-    
-    galleryDropzone.addEventListener('click', function() {
-        galleryInput.click();
-    });
-    
-    // File input change
-    galleryInput.addEventListener('change', function() {
-        handleFiles(this.files);
-    });
-    
-    // Drag and drop functionality
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        galleryDropzone.addEventListener(eventName, preventDefaults, false);
-        document.body.addEventListener(eventName, preventDefaults, false);
-    });
-    
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    
-    // Global drag enter/leave for full page overlay
-    document.addEventListener('dragenter', function(e) {
-        dragCounter++;
-        if (dragCounter === 1) {
-            showDropOverlay();
+    if (galleryDropzone && galleryInput && selectImagesBtn) {
+        // Click to select images
+        selectImagesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            galleryInput.click();
+        });
+        
+        galleryDropzone.addEventListener('click', function(e) {
+            if (e.target === galleryDropzone || e.target.closest('.dropzone-content')) {
+                galleryInput.click();
+            }
+        });
+        
+        // File input change
+        galleryInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            galleryDropzone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-    });
-    
-    document.addEventListener('dragleave', function(e) {
-        dragCounter--;
-        if (dragCounter === 0) {
-            hideDropOverlay();
-        }
-    });
-    
-    document.addEventListener('drop', function(e) {
-        dragCounter = 0;
-        hideDropOverlay();
-    });
-    
-    galleryDropzone.addEventListener('dragover', function() {
-        galleryDropzone.classList.add('dragover');
-    });
-    
-    galleryDropzone.addEventListener('dragleave', function() {
-        galleryDropzone.classList.remove('dragover');
-    });
-    
-    galleryDropzone.addEventListener('drop', function(e) {
-        galleryDropzone.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        handleFiles(files);
-    });
-    
-    function showDropOverlay() {
-        if (!document.querySelector('.drop-overlay')) {
-            const overlay = document.createElement('div');
-            overlay.className = 'drop-overlay';
-            overlay.innerHTML = `
-                <div class="drop-overlay-content">
-                    <i class="material-icons">cloud_upload</i>
-                    <h3><?php _e('drop_images_here'); ?></h3>
-                    <p><?php _e('release_to_upload'); ?></p>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-        }
-    }
-    
-    function hideDropOverlay() {
-        const overlay = document.querySelector('.drop-overlay');
-        if (overlay) {
-            overlay.remove();
-        }
-    }
-    
-    function handleFiles(files) {
-        Array.from(files).forEach(file => {
-            if (file.type.startsWith('image/')) {
-                // Check if file already exists
-                const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
-                if (!exists) {
-                    selectedFiles.push(file);
+        
+        // Global drag enter/leave for full page overlay
+        document.addEventListener('dragenter', function(e) {
+            if (e.dataTransfer.types.includes('Files')) {
+                dragCounter++;
+                if (dragCounter === 1) {
+                    showDropOverlay();
                 }
             }
         });
         
-        updateFileInput();
-        renderPreview();
-    }
-    
-    function updateFileInput() {
-        const dt = new DataTransfer();
-        selectedFiles.forEach(file => dt.items.add(file));
-        galleryInput.files = dt.files;
-    }
-    
-    function renderPreview() {
-        if (selectedFiles.length === 0) {
-            previewSection.style.display = 'none';
-            return;
-        }
+        document.addEventListener('dragleave', function(e) {
+            dragCounter--;
+            if (dragCounter === 0) {
+                hideDropOverlay();
+            }
+        });
         
-        previewSection.style.display = 'block';
-        previewGrid.innerHTML = '';
+        document.addEventListener('drop', function(e) {
+            dragCounter = 0;
+            hideDropOverlay();
+        });
         
-        selectedFiles.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'preview-item';
-                previewItem.innerHTML = `
-                    <div class="preview-image-container">
-                        <img src="${e.target.result}" alt="${file.name}">
-                        <div class="preview-actions">
-                            <button type="button" class="preview-action-btn delete-btn" onclick="removeFile(${index})">
-                                <i class="material-icons">delete</i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="preview-info">
-                        <div class="preview-filename">${file.name}</div>
-                        <div class="preview-filesize">${formatFileSize(file.size)}</div>
+        galleryDropzone.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            galleryDropzone.classList.add('dragover');
+        });
+        
+        galleryDropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            galleryDropzone.classList.add('dragover');
+        });
+        
+        galleryDropzone.addEventListener('dragleave', function(e) {
+            // Only remove dragover if we're actually leaving the dropzone
+            if (!galleryDropzone.contains(e.relatedTarget)) {
+                galleryDropzone.classList.remove('dragover');
+            }
+        });
+        
+        galleryDropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            galleryDropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        function showDropOverlay() {
+            if (!document.querySelector('.drop-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'drop-overlay';
+                overlay.innerHTML = `
+                    <div class="drop-overlay-content">
+                        <i class="material-icons">cloud_upload</i>
+                        <h3>Drop Images Here</h3>
+                        <p>Release to upload images</p>
                     </div>
                 `;
-                previewGrid.appendChild(previewItem);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-    
-    // Global function for removing files
-    window.removeFile = function(index) {
-        selectedFiles.splice(index, 1);
-        updateFileInput();
-        renderPreview();
-    }
-    
-    // Clear all files
-    clearAllBtn.addEventListener('click', function() {
-        selectedFiles = [];
-        updateFileInput();
-        renderPreview();
-    });
-    
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                document.body.appendChild(overlay);
+            }
+        }
+        
+        function hideDropOverlay() {
+            const overlay = document.querySelector('.drop-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+        
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    // Check if file already exists
+                    const exists = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                    if (!exists) {
+                        selectedFiles.push(file);
+                    }
+                }
+            });
+            
+            updateFileInput();
+            renderPreview();
+        }
+        
+        function updateFileInput() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            galleryInput.files = dt.files;
+        }
+        
+        function renderPreview() {
+            if (selectedFiles.length === 0) {
+                previewSection.style.display = 'none';
+                return;
+            }
+            
+            previewSection.style.display = 'block';
+            previewGrid.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <div class="preview-image-container">
+                            <img src="${e.target.result}" alt="${file.name}">
+                            <div class="preview-actions">
+                                <button type="button" class="preview-action-btn delete-btn" onclick="removeFile(${index})">
+                                    <i class="material-icons">delete</i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-info">
+                            <div class="preview-filename">${file.name}</div>
+                            <div class="preview-filesize">${formatFileSize(file.size)}</div>
+                        </div>
+                    `;
+                    previewGrid.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Global function for removing files
+        window.removeFile = function(index) {
+            selectedFiles.splice(index, 1);
+            updateFileInput();
+            renderPreview();
+        }
+        
+        // Clear all files
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', function() {
+                selectedFiles = [];
+                updateFileInput();
+                renderPreview();
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
     }
     
     // Initialize rich text editors
