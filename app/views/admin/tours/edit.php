@@ -175,7 +175,7 @@
                                             <div class="existing-gallery-actions">
                                                 <!-- SADECE AJAX DELETE BUTTON - ESKİ LİNK KALDIRILDI -->
                                                 <button type="button" 
-                                                        class="gallery-action-btn delete-btn ajax-delete-btn" 
+                                                        class="gallery-action-btn gallery-delete-btn ajax-delete-btn" 
                                                         data-image-id="<?php echo $image['id']; ?>"
                                                         data-image-name="<?php echo htmlspecialchars($image['title'] ?: 'Untitled Image'); ?>"
                                                         title="<?php _e('delete'); ?>">
@@ -1363,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="preview-image-container">
                             <img src="${e.target.result}" alt="${file.name}">
                             <div class="preview-actions">
-                                <button type="button" class="preview-action-btn delete-btn" onclick="removeFile(${index})">
+                                <button type="button" class="preview-action-btn gallery-delete-btn" onclick="removeFile(${index})">
                                     <i class="material-icons">delete</i>
                                 </button>
                             </div>
