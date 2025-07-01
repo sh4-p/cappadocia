@@ -90,17 +90,27 @@
                                 <?php foreach ($gallery as $index => $item): ?>
                                     <div class="swiper-slide">
                                         <img src="<?php echo $uploadsUrl . '/gallery/' . $item['image']; ?>" 
-                                             alt="<?php echo isset($item['title']) ? $item['title'] : $tour['name']; ?>">
+                                            alt="<?php echo isset($item['title']) ? $item['title'] : $tour['name']; ?>"
+                                            loading="lazy">
                                     </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <div class="swiper-slide">
                                     <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" 
-                                         alt="<?php echo $tour['name']; ?>">
+                                        alt="<?php echo $tour['name']; ?>"
+                                        loading="lazy">
                                 </div>
                             <?php endif; ?>
                         </div>
+                        
+                        <!-- Pagination -->
                         <div class="swiper-pagination"></div>
+                        
+                        <!-- Navigation buttons (opsiyonel) -->
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        
+                        <!-- Counter -->
                         <div class="gallery-counter">
                             <span class="current">1</span> / <span class="total"><?php echo isset($gallery) ? count($gallery) : 1; ?></span>
                         </div>
@@ -596,6 +606,8 @@
     <!-- Custom CSS Styles -->
     <style>
     /* CSS Reset and Base Styles */
+    @import url('https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css');
+
     * {
         margin: 0;
         padding: 0;
@@ -893,32 +905,63 @@
     .tour-gallery {
         margin-bottom: 1.5rem;
         position: relative;
+        width: 100%;
+        overflow: hidden;
     }
 
     .swiper {
         width: 100%;
+        height: 100%;
         border-radius: var(--border-radius);
         overflow: hidden;
+        position: relative;
+    }
+
+    .swiper-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        display: flex;
+        transition-property: transform;
+        box-sizing: content-box;
+    }
+
+    .swiper-slide {
+        flex-shrink: 0;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition-property: transform;
     }
 
     .swiper-slide img {
         width: 100%;
         height: 250px;
         object-fit: cover;
+        display: block;
     }
 
+    /* Pagination düzeltmeleri */
     .swiper-pagination {
         position: absolute !important;
         bottom: 1rem !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 10 !important;
     }
 
     .swiper-pagination-bullet {
-        background: var(--white-color);
-        opacity: 0.6;
+        background: rgba(255, 255, 255, 0.5) !important;
+        opacity: 1 !important;
+        width: 8px !important;
+        height: 8px !important;
+        margin: 0 4px !important;
     }
 
     .swiper-pagination-bullet-active {
-        opacity: 1;
+        background: var(--white-color) !important;
+        opacity: 1 !important;
     }
 
     .gallery-counter {
@@ -2475,14 +2518,27 @@
         const gallerySwiper = new Swiper('.gallery-swiper', {
             slidesPerView: 1,
             spaceBetween: 0,
-            loop: true,
+            loop: false, // Gallery az olduğunda loop kapatın
+            autoHeight: false,
             pagination: {
                 el: '.swiper-pagination',
-                clickable: true
+                clickable: true,
+                dynamicBullets: true
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
             },
             on: {
                 slideChange: function() {
-                    document.querySelector('.gallery-counter .current').textContent = this.realIndex + 1;
+                    const current = this.activeIndex + 1;
+                    const total = this.slides.length;
+                    document.querySelector('.gallery-counter .current').textContent = current;
+                    document.querySelector('.gallery-counter .total').textContent = total;
+                },
+                init: function() {
+                    const total = this.slides.length;
+                    document.querySelector('.gallery-counter .total').textContent = total;
                 }
             }
         });
