@@ -593,6 +593,7 @@
         </div>
     </div>
     <!-- Custom CSS Styles -->
+    <!-- Custom CSS Styles -->
     <style>
     /* CSS Reset and Base Styles */
     * {
@@ -632,6 +633,7 @@
         background-color: var(--light-color);
         -webkit-font-smoothing: antialiased;
     }
+    
     /* Force proper viewport behavior */
     html, body {
       overflow-x: hidden !important;
@@ -640,6 +642,86 @@
       margin: 0;
       padding: 0;
     }
+    
+    /* HEADER LOGO FIX - En önemli kısım */
+    .site-header .logo img,
+    .site-header .logo .main-logo,
+    .logo img,
+    .logo .main-logo,
+    .logo .logo-image {
+        height: 48px !important;
+        max-height: 48px !important;
+        max-width: 200px !important;
+        width: auto !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .site-header.scrolled .logo img,
+    .site-header.scrolled .logo .main-logo,
+    .scrolled .logo img,
+    .scrolled .logo .main-logo,
+    .scrolled .logo .logo-image {
+        height: 40px !important;
+        max-height: 40px !important;
+        max-width: 180px !important;
+    }
+
+    /* Header container düzeltmeleri */
+    .site-header {
+        position: fixed !important;
+        top: 20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 40px) !important;
+        max-width: 1320px !important;
+        z-index: 1020 !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        padding: 1rem 2rem !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .site-header.scrolled {
+        top: 10px !important;
+        background: rgba(38, 70, 83, 0.85) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .header-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    .logo {
+        position: relative !important;
+        z-index: 1001 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Logo text düzeltmeleri */
+    .logo .logo-text {
+        color: var(--white-color) !important;
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        text-decoration: none !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .scrolled .logo .logo-text {
+        color: var(--white-color) !important;
+    }
+
     /* Ensure all containers respect viewport width */
     .container, 
     .tour-content-wrapper,
@@ -664,6 +746,7 @@
       box-sizing: border-box !important;
       overflow-x: hidden !important;
     }
+    
     /* Fix swiper layout issues */
     .swiper, 
     .swiper-wrapper, 
@@ -672,6 +755,7 @@
       max-width: 100% !important;
       overflow: hidden !important;
     }
+    
     /* Ensure images are constrained */
     img {
       max-width: 100% !important;
@@ -1172,6 +1256,29 @@
 
     /* Mobile Responsive */
     @media (max-width: 768px) {
+        /* Header mobil düzeltmeleri */
+        .site-header {
+            top: 10px !important;
+            width: calc(100% - 20px) !important;
+            padding: 0.75rem 1.5rem !important;
+        }
+        
+        .site-header .logo img,
+        .site-header .logo .main-logo,
+        .logo img,
+        .logo .main-logo {
+            height: 40px !important;
+            max-height: 40px !important;
+            max-width: 160px !important;
+        }
+
+        .scrolled .logo img,
+        .scrolled .logo .main-logo {
+            height: 35px !important;
+            max-height: 35px !important;
+            max-width: 140px !important;
+        }
+        
         .itinerary-timeline {
             padding-left: 2rem;
         }
@@ -1220,6 +1327,23 @@
     }
 
     @media (max-width: 480px) {
+        /* En küçük ekranlar için header */
+        .site-header .logo img,
+        .site-header .logo .main-logo,
+        .logo img,
+        .logo .main-logo {
+            height: 36px !important;
+            max-height: 36px !important;
+            max-width: 140px !important;
+        }
+
+        .scrolled .logo img,
+        .scrolled .logo .main-logo {
+            height: 32px !important;
+            max-height: 32px !important;
+            max-width: 120px !important;
+        }
+        
         .itinerary-timeline {
             padding-left: 1.5rem;
         }

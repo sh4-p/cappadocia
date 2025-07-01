@@ -243,8 +243,12 @@ class AdminToursController extends Controller
                 // Handle gallery uploads
                 $galleryImages = $this->file('gallery_images');
                 
-                if ($galleryImages && $galleryImages['name'][0]) {
-                    $this->uploadGalleryImages($galleryImages, $tourId);
+                if ($galleryImages && isset($galleryImages['name']) && is_array($galleryImages['name'])) {
+                    // Multiple files uploaded
+                    $uploadSuccess = $this->uploadGalleryImages($galleryImages, $tourId);
+                    if (!$uploadSuccess) {
+                        error_log('Some gallery images failed to upload for tour ID: ' . $tourId);
+                    }
                 }
                 
                 $this->session->setFlash('success', __('tour_added'));
@@ -498,8 +502,12 @@ class AdminToursController extends Controller
                 // Handle gallery uploads
                 $galleryImages = $this->file('gallery_images');
                 
-                if ($galleryImages && $galleryImages['name'][0]) {
-                    $this->uploadGalleryImages($galleryImages, $id);
+                if ($galleryImages && isset($galleryImages['name']) && is_array($galleryImages['name'])) {
+                    // Multiple files uploaded
+                    $uploadSuccess = $this->uploadGalleryImages($galleryImages, $id);
+                    if (!$uploadSuccess) {
+                        error_log('Some gallery images failed to upload for tour ID: ' . $id);
+                    }
                 }
                 
                 $this->session->setFlash('success', __('tour_updated'));
@@ -684,32 +692,57 @@ class AdminToursController extends Controller
             return false;
         }
         
+        // Check file size (max 5MB)
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        if ($file['size'] > $maxSize) {
+            error_log('File too large: ' . $file['name'] . ' (' . $file['size'] . ' bytes)');
+            return false;
+        }
+        
         // Get file info
         $fileInfo = pathinfo($file['name']);
-        $fileName = strtolower(str_replace(' ', '-', $fileInfo['filename']));
-        $fileName = preg_replace('/[^a-z0-9\-]/', '', $fileName);
-        $fileName = $fileName . '-' . uniqid() . '.' . strtolower($fileInfo['extension']);
+        $extension = strtolower($fileInfo['extension'] ?? '');
         
         // Check file type
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         
-        if (!in_array(strtolower($fileInfo['extension']), $allowedTypes)) {
+        if (!in_array($extension, $allowedTypes)) {
+            error_log('Invalid file type: ' . $extension);
             return false;
         }
+        
+        // Verify image using getimagesize
+        $imageInfo = getimagesize($file['tmp_name']);
+        if ($imageInfo === false) {
+            error_log('Not a valid image file: ' . $file['name']);
+            return false;
+        }
+        
+        // Generate unique filename
+        $fileName = strtolower(str_replace(' ', '-', $fileInfo['filename'] ?? 'image'));
+        $fileName = preg_replace('/[^a-z0-9\-]/', '', $fileName);
+        $fileName = $fileName . '-' . uniqid() . '.' . $extension;
         
         // Create upload directory if not exists
         $uploadDir = BASE_PATH . '/public/uploads/' . $folder . '/';
         
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+            if (!mkdir($uploadDir, 0755, true)) {
+                error_log('Failed to create upload directory: ' . $uploadDir);
+                return false;
+            }
         }
         
         // Upload file
-        if (move_uploaded_file($file['tmp_name'], $uploadDir . $fileName)) {
+        $targetPath = $uploadDir . $fileName;
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            // Set proper permissions
+            chmod($targetPath, 0644);
             return $fileName;
+        } else {
+            error_log('Failed to move uploaded file to: ' . $targetPath);
+            return false;
         }
-        
-        return false;
     }
     
     /**
@@ -721,8 +754,8 @@ class AdminToursController extends Controller
      */
     private function uploadGalleryImages($files, $tourId)
     {
-        // Check if files exist
-        if (!$files || !is_array($files['name'])) {
+        // Check if files exist and are in correct format
+        if (!$files || !is_array($files['name']) || empty($files['name'][0])) {
             return false;
         }
         
@@ -735,9 +768,11 @@ class AdminToursController extends Controller
         
         // Upload each file
         $success = true;
+        $uploadedCount = 0;
         
         for ($i = 0; $i < count($files['name']); $i++) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+            // Skip if error or no file
+            if ($files['error'][$i] !== UPLOAD_ERR_OK || empty($files['name'][$i])) {
                 continue;
             }
             
@@ -758,7 +793,7 @@ class AdminToursController extends Controller
                 $galleryData = [
                     'tour_id' => $tourId,
                     'image' => $imageName,
-                    'order_number' => 0,
+                    'order_number' => $uploadedCount + 1, // Set order based on upload sequence
                     'is_active' => 1
                 ];
                 
@@ -767,23 +802,32 @@ class AdminToursController extends Controller
                 
                 foreach ($languages as $lang) {
                     $detailsData[$lang['id']] = [
-                        'title' => '',
-                        'description' => ''
+                        'title' => '', // Boş başlık, admin panelden doldurulabilir
+                        'description' => '' // Boş açıklama, admin panelden doldurulabilir
                     ];
                 }
                 
                 // Add gallery item
                 $result = $galleryModel->addWithDetails($galleryData, $detailsData);
                 
-                if (!$result) {
+                if ($result) {
+                    $uploadedCount++;
+                } else {
                     $success = false;
+                    error_log('Failed to save gallery item to database: ' . $imageName);
                 }
             } else {
                 $success = false;
+                error_log('Failed to upload gallery image: ' . $files['name'][$i]);
             }
         }
         
-        return $success;
+        // Log successful uploads
+        if ($uploadedCount > 0) {
+            error_log("Successfully uploaded {$uploadedCount} gallery images for tour ID: {$tourId}");
+        }
+        
+        return $success && $uploadedCount > 0;
     }
     
     /**
