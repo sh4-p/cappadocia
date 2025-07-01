@@ -4,7 +4,14 @@
  * Enhanced user experience with a focus on conversions
  */
 ?>
-
+<?php if (isset($gallery) && !empty($gallery)): ?>
+    <script>
+    console.log('Gallery data:', <?php echo json_encode($gallery); ?>);
+    console.log('Gallery count:', <?php echo count($gallery); ?>);
+    </script>
+<?php else: ?>
+    <script>console.log('No gallery data found');</script>
+<?php endif; ?>
 <!-- Immersive Hero Section -->
     <!-- Tour Hero Section -->
     <section class="tour-hero" style="background-image: url('<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>');">
@@ -765,7 +772,6 @@
     .swiper-slide {
       width: 100% !important;
       max-width: 100% !important;
-      overflow: hidden !important;
     }
     
     /* Ensure images are constrained */
@@ -962,6 +968,10 @@
     .swiper-pagination-bullet-active {
         background: var(--white-color) !important;
         opacity: 1 !important;
+    }
+
+    .swiper-button-next, .swiper-button-prev {
+        color: #FF6B35;
     }
 
     .gallery-counter {
