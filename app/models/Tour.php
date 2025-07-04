@@ -244,17 +244,17 @@ class Tour extends Model
             return [];
         }
         
-        // Build SQL query
+        // Build SQL query - Use different parameter names for each occurrence
         $sql = "SELECT t.*, td.name, td.slug, td.short_description, td.description, 
-                       td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
-                       c.id as category_id, cd.name as category_name, cd.slug as category_slug
+                    td.includes, td.excludes, td.itinerary, td.meta_title, td.meta_description,
+                    c.id as category_id, cd.name as category_name, cd.slug as category_slug
                 FROM tours t
                 JOIN tour_details td ON t.id = td.tour_id
                 LEFT JOIN categories c ON t.category_id = c.id
-                LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = :langId
-                WHERE td.language_id = :langId
+                LEFT JOIN category_details cd ON c.id = cd.category_id AND cd.language_id = :langId1
+                WHERE td.language_id = :langId2
                 AND t.is_active = 1
-                AND (td.name LIKE :keyword OR td.short_description LIKE :keyword OR td.description LIKE :keyword)";
+                AND (td.name LIKE :keyword1 OR td.short_description LIKE :keyword2 OR td.description LIKE :keyword3)";
         
         // Add order by
         $sql .= " ORDER BY t.is_featured DESC, t.id DESC";
@@ -268,10 +268,13 @@ class Tour extends Model
             }
         }
         
-        // Execute query
+        // Execute query with correct parameter binding
         return $this->db->getRows($sql, [
-            'langId' => $langId,
-            'keyword' => '%' . $keyword . '%'
+            'langId1' => $langId,
+            'langId2' => $langId,
+            'keyword1' => '%' . $keyword . '%',
+            'keyword2' => '%' . $keyword . '%',
+            'keyword3' => '%' . $keyword . '%'
         ]);
     }
     

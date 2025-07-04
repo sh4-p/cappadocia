@@ -34,9 +34,9 @@ class Router
         
         // Tours routes
         $this->addRoute('tours', 'Tours', 'index');
-        $this->addRoute('tours/([a-zA-Z0-9-]+)', 'Tours', 'detail', ['slug']);
-        $this->addRoute('tours/search', 'Tours', 'search');
-        $this->addRoute('tours/ajax-search', 'Tours', 'ajaxSearch');
+        $this->addRoute('tours/search', 'Tours', 'search');                           
+        $this->addRoute('tours/ajax-search', 'Tours', 'ajaxSearch');                  
+        $this->addRoute('tours/([a-zA-Z0-9-]+)', 'Tours', 'detail', ['slug']);   
         
         // Admin tours routes
         $this->addRoute($this->adminPrefix . '/tours', 'AdminTours', 'index');

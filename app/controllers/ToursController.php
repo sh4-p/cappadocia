@@ -150,18 +150,20 @@ class ToursController extends Controller
         // Search tours
         $tours = $this->tourModel->search($query, $langCode, $limit, $offset);
         
-        // Count total search results
+        // Count total search results - FIXED: Use different parameter names
         $sql = "SELECT COUNT(*) 
                 FROM tours t
                 JOIN tour_details td ON t.id = td.tour_id
                 JOIN languages l ON td.language_id = l.id
                 WHERE l.code = :langCode
                 AND t.is_active = 1
-                AND (td.name LIKE :query OR td.short_description LIKE :query OR td.description LIKE :query)";
+                AND (td.name LIKE :query1 OR td.short_description LIKE :query2 OR td.description LIKE :query3)";
         
         $totalTours = $this->db->getValue($sql, [
             'langCode' => $langCode,
-            'query' => '%' . $query . '%'
+            'query1' => '%' . $query . '%',
+            'query2' => '%' . $query . '%',
+            'query3' => '%' . $query . '%'
         ]);
         
         // Calculate pagination
@@ -191,47 +193,61 @@ class ToursController extends Controller
      */
     public function ajaxSearch()
     {
-        // Get search query
-        $query = $this->get('q');
-        
-        // Get current language
-        $langCode = $this->language->getCurrentLanguage();
-        
-        // Search tours (limit to 5)
-        $tours = $this->tourModel->search($query, $langCode, 5);
-        
-        // Load settings model for currency
-        $settingsModel = $this->loadModel('Settings');
-        $settings = $settingsModel->getAllSettings();
-        $currencySymbol = isset($settings['currency_symbol']) ? $settings['currency_symbol'] : '€';
-        
-        // Format results for JSON response
-        $results = [];
-        
-        foreach ($tours as $tour) {
-            // Format prices with currency symbol
-            $price = $currencySymbol . number_format($tour['price'], 2);
-            $discountPrice = $tour['discount_price'] ? $currencySymbol . number_format($tour['discount_price'], 2) : null;
-            
-            // Build full URLs with correct APP_URL
-            $imageUrl = '/uploads/tours/' . $tour['featured_image']; // Relative path for JS to fix
-            
-            $results[] = [
-                'id' => $tour['id'],
-                'name' => $tour['name'],
-                'slug' => $tour['slug'],
-                'price' => $price,
-                'discount_price' => $discountPrice,
-                'image' => $imageUrl,
-                'url' => APP_URL . '/' . $langCode . '/tours/' . $tour['slug']
-            ];
-        }
-        
         // Set header for JSON response
         header('Content-Type: application/json');
         
-        // Return JSON response
-        echo json_encode($results);
+        try {
+            // Get search query
+            $query = $this->get('q');
+            
+            if (empty($query) || strlen(trim($query)) < 2) {
+                echo json_encode([]);
+                exit;
+            }
+            
+            // Get current language
+            $langCode = $this->language->getCurrentLanguage();
+            
+            // Search tours (limit to 5 for AJAX)
+            $tours = $this->tourModel->search($query, $langCode, 5);
+            
+            // Load settings model for currency
+            $settingsModel = $this->loadModel('Settings');
+            $settings = $settingsModel->getAllSettings();
+            $currencySymbol = isset($settings['currency_symbol']) ? $settings['currency_symbol'] : '€';
+            
+            // Format results for JSON response
+            $results = [];
+            
+            foreach ($tours as $tour) {
+                // Format prices with currency symbol
+                $price = $currencySymbol . number_format($tour['price'], 2);
+                $discountPrice = $tour['discount_price'] ? $currencySymbol . number_format($tour['discount_price'], 2) : null;
+                
+                // Build image URL - use absolute path
+                $imageUrl = UPLOADS_URL . '/tours/' . $tour['featured_image'];
+                
+                $results[] = [
+                    'id' => $tour['id'],
+                    'name' => htmlspecialchars($tour['name']),
+                    'slug' => $tour['slug'],
+                    'price' => $price,
+                    'discount_price' => $discountPrice,
+                    'image' => $imageUrl,
+                    'url' => APP_URL . '/' . $langCode . '/tours/' . $tour['slug'],
+                    'short_description' => htmlspecialchars(substr(strip_tags($tour['short_description']), 0, 100))
+                ];
+            }
+            
+            // Return JSON response
+            echo json_encode($results);
+            
+        } catch (Exception $e) {
+            // Log error and return empty result
+            error_log('AJAX Search Error: ' . $e->getMessage());
+            echo json_encode([]);
+        }
+        
         exit;
     }
 }

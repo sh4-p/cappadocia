@@ -463,69 +463,6 @@ function searchInit() {
                 document.body.style.overflow = '';
             }
         });
-        
-        // AJAX search (if search input exists)
-        if (searchInput) {
-            let searchTimeout;
-            
-            searchInput.addEventListener('input', function() {
-                const query = this.value.trim();
-                const resultsContainer = document.querySelector('#search-results');
-                
-                if (!resultsContainer) return;
-                
-                // Clear previous timeout
-                clearTimeout(searchTimeout);
-                
-                if (query.length < 2) {
-                    resultsContainer.innerHTML = '';
-                    return;
-                }
-                
-                // Set timeout to prevent too many requests
-                searchTimeout = setTimeout(function() {
-                    // Show loading
-                    resultsContainer.innerHTML = '<div class="search-loading"><div class="spinner"></div></div>';
-                    
-                    // Get current language
-                    const lang = document.documentElement.lang || 'en';
-                    
-                    // Get base URL from data attribute or DOM
-                    const appBaseUrl = document.body.dataset.appUrl || '';
-                    
-                    // Make AJAX request
-                    fetch(`${appBaseUrl}/${lang}/tours/ajax-search?q=${encodeURIComponent(query)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length > 0) {
-                                // Build results
-                                let html = '';
-                                
-                                data.forEach(function(tour) {
-                                    html += `
-                                        <div class="search-result">
-                                            <a href="${tour.url}">
-                                                <h3>${tour.name}</h3>
-                                                <p>${tour.discount_price ? 
-                                                    `<del>${tour.price}</del> ${tour.discount_price}` : 
-                                                    tour.price}</p>
-                                            </a>
-                                        </div>
-                                    `;
-                                });
-                                
-                                resultsContainer.innerHTML = html;
-                            } else {
-                                resultsContainer.innerHTML = '<div class="search-no-results">No tours found matching your search.</div>';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Search error:', error);
-                            resultsContainer.innerHTML = '<div class="search-error">An error occurred. Please try again.</div>';
-                        });
-                }, 300);
-            });
-        }
     }
 }
 
