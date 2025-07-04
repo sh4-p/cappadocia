@@ -400,7 +400,7 @@ $trackingHeroBg = isset($settings['tracking_hero_bg']) ? $settings['tracking_her
 <style>
 /* Tracking Hero */
 .tracking-hero {
-    height: 50vh;
+    height: 70vh;
     min-height: 400px;
     display: flex;
     align-items: center;

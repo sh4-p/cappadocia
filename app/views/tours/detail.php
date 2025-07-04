@@ -4,614 +4,666 @@
  * Enhanced user experience with a focus on conversions
  */
 ?>
-<?php if (isset($gallery) && !empty($gallery)): ?>
-    <script>
-    console.log('Gallery data:', <?php echo json_encode($gallery); ?>);
-    console.log('Gallery count:', <?php echo count($gallery); ?>);
-    </script>
-<?php else: ?>
-    <script>console.log('No gallery data found');</script>
-<?php endif; ?>
-<!-- Immersive Hero Section -->
-    <!-- Tour Hero Section -->
-    <section class="tour-hero" style="background-image: url('<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>');">
-        <div class="tour-hero-overlay"></div>
-        <div class="tour-hero-content">
-            <div class="container">
-                <div class="tour-badges">
-                    <?php if (isset($tour['is_popular']) && $tour['is_popular']): ?>
-                        <span class="tour-badge popular">
-                            <i class="material-icons">star</i> <?php _e('most_popular'); ?>
-                        </span>
-                    <?php endif; ?>
-                    <?php if (isset($tour['is_new']) && $tour['is_new']): ?>
-                        <span class="tour-badge new">
-                            <i class="material-icons">new_releases</i> <?php _e('new'); ?>
-                        </span>
-                    <?php endif; ?>
-                </div>
-                
-                <h1 class="tour-title"><?php echo $tour['name']; ?></h1>
-                
-                <div class="tour-rating">
-                    <div class="stars">
-                        <?php 
-                        $rating = isset($tour['rating']) ? $tour['rating'] : 5;
-                        for ($i = 1; $i <= 5; $i++): ?>
-                            <i class="material-icons"><?php echo $i <= $rating ? 'star' : 'star_border'; ?></i>
-                        <?php endfor; ?>
-                    </div>
-                    <span class="rating-text">
-                        <?php echo number_format($rating, 1); ?> 
-                        (<?php echo isset($tour['reviews_count']) ? $tour['reviews_count'] : rand(15, 50); ?> <?php _e('reviews'); ?>)
+<!-- Tour Hero Section -->
+<section class="tour-hero" style="background-image: url('<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>');">
+    <div class="tour-hero-overlay"></div>
+    <div class="tour-hero-content">
+        <div class="container">
+            <div class="tour-badges">
+                <?php if (isset($tour['is_popular']) && $tour['is_popular']): ?>
+                    <span class="tour-badge popular">
+                        <i class="material-icons">star</i> <?php _e('most_popular'); ?>
                     </span>
-                </div>
+                <?php endif; ?>
+                <?php if (isset($tour['is_new']) && $tour['is_new']): ?>
+                    <span class="tour-badge new">
+                        <i class="material-icons">new_releases</i> <?php _e('new'); ?>
+                    </span>
+                <?php endif; ?>
             </div>
-        </div>
-    </section>
-
-    <!-- Quick Info Bar -->
-    <div class="quick-info-bar">
-        <div class="quick-info-grid">
-            <div class="quick-info-item">
-                <i class="material-icons">schedule</i>
-                <div class="quick-info-text">
-                    <span class="quick-info-label"><?php _e('duration'); ?></span>
-                    <span class="quick-info-value"><?php echo $tour['duration']; ?></span>
+            
+            <h1 class="tour-title"><?php echo $tour['name']; ?></h1>
+            
+            <div class="tour-rating">
+                <div class="stars">
+                    <?php 
+                    $rating = isset($tour['rating']) ? $tour['rating'] : 5;
+                    for ($i = 1; $i <= 5; $i++): ?>
+                        <i class="material-icons"><?php echo $i <= $rating ? 'star' : 'star_border'; ?></i>
+                    <?php endfor; ?>
                 </div>
-            </div>
-            <div class="quick-info-item">
-                <i class="material-icons">group</i>
-                <div class="quick-info-text">
-                    <span class="quick-info-label"><?php _e('group_size'); ?></span>
-                    <span class="quick-info-value"><?php _e('max'); ?> 15</span>
-                </div>
-            </div>
-            <div class="quick-info-item">
-                <i class="material-icons">language</i>
-                <div class="quick-info-text">
-                    <span class="quick-info-label"><?php _e('languages'); ?></span>
-                    <span class="quick-info-value">EN, TR</span>
-                </div>
-            </div>
-            <div class="quick-info-item">
-                <i class="material-icons">verified_user</i>
-                <div class="quick-info-text">
-                    <span class="quick-info-label"><?php _e('confirmation'); ?></span>
-                    <span class="quick-info-value"><?php _e('instant'); ?></span>
-                </div>
+                <span class="rating-text">
+                    <?php echo number_format($rating, 1); ?> 
+                    (<?php echo isset($tour['reviews_count']) ? $tour['reviews_count'] : rand(15, 50); ?> <?php _e('reviews'); ?>)
+                </span>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Main Content -->
-    <div class="container">
-        <div class="tour-content-wrapper">
-            <!-- Main Content Area -->
-            <div class="main-content">
-                <!-- Gallery Section -->
-                <div class="tour-gallery">
-                    <div class="swiper gallery-swiper">
-                        <div class="swiper-wrapper">
-                            <?php if (isset($gallery) && !empty($gallery)): ?>
-                                <?php foreach ($gallery as $index => $item): ?>
-                                    <div class="swiper-slide">
-                                        <img src="<?php echo $uploadsUrl . '/gallery/' . $item['image']; ?>" 
-                                            alt="<?php echo isset($item['title']) ? $item['title'] : $tour['name']; ?>"
-                                            loading="lazy">
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <div class="swiper-slide">
-                                    <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" 
-                                        alt="<?php echo $tour['name']; ?>"
+<!-- Quick Info Bar -->
+<div class="quick-info-bar">
+    <div class="quick-info-grid">
+        <div class="quick-info-item">
+            <i class="material-icons">schedule</i>
+            <div class="quick-info-text">
+                <span class="quick-info-label"><?php _e('duration'); ?></span>
+                <span class="quick-info-value"><?php echo $tour['duration']; ?></span>
+            </div>
+        </div>
+        <div class="quick-info-item">
+            <i class="material-icons">group</i>
+            <div class="quick-info-text">
+                <span class="quick-info-label"><?php _e('group_size'); ?></span>
+                <span class="quick-info-value"><?php _e('max'); ?> 15</span>
+            </div>
+        </div>
+        <div class="quick-info-item">
+            <i class="material-icons">language</i>
+            <div class="quick-info-text">
+                <span class="quick-info-label"><?php _e('languages'); ?></span>
+                <span class="quick-info-value">EN, TR</span>
+            </div>
+        </div>
+        <div class="quick-info-item">
+            <i class="material-icons">verified_user</i>
+            <div class="quick-info-text">
+                <span class="quick-info-label"><?php _e('confirmation'); ?></span>
+                <span class="quick-info-value"><?php _e('instant'); ?></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="tour-content-wrapper">
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Gallery Section with Lightbox -->
+            <div class="tour-gallery">
+                <div class="swiper gallery-swiper">
+                    <div class="swiper-wrapper">
+                        <!-- Ana resim -->
+                        <div class="swiper-slide gallery-lightbox-item" data-lightbox-index="0">
+                            <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" 
+                                alt="<?php echo $tour['name']; ?>"
+                                loading="lazy">
+                        </div>
+                        
+                        <!-- Galeri resimleri -->
+                        <?php if (isset($gallery) && !empty($gallery)): ?>
+                            <?php foreach ($gallery as $index => $item): ?>
+                                <div class="swiper-slide gallery-lightbox-item" data-lightbox-index="<?php echo $index + 1; ?>">
+                                    <img src="<?php echo $uploadsUrl . '/gallery/' . $item['image']; ?>" 
+                                        alt="<?php echo isset($item['title']) ? $item['title'] : $tour['name']; ?>"
                                         loading="lazy">
                                 </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <div class="swiper-pagination"></div>
-                        
-                        <!-- Navigation buttons (opsiyonel) -->
-                        <div class="swiper-button-next"></div>
-                        <div class="swiper-button-prev"></div>
-                        
-                        <!-- Counter -->
-                        <div class="gallery-counter">
-                            <span class="current">1</span> / <span class="total"><?php echo isset($gallery) ? count($gallery) : 1; ?></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabs Section -->
-                <div class="tabs-container">
-                    <div class="tabs-nav">
-                        <button class="tab-btn active" data-tab="overview">
-                            <?php _e('overview'); ?>
-                        </button>
-                        <button class="tab-btn" data-tab="itinerary">
-                            <?php _e('itinerary'); ?>
-                        </button>
-                        <button class="tab-btn" data-tab="includes">
-                            <?php _e('includes'); ?>
-                        </button>
-                        <button class="tab-btn" data-tab="location">
-                            <?php _e('location'); ?>
-                        </button>
-                        <button class="tab-btn" data-tab="reviews">
-                            <?php _e('reviews'); ?>
-                        </button>
-                    </div>
-
-                    <!-- Tab Contents -->
-                    <div class="tab-content active" id="overview">
-                        <div class="content-section">
-                            <h3><?php _e('tour_overview'); ?></h3>
-                            <div class="tour-description">
-                                <?php echo $tour['description']; ?>
-                            </div>
-
-                            <h3><?php _e('experience_highlights'); ?></h3>
-                            <div class="highlights-grid">
-                                <?php 
-                                $highlights = isset($tour['highlights']) ? explode("\n", $tour['highlights']) : explode("\n", $tour['includes']);
-                                $icons = ['explore', 'photo_camera', 'history_edu', 'restaurant'];
-                                foreach (array_slice($highlights, 0, 4) as $index => $highlight): 
-                                    if (trim($highlight)):
-                                ?>
-                                    <div class="highlight-card">
-                                        <div class="highlight-icon">
-                                            <i class="material-icons"><?php echo $icons[$index % 4]; ?></i>
-                                        </div>
-                                        <div class="highlight-text"><?php echo trim($highlight); ?></div>
-                                    </div>
-                                <?php 
-                                    endif;
-                                endforeach; 
-                                ?>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Updated Itinerary Tab Content -->
-                    <div class="tab-content" id="itinerary">
-                        <div class="content-section">
-                            <h3><?php _e('tour_itinerary'); ?></h3>
-                            <div class="itinerary-timeline">
-                                <?php
-                                if (isset($tour['itinerary']) && !empty($tour['itinerary'])):
-                                    // Try to parse as JSON first (new format)
-                                    $itineraryData = json_decode($tour['itinerary'], true);
-                                    
-                                    if (json_last_error() === JSON_ERROR_NONE && is_array($itineraryData)):
-                                        // New format: JSON array with day numbers as keys
-                                        ksort($itineraryData); // Sort by day number
-                                        foreach ($itineraryData as $dayNumber => $dayData):
-                                            if (!empty($dayData['title']) || !empty($dayData['description'])):
-                                ?>
-                                            <div class="itinerary-item">
-                                                <div class="itinerary-marker"><?php echo $dayNumber; ?></div>
-                                                <div class="itinerary-content">
-                                                    <?php if (!empty($dayData['title'])): ?>
-                                                        <h4><?php echo htmlspecialchars($dayData['title']); ?></h4>
-                                                    <?php endif; ?>
-                                                    <?php if (!empty($dayData['description'])): ?>
-                                                        <p><?php echo nl2br(htmlspecialchars($dayData['description'])); ?></p>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                <?php
-                                            endif;
-                                        endforeach;
-                                    else:
-                                        // Old format: plain text with double newlines
-                                        $itinerary = explode("\n\n", $tour['itinerary']);
-                                        foreach ($itinerary as $index => $day):
-                                            if (trim($day)):
-                                ?>
-                                            <div class="itinerary-item">
-                                                <div class="itinerary-marker"><?php echo $index + 1; ?></div>
-                                                <div class="itinerary-content">
-                                                    <?php 
-                                                    $lines = explode("\n", $day);
-                                                    if (count($lines) > 0): ?>
-                                                        <h4><?php echo htmlspecialchars($lines[0]); ?></h4>
-                                                        <?php if (count($lines) > 1): ?>
-                                                            <p><?php echo nl2br(htmlspecialchars(implode("\n", array_slice($lines, 1)))); ?></p>
-                                                        <?php endif; ?>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                <?php 
-                                            endif;
-                                        endforeach;
-                                    endif;
-                                else:
-                                ?>
-                                    <div class="no-itinerary">
-                                        <div class="no-itinerary-icon">
-                                            <i class="material-icons">event_note</i>
-                                        </div>
-                                        <p><?php _e('no_itinerary_available'); ?></p>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <!-- Tour Duration Info -->
-                            <?php if (isset($tour['duration_days']) && $tour['duration_days'] > 1): ?>
-                            <div class="duration-info">
-                                <div class="duration-card">
-                                    <div class="duration-icon">
-                                        <i class="material-icons">schedule</i>
-                                    </div>
-                                    <div class="duration-details">
-                                        <h5><?php _e('tour_duration'); ?></h5>
-                                        <p><?php echo $tour['duration']; ?></p>
-                                        <span class="duration-days"><?php echo $tour['duration_days']; ?> <?php _e('days'); ?></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <div class="tab-content" id="includes">
-                        <div class="content-section">
-                            <h3><?php _e('whats_included'); ?></h3>
-                            <div class="includes-excludes">
-                                <div class="list-section">
-                                    <h4><i class="material-icons">check_circle</i> <?php _e('included'); ?></h4>
-                                    <ul class="includes-list">
-                                        <?php
-                                        $includes = explode("\n", $tour['includes']);
-                                        foreach ($includes as $include):
-                                            if (trim($include)):
-                                        ?>
-                                            <li>
-                                                <i class="material-icons">check</i>
-                                                <span><?php echo trim($include); ?></span>
-                                            </li>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </ul>
-                                </div>
-
-                                <?php if (isset($tour['excludes']) && !empty($tour['excludes'])): ?>
-                                <div class="list-section">
-                                    <h4><i class="material-icons">remove_circle</i> <?php _e('not_included'); ?></h4>
-                                    <ul class="excludes-list">
-                                        <?php
-                                        $excludes = explode("\n", $tour['excludes']);
-                                        foreach ($excludes as $exclude):
-                                            if (trim($exclude)):
-                                        ?>
-                                            <li>
-                                                <i class="material-icons">close</i>
-                                                <span><?php echo trim($exclude); ?></span>
-                                            </li>
-                                        <?php
-                                            endif;
-                                        endforeach;
-                                        ?>
-                                    </ul>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-
-                            <h3 class="mt-2"><?php _e('additional_info'); ?></h3>
-                            <div class="info-cards">
-                                <div class="info-card">
-                                    <i class="material-icons">directions_walk</i>
-                                    <h5><?php _e('activity_level'); ?></h5>
-                                    <p><?php _e('moderate'); ?></p>
-                                </div>
-                                <div class="info-card">
-                                    <i class="material-icons">schedule</i>
-                                    <h5><?php _e('start_time'); ?></h5>
-                                    <p>08:00 AM</p>
-                                </div>
-                                <div class="info-card">
-                                    <i class="material-icons">event_available</i>
-                                    <h5><?php _e('availability'); ?></h5>
-                                    <p><?php _e('daily'); ?></p>
-                                </div>
-                                <div class="info-card">
-                                    <i class="material-icons">update</i>
-                                    <h5><?php _e('cancellation'); ?></h5>
-                                    <p><?php _e('free_24h'); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tab-content" id="location">
-                        <div class="content-section">
-                            <h3><?php _e('meeting_point'); ?></h3>
-                            <div class="map-container" id="tour-map" 
-                                 data-lat="38.642335" 
-                                 data-lng="34.827335" 
-                                 data-zoom="13">
-                            </div>
-                            <p class="mt-1"><?php _e('meeting_point_description'); ?></p>
-                        </div>
-                    </div>
-
-                    <div class="tab-content" id="reviews">
-                        <div class="content-section">
-                            <h3><?php _e('customer_reviews'); ?></h3>
-                            <div class="reviews-summary">
-                                <div class="overall-rating"><?php echo number_format($rating, 1); ?></div>
-                                <div class="stars">
-                                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <i class="material-icons"><?php echo $i <= $rating ? 'star' : 'star_border'; ?></i>
-                                    <?php endfor; ?>
-                                </div>
-                                <p><?php echo isset($tour['reviews_count']) ? $tour['reviews_count'] : rand(15, 50); ?> <?php _e('reviews'); ?></p>
-
-                                <div class="rating-bars">
-                                    <?php 
-                                    $categories = [
-                                        'value' => [__('value_for_money'), 4.8],
-                                        'guide' => [__('guide'), 4.9],
-                                        'experience' => [__('experience'), 4.7],
-                                        'safety' => [__('safety'), 5.0]
-                                    ];
-                                    foreach ($categories as $key => $category): 
-                                    ?>
-                                        <div class="rating-bar-item">
-                                            <span class="rating-bar-label"><?php echo $category[0]; ?></span>
-                                            <div class="rating-bar-track">
-                                                <div class="rating-bar-fill" style="width: <?php echo ($category[1] / 5) * 100; ?>%"></div>
-                                            </div>
-                                            <span class="rating-bar-value"><?php echo number_format($category[1], 1); ?></span>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-
-                            <!-- Sample Reviews -->
-                            <?php 
-                            $reviews = [
-                                [
-                                    'name' => 'John Smith',
-                                    'date' => '2023-10-15',
-                                    'rating' => 5,
-                                    'text' => 'Amazing experience! The hot air balloon ride was absolutely breathtaking.',
-                                    'avatar' => 'avatar-1.jpg'
-                                ],
-                                [
-                                    'name' => 'Maria Garcia',
-                                    'date' => '2023-09-22',
-                                    'rating' => 4,
-                                    'text' => 'Great tour overall. Beautiful landscapes and interesting history.',
-                                    'avatar' => 'avatar-2.jpg'
-                                ]
-                            ];
-                            
-                            foreach ($reviews as $review): 
-                            ?>
-                                <div class="review-card">
-                                    <div class="review-header">
-                                        <div class="review-avatar">
-                                            <img src="<?php echo $imgUrl; ?>/<?php echo $review['avatar']; ?>" alt="<?php echo $review['name']; ?>">
-                                        </div>
-                                        <div class="review-info">
-                                            <div class="review-name"><?php echo $review['name']; ?></div>
-                                            <div class="review-date"><?php echo date('F j, Y', strtotime($review['date'])); ?></div>
-                                        </div>
-                                    </div>
-                                    <div class="review-rating">
-                                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                                            <i class="material-icons"><?php echo $i <= $review['rating'] ? 'star' : 'star_border'; ?></i>
-                                        <?php endfor; ?>
-                                    </div>
-                                    <div class="review-text"><?php echo $review['text']; ?></div>
-                                </div>
                             <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="swiper-pagination"></div>
+                    
+                    <!-- Navigation buttons -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    
+                    <!-- Counter -->
+                    <div class="gallery-counter">
+                        <span class="current">1</span> / <span class="total"><?php echo (isset($gallery) ? count($gallery) + 1 : 1); ?></span>
+                    </div>
+                    
+                    <!-- Lightbox açma ikonu -->
+                    <div class="gallery-expand-btn" onclick="openGalleryLightbox(0)">
+                        <i class="material-icons">fullscreen</i>
+                        <span><?php _e('view_gallery'); ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Section -->
+            <div class="tabs-container">
+                <div class="tabs-nav">
+                    <button class="tab-btn active" data-tab="overview"><?php _e('overview'); ?></button>
+                    <button class="tab-btn" data-tab="itinerary"><?php _e('itinerary'); ?></button>
+                    <button class="tab-btn" data-tab="includes"><?php _e('includes'); ?></button>
+                    <button class="tab-btn" data-tab="location"><?php _e('location'); ?></button>
+                    <button class="tab-btn" data-tab="reviews"><?php _e('reviews'); ?></button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="tab-content active" id="overview">
+                    <div class="content-section">
+                        <h3><?php _e('tour_overview'); ?></h3>
+                        <div class="tour-description">
+                            <?php echo $tour['description']; ?>
+                        </div>
+
+                        <h3><?php _e('experience_highlights'); ?></h3>
+                        <div class="highlights-grid">
+                            <?php 
+                            $highlights = isset($tour['highlights']) ? explode("\n", $tour['highlights']) : explode("\n", $tour['includes']);
+                            $icons = ['explore', 'photo_camera', 'history_edu', 'restaurant'];
+                            foreach (array_slice($highlights, 0, 4) as $index => $highlight): 
+                                if (trim($highlight)):
+                            ?>
+                                <div class="highlight-card">
+                                    <div class="highlight-icon">
+                                        <i class="material-icons"><?php echo $icons[$index % 4]; ?></i>
+                                    </div>
+                                    <div class="highlight-text"><?php echo trim($highlight); ?></div>
+                                </div>
+                            <?php 
+                                endif;
+                            endforeach; 
+                            ?>
                         </div>
                     </div>
                 </div>
 
-                <!-- Share Section -->
-                <div class="share-section">
-                    <h3><?php _e('share_this_tour'); ?></h3>
-                    <div class="share-buttons">
-                        <a href="#" class="share-btn facebook" data-type="facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="share-btn twitter" data-type="twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="share-btn whatsapp" data-type="whatsapp">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="#" class="share-btn pinterest" data-type="pinterest">
-                            <i class="fab fa-pinterest-p"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Related Tours -->
-                <?php if (isset($relatedTours) && !empty($relatedTours)): ?>
-                <div class="related-tours">
-                    <h3><?php _e('you_might_also_like'); ?></h3>
-                    <div class="swiper related-tours-slider">
-                        <div class="swiper-wrapper">
-                            <?php foreach ($relatedTours as $relatedTour): ?>
-                                <div class="swiper-slide related-tour-slide">
-                                    <div class="related-tour-card">
-                                        <div class="related-tour-image">
-                                            <img src="<?php echo $uploadsUrl . '/tours/' . $relatedTour['featured_image']; ?>" 
-                                                 alt="<?php echo $relatedTour['name']; ?>">
-                                            <div class="related-tour-price">
-                                                <?php if (isset($relatedTour['discount_price']) && $relatedTour['discount_price']): ?>
-                                                    <?php echo $settings['currency_symbol'] . number_format($relatedTour['discount_price'], 2); ?>
-                                                <?php else: ?>
-                                                    <?php echo $settings['currency_symbol'] . number_format($relatedTour['price'], 2); ?>
+                <!-- Itinerary Tab Content -->
+                <div class="tab-content" id="itinerary">
+                    <div class="content-section">
+                        <h3><?php _e('tour_itinerary'); ?></h3>
+                        <div class="itinerary-timeline">
+                            <?php
+                            if (isset($tour['itinerary']) && !empty($tour['itinerary'])):
+                                // Try to parse as JSON first (new format)
+                                $itineraryData = json_decode($tour['itinerary'], true);
+                                
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($itineraryData)):
+                                    // New format: JSON array with day numbers as keys
+                                    ksort($itineraryData); // Sort by day number
+                                    foreach ($itineraryData as $dayNumber => $dayData):
+                                        if (!empty($dayData['title']) || !empty($dayData['description'])):
+                            ?>
+                                        <div class="itinerary-item">
+                                            <div class="itinerary-marker"><?php echo $dayNumber; ?></div>
+                                            <div class="itinerary-content">
+                                                <?php if (!empty($dayData['title'])): ?>
+                                                    <h4><?php echo htmlspecialchars($dayData['title']); ?></h4>
+                                                <?php endif; ?>
+                                                <?php if (!empty($dayData['description'])): ?>
+                                                    <p><?php echo nl2br(htmlspecialchars($dayData['description'])); ?></p>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
-                                        <div class="related-tour-content">
-                                            <h4 class="related-tour-title">
-                                                <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $relatedTour['slug']; ?>">
-                                                    <?php echo $relatedTour['name']; ?>
-                                                </a>
-                                            </h4>
-                                            <div class="related-tour-meta">
-                                                <span><i class="material-icons">schedule</i> <?php echo $relatedTour['duration']; ?></span>
-                                                <span>
-                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
-                                                        <i class="material-icons"><?php echo $i <= $relatedTour['rating'] ? 'star' : 'star_border'; ?></i>
-                                                    <?php endfor; ?>
-                                                </span>
+                            <?php
+                                        endif;
+                                    endforeach;
+                                else:
+                                    // Old format: plain text with double newlines
+                                    $itinerary = explode("\n\n", $tour['itinerary']);
+                                    foreach ($itinerary as $index => $day):
+                                        if (trim($day)):
+                            ?>
+                                        <div class="itinerary-item">
+                                            <div class="itinerary-marker"><?php echo $index + 1; ?></div>
+                                            <div class="itinerary-content">
+                                                <?php 
+                                                $lines = explode("\n", $day);
+                                                if (count($lines) > 0): ?>
+                                                    <h4><?php echo htmlspecialchars($lines[0]); ?></h4>
+                                                    <?php if (count($lines) > 1): ?>
+                                                        <p><?php echo nl2br(htmlspecialchars(implode("\n", array_slice($lines, 1)))); ?></p>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
                                             </div>
+                                        </div>
+                            <?php 
+                                        endif;
+                                    endforeach;
+                                endif;
+                            else:
+                            ?>
+                                <div class="no-itinerary">
+                                    <div class="no-itinerary-icon">
+                                        <i class="material-icons">event_note</i>
+                                    </div>
+                                    <p><?php _e('no_itinerary_available'); ?></p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <!-- Tour Duration Info -->
+                        <?php if (isset($tour['duration_days']) && $tour['duration_days'] > 1): ?>
+                        <div class="duration-info">
+                            <div class="duration-card">
+                                <div class="duration-icon">
+                                    <i class="material-icons">schedule</i>
+                                </div>
+                                <div class="duration-details">
+                                    <h5><?php _e('tour_duration'); ?></h5>
+                                    <p><?php echo $tour['duration']; ?></p>
+                                    <span class="duration-days"><?php echo $tour['duration_days']; ?> <?php _e('days'); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Includes Tab Content -->
+                <div class="tab-content" id="includes">
+                    <div class="content-section">
+                        <h3><?php _e('whats_included'); ?></h3>
+                        <div class="includes-excludes">
+                            <div class="list-section">
+                                <h4><i class="material-icons">check_circle</i> <?php _e('included'); ?></h4>
+                                <ul class="includes-list">
+                                    <?php
+                                    $includes = explode("\n", $tour['includes']);
+                                    foreach ($includes as $include):
+                                        if (trim($include)):
+                                    ?>
+                                        <li>
+                                            <i class="material-icons">check</i>
+                                            <span><?php echo trim($include); ?></span>
+                                        </li>
+                                    <?php
+                                        endif;
+                                    endforeach;
+                                    ?>
+                                </ul>
+                            </div>
+
+                            <?php if (isset($tour['excludes']) && !empty($tour['excludes'])): ?>
+                            <div class="list-section">
+                                <h4><i class="material-icons">remove_circle</i> <?php _e('not_included'); ?></h4>
+                                <ul class="excludes-list">
+                                    <?php
+                                    $excludes = explode("\n", $tour['excludes']);
+                                    foreach ($excludes as $exclude):
+                                        if (trim($exclude)):
+                                    ?>
+                                        <li>
+                                            <i class="material-icons">close</i>
+                                            <span><?php echo trim($exclude); ?></span>
+                                        </li>
+                                    <?php
+                                        endif;
+                                    endforeach;
+                                    ?>
+                                </ul>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <h3 class="mt-2"><?php _e('additional_info'); ?></h3>
+                        <div class="info-cards">
+                            <div class="info-card">
+                                <i class="material-icons">directions_walk</i>
+                                <h5><?php _e('activity_level'); ?></h5>
+                                <p><?php _e('moderate'); ?></p>
+                            </div>
+                            <div class="info-card">
+                                <i class="material-icons">schedule</i>
+                                <h5><?php _e('start_time'); ?></h5>
+                                <p>08:00 AM</p>
+                            </div>
+                            <div class="info-card">
+                                <i class="material-icons">event_available</i>
+                                <h5><?php _e('availability'); ?></h5>
+                                <p><?php _e('daily'); ?></p>
+                            </div>
+                            <div class="info-card">
+                                <i class="material-icons">update</i>
+                                <h5><?php _e('cancellation'); ?></h5>
+                                <p><?php _e('free_24h'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Tab Content -->
+                <div class="tab-content" id="location">
+                    <div class="content-section">
+                        <h3><?php _e('meeting_point'); ?></h3>
+                        <div class="map-container" id="tour-map" 
+                             data-lat="38.642335" 
+                             data-lng="34.827335" 
+                             data-zoom="13">
+                        </div>
+                        <p class="mt-1"><?php _e('meeting_point_description'); ?></p>
+                    </div>
+                </div>
+
+                <!-- Reviews Tab Content -->
+                <div class="tab-content" id="reviews">
+                    <div class="content-section">
+                        <h3><?php _e('customer_reviews'); ?></h3>
+                        <div class="reviews-summary">
+                            <div class="overall-rating"><?php echo number_format($rating, 1); ?></div>
+                            <div class="stars">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <i class="material-icons"><?php echo $i <= $rating ? 'star' : 'star_border'; ?></i>
+                                <?php endfor; ?>
+                            </div>
+                            <p><?php echo isset($tour['reviews_count']) ? $tour['reviews_count'] : rand(15, 50); ?> <?php _e('reviews'); ?></p>
+
+                            <div class="rating-bars">
+                                <?php 
+                                $categories = [
+                                    'value' => [__('value_for_money'), 4.8],
+                                    'guide' => [__('guide'), 4.9],
+                                    'experience' => [__('experience'), 4.7],
+                                    'safety' => [__('safety'), 5.0]
+                                ];
+                                foreach ($categories as $key => $category): 
+                                ?>
+                                    <div class="rating-bar-item">
+                                        <span class="rating-bar-label"><?php echo $category[0]; ?></span>
+                                        <div class="rating-bar-track">
+                                            <div class="rating-bar-fill" style="width: <?php echo ($category[1] / 5) * 100; ?>%"></div>
+                                        </div>
+                                        <span class="rating-bar-value"><?php echo number_format($category[1], 1); ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <!-- Sample Reviews -->
+                        <?php 
+                        $reviews = [
+                            [
+                                'name' => 'John Smith',
+                                'date' => '2023-10-15',
+                                'rating' => 5,
+                                'text' => 'Amazing experience! The hot air balloon ride was absolutely breathtaking.',
+                                'avatar' => 'avatar-1.jpg'
+                            ],
+                            [
+                                'name' => 'Maria Garcia',
+                                'date' => '2023-09-22',
+                                'rating' => 4,
+                                'text' => 'Great tour overall. Beautiful landscapes and interesting history.',
+                                'avatar' => 'avatar-2.jpg'
+                            ]
+                        ];
+                        
+                        foreach ($reviews as $review): 
+                        ?>
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="review-avatar">
+                                        <img src="<?php echo $imgUrl; ?>/<?php echo $review['avatar']; ?>" alt="<?php echo $review['name']; ?>">
+                                    </div>
+                                    <div class="review-info">
+                                        <div class="review-name"><?php echo $review['name']; ?></div>
+                                        <div class="review-date"><?php echo date('F j, Y', strtotime($review['date'])); ?></div>
+                                    </div>
+                                </div>
+                                <div class="review-rating">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="material-icons"><?php echo $i <= $review['rating'] ? 'star' : 'star_border'; ?></i>
+                                    <?php endfor; ?>
+                                </div>
+                                <div class="review-text"><?php echo $review['text']; ?></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+                <h3><?php _e('share_this_tour'); ?></h3>
+                <div class="share-buttons">
+                    <a href="#" class="share-btn facebook" data-type="facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="share-btn twitter" data-type="twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="share-btn whatsapp" data-type="whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="#" class="share-btn pinterest" data-type="pinterest">
+                        <i class="fab fa-pinterest-p"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Related Tours -->
+            <?php if (isset($relatedTours) && !empty($relatedTours)): ?>
+            <div class="related-tours">
+                <h3><?php _e('you_might_also_like'); ?></h3>
+                <div class="swiper related-tours-slider">
+                    <div class="swiper-wrapper">
+                        <?php foreach ($relatedTours as $relatedTour): ?>
+                            <div class="swiper-slide related-tour-slide">
+                                <div class="related-tour-card">
+                                    <div class="related-tour-image">
+                                        <img src="<?php echo $uploadsUrl . '/tours/' . $relatedTour['featured_image']; ?>" 
+                                            alt="<?php echo $relatedTour['name']; ?>">
+                                        <div class="related-tour-price">
+                                            <?php if (isset($relatedTour['discount_price']) && $relatedTour['discount_price']): ?>
+                                                <?php echo $settings['currency_symbol'] . number_format($relatedTour['discount_price'], 2); ?>
+                                            <?php else: ?>
+                                                <?php echo $settings['currency_symbol'] . number_format($relatedTour['price'], 2); ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div class="related-tour-content">
+                                        <h4 class="related-tour-title">
+                                            <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $relatedTour['slug']; ?>">
+                                                <?php echo $relatedTour['name']; ?>
+                                            </a>
+                                        </h4>
+                                        <div class="related-tour-meta">
+                                            <span><i class="material-icons">schedule</i> <?php echo $relatedTour['duration']; ?></span>
+                                            <span>
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <i class="material-icons"><?php echo $i <= $relatedTour['rating'] ? 'star' : 'star_border'; ?></i>
+                                                <?php endfor; ?>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Sidebar Content (Desktop) -->
-            <div class="sidebar-content">
-                <div class="price-booking-section">
-                    <div class="price-display">
-                        <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
-                            <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-                            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
-                        <?php else: ?>
-                            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-                        <?php endif; ?>
-                        <span class="price-per">/ <?php _e('per_person'); ?></span>
-                    </div>
-                    <button class="book-now-btn" onclick="openBookingModal()">
-                        <i class="material-icons">shopping_cart</i>
-                        <?php _e('book_now'); ?>
-                    </button>
-                </div>
-
-                <!-- Help Section -->
-                <div class="help-section">
-                    <h3><?php _e('need_help'); ?></h3>
-                    <div class="help-contacts">
-                        <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $settings['contact_phone']); ?>" class="help-contact">
-                            <i class="material-icons">phone</i>
-                            <?php echo $settings['contact_phone']; ?>
-                        </a>
-                        <a href="https://wa.me/<?php echo preg_replace('/[^0-9+]/', '', $settings['contact_phone']); ?>" class="help-contact">
-                            <i class="fab fa-whatsapp"></i>
-                            <?php _e('chat_with_us'); ?>
-                        </a>
-                        <a href="mailto:<?php echo $settings['contact_email']; ?>" class="help-contact">
-                            <i class="material-icons">email</i>
-                            <?php echo $settings['contact_email']; ?>
-                        </a>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <!-- Mobile Fixed Booking Bar -->
-    <div class="price-booking-section" id="mobile-booking-bar">
-        <div class="price-display">
-            <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
-                <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-                <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
-            <?php else: ?>
-                <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
             <?php endif; ?>
-            <span class="price-per">/ <?php _e('per_person'); ?></span>
         </div>
-        <button class="book-now-btn" onclick="openBookingModal()">
-            <i class="material-icons">shopping_cart</i>
-            <?php _e('book_now'); ?>
-        </button>
-    </div>
-                
-    <!-- Booking Modal -->
-    <div class="booking-modal" id="bookingModal">
-        <div class="booking-modal-content">
-            <div class="modal-header">
-                <h3><?php _e('book_this_tour'); ?></h3>
-                <button class="modal-close" onclick="closeBookingModal()">
-                    <i class="material-icons">close</i>
+
+        <!-- Sidebar Content (Desktop) -->
+        <div class="sidebar-content">
+            <div class="price-booking-section">
+                <div class="price-display">
+                    <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
+                        <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+                        <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
+                    <?php else: ?>
+                        <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+                    <?php endif; ?>
+                    <span class="price-per">/ <?php _e('per_person'); ?></span>
+                </div>
+                <button class="book-now-btn" onclick="openBookingModal()">
+                    <i class="material-icons">shopping_cart</i>
+                    <?php _e('book_now'); ?>
                 </button>
             </div>
 
-            <form class="booking-form" action="<?php echo $appUrl . '/' . $currentLang; ?>/booking/tour/<?php echo $tour['id']; ?>" method="get">
-                <div class="form-group">
-                    <label for="booking_date"><?php _e('select_date'); ?></label>
-                    <input type="date" id="booking_date" name="date" min="<?php echo date('Y-m-d'); ?>" required>
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3><?php _e('need_help'); ?></h3>
+                <div class="help-contacts">
+                    <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $settings['contact_phone']); ?>" class="help-contact">
+                        <i class="material-icons">phone</i>
+                        <?php echo $settings['contact_phone']; ?>
+                    </a>
+                    <a href="https://wa.me/<?php echo preg_replace('/[^0-9+]/', '', $settings['contact_phone']); ?>" class="help-contact">
+                        <i class="fab fa-whatsapp"></i>
+                        <?php _e('chat_with_us'); ?>
+                    </a>
+                    <a href="mailto:<?php echo $settings['contact_email']; ?>" class="help-contact">
+                        <i class="material-icons">email</i>
+                        <?php echo $settings['contact_email']; ?>
+                    </a>
                 </div>
-
-                <div class="form-group">
-                    <label><?php _e('participants'); ?></label>
-                    <div class="guest-selector">
-                        <div class="guest-item">
-                            <div class="guest-info">
-                                <div class="guest-label"><?php _e('adults'); ?></div>
-                                <div class="guest-sublabel"><?php _e('age_12_plus'); ?></div>
-                            </div>
-                            <div class="guest-counter">
-                                <button type="button" class="counter-btn" onclick="updateGuests('adults', -1)">
-                                    <i class="material-icons">remove</i>
-                                </button>
-                                <span class="counter-value" id="adults-count">2</span>
-                                <button type="button" class="counter-btn" onclick="updateGuests('adults', 1)">
-                                    <i class="material-icons">add</i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="guest-item">
-                            <div class="guest-info">
-                                <div class="guest-label"><?php _e('children'); ?></div>
-                                <div class="guest-sublabel"><?php _e('age_2_11'); ?></div>
-                            </div>
-                            <div class="guest-counter">
-                                <button type="button" class="counter-btn" onclick="updateGuests('children', -1)">
-                                    <i class="material-icons">remove</i>
-                                </button>
-                                <span class="counter-value" id="children-count">0</span>
-                                <button type="button" class="counter-btn" onclick="updateGuests('children', 1)">
-                                    <i class="material-icons">add</i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <input type="hidden" name="adults" id="adults-input" value="2">
-                    <input type="hidden" name="children" id="children-input" value="0">
-                </div>
-
-                <div class="booking-summary">
-                    <div class="summary-row">
-                        <span><?php _e('adults'); ?></span>
-                        <span id="adults-summary">2 × <?php echo $settings['currency_symbol'] . number_format($tour['discount_price'] ?: $tour['price'], 2); ?></span>
-                    </div>
-                    <div class="summary-row" id="children-summary-row" style="display: none;">
-                        <span><?php _e('children'); ?></span>
-                        <span id="children-summary">0 × <?php echo $settings['currency_symbol'] . number_format(($tour['discount_price'] ?: $tour['price']) * 0.5, 2); ?></span>
-                    </div>
-                    <div class="summary-row total">
-                        <span><?php _e('total'); ?></span>
-                        <span id="total-price"><?php echo $settings['currency_symbol'] . number_format(($tour['discount_price'] ?: $tour['price']) * 2, 2); ?></span>
-                    </div>
-                </div>
-
-                <button type="submit" class="booking-submit">
-                    <?php _e('continue_to_booking'); ?>
-                </button>
-            </form>
+            </div>
         </div>
     </div>
-    <!-- Custom CSS Styles -->
-    <!-- Custom CSS Styles -->
-    <style>
+</div>
+
+<!-- Mobile Fixed Booking Bar -->
+<div class="price-booking-section" id="mobile-booking-bar">
+    <div class="price-display">
+        <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
+            <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
+        <?php else: ?>
+            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+        <?php endif; ?>
+        <span class="price-per">/ <?php _e('per_person'); ?></span>
+    </div>
+    <button class="book-now-btn" onclick="openBookingModal()">
+        <i class="material-icons">shopping_cart</i>
+        <?php _e('book_now'); ?>
+    </button>
+</div>
+
+<!-- Gallery Lightbox -->
+<div class="gallery-lightbox" id="galleryLightbox" role="dialog" aria-labelledby="lightbox-title" aria-hidden="true">
+    <div class="lightbox-container">
+        <!-- Loading State -->
+        <div class="lightbox-loading" id="lightboxLoading">
+            <div class="lightbox-spinner"></div>
+            <div><?php _e('loading'); ?>...</div>
+        </div>
+
+        <!-- Image Container -->
+        <div class="lightbox-image-container">
+            <img class="lightbox-image" id="lightboxImage" alt="" />
+        </div>
+
+        <!-- Touch Areas (Mobile) -->
+        <div class="lightbox-touch-prev" id="lightboxTouchPrev">
+            <span class="sr-only"><?php _e('previous_image'); ?></span>
+        </div>
+        <div class="lightbox-touch-next" id="lightboxTouchNext">
+            <span class="sr-only"><?php _e('next_image'); ?></span>
+        </div>
+
+        <!-- Controls -->
+        <button class="lightbox-close" id="lightboxClose" type="button" aria-label="<?php _e('close_gallery'); ?>">
+            <i class="material-icons">close</i>
+        </button>
+
+        <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="<?php _e('previous_image'); ?>">
+            <i class="material-icons">chevron_left</i>
+        </button>
+
+        <button class="lightbox-next" id="lightboxNext" type="button" aria-label="<?php _e('next_image'); ?>">
+            <i class="material-icons">chevron_right</i>
+        </button>
+
+        <!-- Zoom Controls -->
+        <div class="lightbox-zoom-controls">
+            <button class="zoom-btn" id="zoomIn" type="button" aria-label="<?php _e('zoom_in'); ?>">
+                <i class="material-icons">zoom_in</i>
+            </button>
+            <button class="zoom-btn" id="zoomOut" type="button" aria-label="<?php _e('zoom_out'); ?>">
+                <i class="material-icons">zoom_out</i>
+            </button>
+            <button class="zoom-btn" id="zoomReset" type="button" aria-label="<?php _e('reset_zoom'); ?>">
+                <i class="material-icons">zoom_out_map</i>
+            </button>
+        </div>
+
+        <!-- Info -->
+        <div class="lightbox-info">
+            <div class="lightbox-title" id="lightboxTitle"><?php echo $tour['name']; ?></div>
+            <div class="lightbox-counter">
+                <span id="lightboxCurrent">1</span> / <span id="lightboxTotal"><?php echo (isset($gallery) ? count($gallery) + 1 : 1); ?></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Modal -->
+<div class="booking-modal" id="bookingModal">
+    <div class="booking-modal-content">
+        <div class="modal-header">
+            <h3><?php _e('book_this_tour'); ?></h3>
+            <button class="modal-close" onclick="closeBookingModal()">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+
+        <form class="booking-form" action="<?php echo $appUrl . '/' . $currentLang; ?>/booking/tour/<?php echo $tour['id']; ?>" method="get">
+            <div class="form-group">
+                <label for="booking_date"><?php _e('select_date'); ?></label>
+                <input type="date" id="booking_date" name="date" min="<?php echo date('Y-m-d'); ?>" required>
+            </div>
+
+            <div class="form-group">
+                <label><?php _e('participants'); ?></label>
+                <div class="guest-selector">
+                    <div class="guest-item">
+                        <div class="guest-info">
+                            <div class="guest-label"><?php _e('adults'); ?></div>
+                            <div class="guest-sublabel"><?php _e('age_12_plus'); ?></div>
+                        </div>
+                        <div class="guest-counter">
+                            <button type="button" class="counter-btn" onclick="updateGuests('adults', -1)">
+                                <i class="material-icons">remove</i>
+                            </button>
+                            <span class="counter-value" id="adults-count">2</span>
+                            <button type="button" class="counter-btn" onclick="updateGuests('adults', 1)">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="guest-item">
+                        <div class="guest-info">
+                            <div class="guest-label"><?php _e('children'); ?></div>
+                            <div class="guest-sublabel"><?php _e('age_2_11'); ?></div>
+                        </div>
+                        <div class="guest-counter">
+                            <button type="button" class="counter-btn" onclick="updateGuests('children', -1)">
+                                <i class="material-icons">remove</i>
+                            </button>
+                            <span class="counter-value" id="children-count">0</span>
+                            <button type="button" class="counter-btn" onclick="updateGuests('children', 1)">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="adults" id="adults-input" value="2">
+                <input type="hidden" name="children" id="children-input" value="0">
+            </div>
+
+            <div class="booking-summary">
+                <div class="summary-row">
+                    <span><?php _e('adults'); ?></span>
+                    <span id="adults-summary">2 × <?php echo $settings['currency_symbol'] . number_format($tour['discount_price'] ?: $tour['price'], 2); ?></span>
+                </div>
+                <div class="summary-row" id="children-summary-row" style="display: none;">
+                    <span><?php _e('children'); ?></span>
+                    <span id="children-summary">0 × <?php echo $settings['currency_symbol'] . number_format(($tour['discount_price'] ?: $tour['price']) * 0.5, 2); ?></span>
+                </div>
+                <div class="summary-row total">
+                    <span><?php _e('total'); ?></span>
+                    <span id="total-price"><?php echo $settings['currency_symbol'] . number_format(($tour['discount_price'] ?: $tour['price']) * 2, 2); ?></span>
+                </div>
+            </div>
+
+            <button type="submit" class="booking-submit">
+                <?php _e('continue_to_booking'); ?>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="<?php echo $appUrl; ?>/public/js/tour-lightbox.js"></script>
+<style>
     /* CSS Reset and Base Styles */
     @import url('https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css');
 
@@ -683,6 +735,395 @@
         height: 40px !important;
         max-height: 40px !important;
         max-width: 180px !important;
+    }
+    /* Gallery expand button */
+    .gallery-expand-btn {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        background: rgba(0, 0, 0, 0.7);
+        color: var(--white-color);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        z-index: 10;
+        transition: all 0.3s ease;
+    }
+
+    .gallery-expand-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.05);
+    }
+
+    /* Additional gallery grid */
+    .additional-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .gallery-grid-item {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        height: 120px;
+    }
+
+    .gallery-grid-item:hover {
+        transform: scale(1.05);
+    }
+
+    .gallery-grid-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .gallery-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .gallery-grid-item:hover .gallery-overlay {
+        opacity: 1;
+    }
+
+    /* ========== LIGHTBOX STYLES ========== */
+    .gallery-lightbox {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    }
+
+    .gallery-lightbox.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .lightbox-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        max-width: 1400px;
+    }
+
+    .lightbox-image-container {
+        position: relative;
+        max-width: 100%;
+        max-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        cursor: grab;
+    }
+
+    .lightbox-image:active {
+        cursor: grabbing;
+    }
+
+    /* Loading State */
+    .lightbox-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--white-color);
+        font-size: 1.125rem;
+        text-align: center;
+    }
+
+    .lightbox-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--white-color);
+        animation: spin 1s ease-in-out infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Lightbox Controls */
+    .lightbox-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 50px;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        color: var(--white-color);
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 1001;
+    }
+
+    .lightbox-close:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.1);
+    }
+
+    .lightbox-prev, .lightbox-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        color: var(--white-color);
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 1001;
+    }
+
+    .lightbox-prev:hover, .lightbox-next:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .lightbox-prev {
+        left: 2rem;
+    }
+
+    .lightbox-next {
+        right: 2rem;
+    }
+
+    /* Lightbox Info */
+    .lightbox-info {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: var(--white-color);
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 90%;
+        backdrop-filter: blur(10px);
+    }
+
+    .lightbox-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .lightbox-counter {
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+
+    /* Zoom functionality */
+    .lightbox-zoom-controls {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        z-index: 1001;
+    }
+
+    .zoom-btn {
+        width: 44px;
+        height: 44px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        color: var(--white-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .zoom-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: scale(1.1);
+    }
+
+    /* Touch areas for mobile */
+    .lightbox-touch-prev, .lightbox-touch-next {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 25%;
+        z-index: 999;
+        cursor: pointer;
+    }
+
+    .lightbox-touch-prev {
+        left: 0;
+    }
+
+    .lightbox-touch-next {
+        right: 0;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .lightbox-container {
+            padding: 1rem;
+        }
+
+        .lightbox-close {
+            top: env(safe-area-inset-top, 1rem);
+            right: 1rem;
+            width: 44px;
+            height: 44px;
+            font-size: 1.25rem;
+        }
+
+        .lightbox-prev, .lightbox-next {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+
+        .lightbox-prev {
+            left: 1rem;
+        }
+
+        .lightbox-next {
+            right: 1rem;
+        }
+
+        .lightbox-info {
+            bottom: env(safe-area-inset-bottom, 1rem);
+            padding: 0.75rem 1rem;
+            max-width: calc(100% - 2rem);
+        }
+
+        .lightbox-title {
+            font-size: 1rem;
+        }
+
+        .lightbox-counter {
+            font-size: 0.8rem;
+        }
+
+        .lightbox-zoom-controls {
+            top: env(safe-area-inset-top, 1rem);
+            left: 1rem;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+        }
+
+        .additional-gallery-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Very small screens */
+    @media (max-width: 480px) {
+        .lightbox-container {
+            padding: 0.5rem;
+        }
+
+        .lightbox-info {
+            bottom: env(safe-area-inset-bottom, 0.5rem);
+            padding: 0.5rem;
+        }
+        
+        .additional-gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .gallery-grid-item {
+            height: 100px;
+        }
+    }
+
+    /* Prevent body scroll when lightbox is open */
+    body.lightbox-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+
+    /* Accessibility */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* Focus styles */
+    .lightbox-close:focus,
+    .lightbox-prev:focus,
+    .lightbox-next:focus,
+    .zoom-btn:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
     }
 
     /* Header container düzeltmeleri */
@@ -774,11 +1215,11 @@
       max-width: 100% !important;
     }
     
-    /* Ensure images are constrained */
+    /* Ensure images are constrained 
     img {
       max-width: 100% !important;
       height: auto !important;
-    }
+    }*/
 
     /* Fix container width on small screens */
     .container {

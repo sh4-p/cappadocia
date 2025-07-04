@@ -350,6 +350,10 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
 </section>
 
 <style>
+.root:{
+    --success-color: #28a745;
+}
+
 /* Updated styles for new elements */
 .tracking-notice {
     background-color: rgba(255, 255, 255, 0.15);
@@ -503,7 +507,7 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
 }
 /* Confirmation Hero */
 .confirmation-hero {
-    height: 60vh;
+    height: 120vh;
     min-height: 500px;
     display: flex;
     align-items: center;
@@ -884,6 +888,7 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
 
 @media (max-width: 768px) {
     .confirmation-hero {
+        height: 95vh;
         min-height: 400px;
     }
     
