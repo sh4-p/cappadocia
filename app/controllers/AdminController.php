@@ -74,9 +74,6 @@ class AdminController extends Controller
                             setcookie('remember_token', $token, $expires, '/', '', false, true);
                         }
                         
-                        // Update last login time
-                        $userModel->updateLastLogin($user['id']);
-                        
                         // Redirect to dashboard
                         $this->redirect('admin/dashboard');
                     } else {
