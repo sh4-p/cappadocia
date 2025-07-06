@@ -235,40 +235,6 @@
                         </ul>
                     </div>
                     
-                    <!-- Widget: Recent Tours -->
-                    <div class="footer-widget">
-                        <h3 class="widget-title"><?php _e('top_tours'); ?></h3>
-                        <ul class="recent-tours">
-                            <?php 
-                            // Bu kısım değiştirildi - Artık controller'dan gelen bilgileri kullanıyoruz
-                            if (isset($featuredTours) && is_array($featuredTours)): 
-                                foreach ($featuredTours as $tour): 
-                            ?>
-                                <li>
-                                    <a href="<?php echo $appUrl . '/' . $currentLang . '/tours/' . $tour['slug']; ?>">
-                                        <div class="tour-image">
-                                            <img src="<?php echo $uploadsUrl . '/tours/' . $tour['featured_image']; ?>" alt="<?php echo $tour['name']; ?>">
-                                        </div>
-                                        <div class="tour-info">
-                                            <h4><?php echo $tour['name']; ?></h4>
-                                            <span class="price">
-                                                <?php if ($tour['discount_price']): ?>
-                                                    <del><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></del>
-                                                    <?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?>
-                                                <?php else: ?>
-                                                    <?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?>
-                                                <?php endif; ?>
-                                            </span>
-                                        </div>
-                                    </a>
-                                </li>
-                            <?php 
-                                endforeach; 
-                            endif; 
-                            ?>
-                        </ul>
-                    </div>
-                    
                     <!-- Widget: Contact Info -->
                     <div class="footer-widget">
                         <h3 class="widget-title"><?php _e('contact_info'); ?></h3>
