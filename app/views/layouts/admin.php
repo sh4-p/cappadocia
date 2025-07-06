@@ -26,12 +26,6 @@
     <?php endif; ?>
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="loader">
-            <div class="spinner"></div>
-        </div>
-    </div>
     <!-- Flash Messages - Add this to your admin layout or view files -->
 
     <?php if (isset($_SESSION['flash_success'])): ?>

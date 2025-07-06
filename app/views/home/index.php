@@ -258,38 +258,6 @@ $ctaBgImage = isset($settings['cta_bg']) ? $settings['cta_bg'] : 'cta-bg.jpg';
     </div>
 </section>
 
-<!-- Popular Destinations Section - Visual Enhancement -->
-<section class="section" id="destinations">
-    <div class="container">
-        <div class="section-header" data-aos="fade-up">
-            <h2 class="section-title"><?php _e('popular_destinations'); ?></h2>
-            <p class="section-subtitle"><?php _e('popular_destinations_subtitle'); ?></p>
-        </div>
-        
-        <div class="destination-grid">
-            <?php foreach ($destinations as $index => $destination): ?>
-                <div class="destination-card" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
-                    <img src="<?php echo $uploadsUrl . '/categories/' . $destination['image']; ?>" alt="<?php echo $destination['name']; ?>" class="destination-image">
-                    <div class="destination-content">
-                        <h3 class="destination-title"><?php echo $destination['name']; ?></h3>
-                        <div class="destination-tours">
-                            <?php 
-                            // Count tours in this category
-                            $tourCount = isset($destination['tour_count']) ? $destination['tour_count'] : 
-                                      (method_exists($this, 'tourModel') ? $this->tourModel->countTours(['category_id' => $destination['id'], 'is_active' => 1]) : 0);
-                            echo sprintf(__('tours_count'), $tourCount);
-                            ?>
-                        </div>
-                        <a href="<?php echo $appUrl . '/' . $currentLang . '/tours?category=' . $destination['slug']; ?>" class="btn btn-glass btn-sm">
-                            <?php _e('explore'); ?>
-                        </a>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-
 <!-- Why Choose Us Section - Enhanced Visual Design -->
 <section class="section why-choose-us" style="background-color: var(--gray-300); position: relative; z-index: 1;">
     <div class="container">
