@@ -7,11 +7,15 @@ class Logger
 {
     private static $instance = null;
     private $logDirectory;
+    private $debugMode = false;
 
     private function __construct() 
     {
         $this->logDirectory = dirname(__DIR__) . '/logs';
         $this->ensureLogDirectoryExists();
+        
+        // Check if debug mode is enabled
+        $this->debugMode = defined('DEBUG_MODE') && DEBUG_MODE === true;
     }
 
     public static function getInstance() 
@@ -38,6 +42,20 @@ class Logger
     public function log($message, $level = 'ERROR', $file = null) 
     {
         try {
+            // Skip DEBUG and INFO logs unless debug mode is enabled
+            if (!$this->debugMode && in_array($level, ['DEBUG', 'INFO'])) {
+                return;
+            }
+            
+            // Skip success messages (containing words like 'success', 'sent', 'uploaded')
+            $lowerMessage = strtolower($message);
+            $successKeywords = ['success', 'sent', 'uploaded', 'saved all', 'confirmation email sent'];
+            foreach ($successKeywords as $keyword) {
+                if (strpos($lowerMessage, $keyword) !== false && $level !== 'ERROR') {
+                    return;
+                }
+            }
+            
             $timestamp = date('Y-m-d H:i:s');
             $logEntry = "[$timestamp] [$level] $message" . PHP_EOL;
             
@@ -104,7 +122,23 @@ class Logger
      */
     public static function writeLog($message, $file = null) 
     {
-        self::getInstance()->error($message, $file);
+        // Determine log level based on message content
+        $lowerMessage = strtolower($message);
+        $errorKeywords = ['error', 'failed', 'exception', 'could not', 'unable to', 'invalid', 'missing'];
+        $isError = false;
+        
+        foreach ($errorKeywords as $keyword) {
+            if (strpos($lowerMessage, $keyword) !== false) {
+                $isError = true;
+                break;
+            }
+        }
+        
+        if ($isError) {
+            self::getInstance()->error($message, $file);
+        } else {
+            self::getInstance()->warning($message, $file);
+        }
     }
 }
 

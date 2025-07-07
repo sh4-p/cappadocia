@@ -822,10 +822,7 @@ class AdminToursController extends Controller
             }
         }
         
-        // Log successful uploads
-        if ($uploadedCount > 0) {
-            writeLog("Successfully uploaded {$uploadedCount} gallery images for tour ID: {$tourId}", 'admin-tours');
-        }
+        // Successful uploads don't need logging - only errors are logged above
         
         return $success && $uploadedCount > 0;
     }

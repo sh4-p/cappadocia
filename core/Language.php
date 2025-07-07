@@ -101,8 +101,10 @@ class Language
             $this->translations[$translation['key_name']] = $translation['value'];
         }
         
-        // Debug - log loaded translations count
-        writeLog("Loaded " . count($this->translations) . " translations for language $langCode (ID: $langId)", 'language');
+        // Only log if there are no translations loaded (potential issue)
+        if (count($this->translations) == 0) {
+            writeLog("Warning: No translations loaded for language $langCode (ID: $langId)", 'language');
+        }
     }
     
     /**
@@ -114,9 +116,10 @@ class Language
      */
     public function get($key, $default = null)
     {
-        // Debug
-        writeLog("Requesting translation for key: {$key}, has translation: " . 
-            (isset($this->translations[$key]) ? 'Yes' : 'No'), 'language');
+        // Only log missing translations
+        if (!isset($this->translations[$key])) {
+            writeLog("Missing translation for key: {$key}", 'language');
+        }
             
         return $this->translations[$key] ?? ($default ?? $key);
     }

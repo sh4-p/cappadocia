@@ -217,7 +217,7 @@ class AdminBookingsController extends Controller
             $result = $email->sendTemplate($templateKey, $booking['email'], $variables);
             
             if ($result) {
-                writeLog("Booking #{$booking['id']}: Status change email sent to {$booking['email']} (status: {$newStatus})", 'admin-bookings');
+                // Success - no logging needed
             } else {
                 writeLog("Booking #{$booking['id']}: Failed to send status change email. Error: " . $email->getError(), 'admin-bookings');
             }
@@ -588,7 +588,7 @@ class AdminBookingsController extends Controller
                 $results['customer'] = $this->sendCustomerConfirmationEmail($email, $bookingData, $tour, $settings);
                 
                 if ($results['customer']) {
-                    writeLog("Admin-created Booking #{$bookingId}: Customer email sent to {$bookingData['email']}", 'admin-bookings');
+                    // Success - no logging needed
                 } else {
                     writeLog("Admin-created Booking #{$bookingId}: Failed to send customer email. Error: " . $email->getError(), 'admin-bookings');
                 }
@@ -599,7 +599,7 @@ class AdminBookingsController extends Controller
                 $results['admin'] = $this->sendAdminNotificationEmail($email, $bookingData, $tour, $settings);
                 
                 if ($results['admin']) {
-                    writeLog("Admin-created Booking #{$bookingId}: Admin notification sent", 'admin-bookings');
+                    // Success - no logging needed
                 } else {
                     writeLog("Admin-created Booking #{$bookingId}: Failed to send admin notification. Error: " . $email->getError(), 'admin-bookings');
                 }

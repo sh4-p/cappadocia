@@ -173,7 +173,7 @@ class AdminSettingsController extends Controller
                 foreach ($existingFiles as $existingFile) {
                     if (file_exists($existingFile)) {
                         unlink($existingFile);
-                        writeLog("Deleted old file: " . basename($existingFile), 'admin-settings');
+                        // File deletion success - no logging needed
                     }
                 }
                 
@@ -182,7 +182,7 @@ class AdminSettingsController extends Controller
                     $settings[$key] = $fileName;
                     
                     // Log successful upload
-                    writeLog("File uploaded successfully: " . $fileName . " to " . $uploadPath, 'admin-settings');
+                    // File upload success - no logging needed
                     
                     // Set flash message for successful upload
                     $uploadType = $key === 'logo' ? 'Logo' : 'Favicon';
@@ -236,7 +236,7 @@ class AdminSettingsController extends Controller
                     // Upload file
                     if (move_uploaded_file($homepageImages['tmp_name'][$key], $uploadPath)) {
                         $settings[$key] = $fileName;
-                        writeLog("Homepage image uploaded: " . $fileName, 'admin-settings');
+                        // Image upload success - no logging needed
                     }
                 }
             }
@@ -267,7 +267,7 @@ class AdminSettingsController extends Controller
             
             if ($result) {
                 $this->session->setFlash('success', __('settings_updated'));
-                writeLog("Settings saved successfully. Settings count: " . count($settings), 'admin-settings');
+                // Settings save success - no logging needed
             } else {
                 $this->session->setFlash('error', __('settings_update_failed'));
                 writeLog("Failed to save settings", 'admin-settings');

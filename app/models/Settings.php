@@ -77,7 +77,10 @@ class Settings extends Model
             if ($setting) {
                 // Update existing setting
                 $result = $this->update(['setting_value' => $value], ['id' => $setting['id']]);
-                writeLog("Updated setting: $key = $value, Result: " . ($result ? 'success' : 'failed'), 'settings');
+                // Only log if update failed
+                if (!$result) {
+                    writeLog("Failed to update setting: $key = $value", 'settings');
+                }
                 return $result;
             } else {
                 // Insert new setting
@@ -85,7 +88,10 @@ class Settings extends Model
                     'setting_key' => $key,
                     'setting_value' => $value
                 ]);
-                writeLog("Inserted new setting: $key = $value, Result: " . ($result ? 'success' : 'failed'), 'settings');
+                // Only log if insert failed
+                if (!$result) {
+                    writeLog("Failed to insert new setting: $key = $value", 'settings');
+                }
                 return $result;
             }
         } catch (Exception $e) {
@@ -127,7 +133,7 @@ class Settings extends Model
            
             if ($successCount === $totalCount) {
                 $this->db->endTransaction();
-                writeLog("Successfully saved all $totalCount settings", 'settings');
+                // Successful operations don't need logging
                 return true;
             } else {
                 $this->db->cancelTransaction();

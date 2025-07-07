@@ -683,16 +683,12 @@ class BookingController extends Controller
             // Send notification email to admin
             $adminEmailSent = $this->sendAdminNotificationEmail($email, $bookingData, $tour);
             
-            // Log email results for debugging
-            if ($customerEmailSent) {
-                writeLog("Booking #{$bookingId}: Customer confirmation email sent to {$bookingData['email']}", 'booking');
-            } else {
+            // Only log email failures
+            if (!$customerEmailSent) {
                 writeLog("Booking #{$bookingId}: Failed to send customer confirmation email to {$bookingData['email']}. Error: " . $email->getError(), 'booking');
             }
             
-            if ($adminEmailSent) {
-                writeLog("Booking #{$bookingId}: Admin notification email sent", 'booking');
-            } else {
+            if (!$adminEmailSent) {
                 writeLog("Booking #{$bookingId}: Failed to send admin notification email. Error: " . $email->getError(), 'booking');
             }
             
