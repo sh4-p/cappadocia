@@ -247,7 +247,7 @@ class AdminToursController extends Controller
                     // Multiple files uploaded
                     $uploadSuccess = $this->uploadGalleryImages($galleryImages, $tourId);
                     if (!$uploadSuccess) {
-                        error_log('Some gallery images failed to upload for tour ID: ' . $tourId);
+                        writeLog('Some gallery images failed to upload for tour ID: ' . $tourId, 'admin-tours');
                     }
                 }
                 
@@ -506,7 +506,7 @@ class AdminToursController extends Controller
                     // Multiple files uploaded
                     $uploadSuccess = $this->uploadGalleryImages($galleryImages, $id);
                     if (!$uploadSuccess) {
-                        error_log('Some gallery images failed to upload for tour ID: ' . $id);
+                        writeLog('Some gallery images failed to upload for tour ID: ' . $id, 'admin-tours');
                     }
                 }
                 
@@ -695,7 +695,7 @@ class AdminToursController extends Controller
         // Check file size (max 5MB)
         $maxSize = 5 * 1024 * 1024; // 5MB
         if ($file['size'] > $maxSize) {
-            error_log('File too large: ' . $file['name'] . ' (' . $file['size'] . ' bytes)');
+            writeLog('File too large: ' . $file['name'] . ' (' . $file['size'] . ' bytes)', 'admin-tours');
             return false;
         }
         
@@ -707,14 +707,14 @@ class AdminToursController extends Controller
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         
         if (!in_array($extension, $allowedTypes)) {
-            error_log('Invalid file type: ' . $extension);
+            writeLog('Invalid file type: ' . $extension, 'admin-tours');
             return false;
         }
         
         // Verify image using getimagesize
         $imageInfo = getimagesize($file['tmp_name']);
         if ($imageInfo === false) {
-            error_log('Not a valid image file: ' . $file['name']);
+            writeLog('Not a valid image file: ' . $file['name'], 'admin-tours');
             return false;
         }
         
@@ -728,7 +728,7 @@ class AdminToursController extends Controller
         
         if (!is_dir($uploadDir)) {
             if (!mkdir($uploadDir, 0755, true)) {
-                error_log('Failed to create upload directory: ' . $uploadDir);
+                writeLog('Failed to create upload directory: ' . $uploadDir, 'admin-tours');
                 return false;
             }
         }
@@ -740,7 +740,7 @@ class AdminToursController extends Controller
             chmod($targetPath, 0644);
             return $fileName;
         } else {
-            error_log('Failed to move uploaded file to: ' . $targetPath);
+            writeLog('Failed to move uploaded file to: ' . $targetPath, 'admin-tours');
             return false;
         }
     }
@@ -814,17 +814,17 @@ class AdminToursController extends Controller
                     $uploadedCount++;
                 } else {
                     $success = false;
-                    error_log('Failed to save gallery item to database: ' . $imageName);
+                    writeLog('Failed to save gallery item to database: ' . $imageName, 'admin-tours');
                 }
             } else {
                 $success = false;
-                error_log('Failed to upload gallery image: ' . $files['name'][$i]);
+                writeLog('Failed to upload gallery image: ' . $files['name'][$i], 'admin-tours');
             }
         }
         
         // Log successful uploads
         if ($uploadedCount > 0) {
-            error_log("Successfully uploaded {$uploadedCount} gallery images for tour ID: {$tourId}");
+            writeLog("Successfully uploaded {$uploadedCount} gallery images for tour ID: {$tourId}", 'admin-tours');
         }
         
         return $success && $uploadedCount > 0;

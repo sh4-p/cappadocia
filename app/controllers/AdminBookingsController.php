@@ -217,13 +217,13 @@ class AdminBookingsController extends Controller
             $result = $email->sendTemplate($templateKey, $booking['email'], $variables);
             
             if ($result) {
-                error_log("Booking #{$booking['id']}: Status change email sent to {$booking['email']} (status: {$newStatus})");
+                writeLog("Booking #{$booking['id']}: Status change email sent to {$booking['email']} (status: {$newStatus})", 'admin-bookings');
             } else {
-                error_log("Booking #{$booking['id']}: Failed to send status change email. Error: " . $email->getError());
+                writeLog("Booking #{$booking['id']}: Failed to send status change email. Error: " . $email->getError(), 'admin-bookings');
             }
             
         } catch (Exception $e) {
-            error_log("Booking status email error: " . $e->getMessage());
+            writeLog("Booking status email error: " . $e->getMessage(), 'admin-bookings');
         }
     }
     
@@ -588,9 +588,9 @@ class AdminBookingsController extends Controller
                 $results['customer'] = $this->sendCustomerConfirmationEmail($email, $bookingData, $tour, $settings);
                 
                 if ($results['customer']) {
-                    error_log("Admin-created Booking #{$bookingId}: Customer email sent to {$bookingData['email']}");
+                    writeLog("Admin-created Booking #{$bookingId}: Customer email sent to {$bookingData['email']}", 'admin-bookings');
                 } else {
-                    error_log("Admin-created Booking #{$bookingId}: Failed to send customer email. Error: " . $email->getError());
+                    writeLog("Admin-created Booking #{$bookingId}: Failed to send customer email. Error: " . $email->getError(), 'admin-bookings');
                 }
             }
             
@@ -599,14 +599,14 @@ class AdminBookingsController extends Controller
                 $results['admin'] = $this->sendAdminNotificationEmail($email, $bookingData, $tour, $settings);
                 
                 if ($results['admin']) {
-                    error_log("Admin-created Booking #{$bookingId}: Admin notification sent");
+                    writeLog("Admin-created Booking #{$bookingId}: Admin notification sent", 'admin-bookings');
                 } else {
-                    error_log("Admin-created Booking #{$bookingId}: Failed to send admin notification. Error: " . $email->getError());
+                    writeLog("Admin-created Booking #{$bookingId}: Failed to send admin notification. Error: " . $email->getError(), 'admin-bookings');
                 }
             }
             
         } catch (Exception $e) {
-            error_log("Admin-created Booking #{$bookingId}: Email error: " . $e->getMessage());
+            writeLog("Admin-created Booking #{$bookingId}: Email error: " . $e->getMessage(), 'admin-bookings');
             
             // Mark failed emails
             if ($sendCustomerEmail) $results['customer'] = false;

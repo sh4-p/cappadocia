@@ -244,7 +244,7 @@ class ToursController extends Controller
             
         } catch (Exception $e) {
             // Log error and return empty result
-            error_log('AJAX Search Error: ' . $e->getMessage());
+            writeLog('AJAX Search Error: ' . $e->getMessage(), 'tours');
             echo json_encode([]);
         }
         

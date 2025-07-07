@@ -484,7 +484,7 @@ class AdminEmailTemplatesController extends Controller
             
         } catch (Exception $e) {
             // Log error for debugging
-            error_log('Test email error: ' . $e->getMessage());
+            writeLog('Test email error: ' . $e->getMessage(), 'admin-email-templates');
             $this->session->setFlash('error', 'An error occurred while sending test email: ' . $e->getMessage());
         }
         

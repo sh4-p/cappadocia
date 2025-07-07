@@ -22,6 +22,7 @@ require_once BASE_PATH . '/core/Database.php';
 require_once BASE_PATH . '/core/Session.php';
 require_once BASE_PATH . '/core/Language.php';
 require_once BASE_PATH . '/core/Validator.php';
+require_once BASE_PATH . '/core/Logger.php';
 
 // Load helper files
 require_once BASE_PATH . '/app/helpers/LanguageHelper.php';

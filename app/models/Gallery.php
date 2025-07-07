@@ -260,7 +260,7 @@ class Gallery extends Model
             // No parameters to bind
             return $this->db->resultSet();
         } catch (Exception $e) {
-            error_log('Gallery query error: ' . $e->getMessage());
+            writeLog('Gallery query error: ' . $e->getMessage(), 'gallery');
             return [];
         }
     }

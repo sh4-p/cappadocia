@@ -77,7 +77,7 @@ class Settings extends Model
             if ($setting) {
                 // Update existing setting
                 $result = $this->update(['setting_value' => $value], ['id' => $setting['id']]);
-                error_log("Updated setting: $key = $value, Result: " . ($result ? 'success' : 'failed'));
+                writeLog("Updated setting: $key = $value, Result: " . ($result ? 'success' : 'failed'), 'settings');
                 return $result;
             } else {
                 // Insert new setting
@@ -85,11 +85,11 @@ class Settings extends Model
                     'setting_key' => $key,
                     'setting_value' => $value
                 ]);
-                error_log("Inserted new setting: $key = $value, Result: " . ($result ? 'success' : 'failed'));
+                writeLog("Inserted new setting: $key = $value, Result: " . ($result ? 'success' : 'failed'), 'settings');
                 return $result;
             }
         } catch (Exception $e) {
-            error_log("Error saving setting $key: " . $e->getMessage());
+            writeLog("Error saving setting $key: " . $e->getMessage(), 'settings');
             return false;
         }
     }
@@ -127,16 +127,16 @@ class Settings extends Model
            
             if ($successCount === $totalCount) {
                 $this->db->endTransaction();
-                error_log("Successfully saved all $totalCount settings");
+                writeLog("Successfully saved all $totalCount settings", 'settings');
                 return true;
             } else {
                 $this->db->cancelTransaction();
-                error_log("Failed to save all settings. Success: $successCount/$totalCount");
+                writeLog("Failed to save all settings. Success: $successCount/$totalCount", 'settings');
                 return false;
             }
         } catch (Exception $e) {
             $this->db->cancelTransaction();
-            error_log("Exception in saveMultipleSettings: " . $e->getMessage());
+            writeLog("Exception in saveMultipleSettings: " . $e->getMessage(), 'settings');
             return false;
         }
     }
@@ -178,7 +178,7 @@ class Settings extends Model
             if (file_exists($filePath)) {
                 return $value;
             } else {
-                error_log("File not found for setting $key: $filePath");
+                writeLog("File not found for setting $key: $filePath", 'settings');
                 // File doesn't exist, return empty string to prevent 404s
                 return '';
             }
@@ -235,7 +235,7 @@ class Settings extends Model
         foreach ($fileSettings as $key) {
             if (!$this->fileSettingExists($key)) {
                 $this->saveSetting($key, '');
-                error_log("Cleaned up orphaned file setting: $key");
+                writeLog("Cleaned up orphaned file setting: $key", 'settings');
             }
         }
     }

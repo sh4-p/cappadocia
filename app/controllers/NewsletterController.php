@@ -43,12 +43,12 @@ class NewsletterController extends Controller
             
             if (!$antibotResult['success']) {
                 // Log the bot attempt
-                error_log("Newsletter subscription bot attempt blocked: " . json_encode([
+                writeLog("Newsletter subscription bot attempt blocked: " . json_encode([
                     'ip' => $_SERVER['REMOTE_ADDR'],
                     'reason' => $antibotResult['blocked_reason'],
                     'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
                     'post_data' => array_keys($_POST)
-                ]));
+                ]), 'newsletter');
                 
                 $this->session->setFlash('newsletter_error', implode('<br>', $antibotResult['errors']));
                 $this->redirectBack();
@@ -302,7 +302,7 @@ class NewsletterController extends Controller
             $this->db->insert('newsletter_attempts', $data);
         } catch (Exception $e) {
             // Log error but don't fail the request
-            error_log("Failed to log newsletter action: " . $e->getMessage());
+            writeLog("Failed to log newsletter action: " . $e->getMessage(), 'newsletter');
         }
     }
     
@@ -325,7 +325,7 @@ class NewsletterController extends Controller
         
         if (!$subscriber) {
             // Log invalid token attempt
-            error_log("Invalid newsletter confirmation token: " . $token . " from IP: " . $_SERVER['REMOTE_ADDR']);
+            writeLog("Invalid newsletter confirmation token: " . $token . " from IP: " . $_SERVER['REMOTE_ADDR'], 'newsletter');
             
             $this->session->setFlash('error', __('invalid_confirmation_link'));
             $this->redirect('');
@@ -396,7 +396,7 @@ class NewsletterController extends Controller
         
         if (!$subscriber) {
             // Log invalid token attempt
-            error_log("Invalid newsletter unsubscribe token: " . $token . " from IP: " . $_SERVER['REMOTE_ADDR']);
+            writeLog("Invalid newsletter unsubscribe token: " . $token . " from IP: " . $_SERVER['REMOTE_ADDR'], 'newsletter');
             
             $this->session->setFlash('error', __('invalid_unsubscribe_link'));
             $this->redirect('');
@@ -480,7 +480,7 @@ class NewsletterController extends Controller
             
             // If still no token, something is wrong
             if (empty($linkToken)) {
-                error_log("Newsletter confirmation email: No token available for subscriber " . $subscriber['email']);
+                writeLog("Newsletter confirmation email: No token available for subscriber " . $subscriber['email'], 'newsletter');
                 return false;
             }
             
@@ -501,7 +501,7 @@ class NewsletterController extends Controller
             return $email->sendTemplate('newsletter_confirmation', $subscriber['email'], $variables);
             
         } catch (Exception $e) {
-            error_log('Newsletter confirmation email error: ' . $e->getMessage());
+            writeLog('Newsletter confirmation email error: ' . $e->getMessage(), 'newsletter');
             return false;
         }
     }
@@ -533,7 +533,7 @@ class NewsletterController extends Controller
             return $email->sendTemplate('newsletter_welcome', $subscriber['email'], $variables);
             
         } catch (Exception $e) {
-            error_log('Newsletter welcome email error: ' . $e->getMessage());
+            writeLog('Newsletter welcome email error: ' . $e->getMessage(), 'newsletter');
             return false;
         }
     }
@@ -561,7 +561,7 @@ class NewsletterController extends Controller
             return $email->sendTemplate('newsletter_unsubscribe_confirmation', $subscriber['email'], $variables);
             
         } catch (Exception $e) {
-            error_log('Newsletter unsubscribe confirmation email error: ' . $e->getMessage());
+            writeLog('Newsletter unsubscribe confirmation email error: ' . $e->getMessage(), 'newsletter');
             return false;
         }
     }

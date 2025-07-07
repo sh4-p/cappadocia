@@ -598,7 +598,7 @@ class AdminNewsletterController extends Controller
             return $sent;
             
         } catch (Exception $e) {
-            error_log('Campaign email sending error: ' . $e->getMessage());
+            writeLog('Campaign email sending error: ' . $e->getMessage(), 'admin-newsletter');
             return 0;
         }
     }

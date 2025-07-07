@@ -32,7 +32,7 @@ class Email
             $db = new Database();
             $this->emailTemplateModel = new EmailTemplate($db);
         } catch (Exception $e) {
-            error_log('Email: Could not load EmailTemplate model: ' . $e->getMessage());
+            writeLog('Email: Could not load EmailTemplate model: ' . $e->getMessage(), 'email');
         }
     }
     
@@ -60,7 +60,7 @@ class Email
             if (!empty($settings['smtp_enabled']) && $settings['smtp_enabled'] == '1') {
                 $this->configureSMTP([
                     'host' => $settings['smtp_host'] ?? '',
-                    'port' => intval($settings['smtp_port'] ?? 587),
+                    'port' => intval($settings['smtp_port'] ?? 465),
                     'security' => $settings['smtp_security'] ?? 'tls',
                     'auth' => !empty($settings['smtp_auth']) && $settings['smtp_auth'] == '1',
                     'username' => $settings['smtp_username'] ?? '',
@@ -71,7 +71,7 @@ class Email
         } catch (Exception $e) {
             // Fallback if settings can't be loaded
             $this->error = 'Could not load email settings: ' . $e->getMessage();
-            error_log('Email settings error: ' . $e->getMessage());
+            writeLog('Email settings error: ' . $e->getMessage(), 'email');
         }
     }
     
@@ -488,7 +488,7 @@ class Email
         } catch (Exception $e) {
             $this->error = $e->getMessage();
             if ($this->debug) {
-                error_log("SMTP Error: " . $this->error);
+                writeLog("SMTP Error: " . $this->error, 'email');
             }
             return false;
         }
@@ -521,7 +521,7 @@ class Email
         }
         
         if ($this->debug) {
-            error_log("Connecting to SMTP: $host:$port");
+            writeLog("Connecting to SMTP: $host:$port", 'email');
         }
         
         $smtp = stream_socket_client(
@@ -574,14 +574,14 @@ class Email
     private function smtpCommand($smtp, $command)
     {
         if ($this->debug) {
-            error_log("SMTP Command: $command");
+            writeLog("SMTP Command: $command", 'email');
         }
         
         fwrite($smtp, $command . "\r\n");
         $response = fgets($smtp, 515);
         
         if ($this->debug) {
-            error_log("SMTP Response: $response");
+            writeLog("SMTP Response: $response", 'email');
         }
         
         if (!$response) {

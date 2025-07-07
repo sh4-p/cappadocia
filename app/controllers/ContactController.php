@@ -69,12 +69,12 @@ class ContactController extends Controller
             
             if (!$antibotResult['success']) {
                 // Log the bot attempt
-                error_log("Contact form bot attempt blocked: " . json_encode([
+                writeLog("Contact form bot attempt blocked: " . json_encode([
                     'ip' => $_SERVER['REMOTE_ADDR'],
                     'reason' => $antibotResult['blocked_reason'],
                     'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
                     'post_data' => array_keys($_POST)
-                ]));
+                ]), 'contact');
                 
                 // Set error message
                 $this->session->setFlash('error', implode('<br>', $antibotResult['errors']));
@@ -135,13 +135,13 @@ class ContactController extends Controller
         // Additional security checks
         if ($this->isLikelySuspicious($name, $email, $subject, $message)) {
             // Log suspicious attempt
-            error_log("Suspicious contact form submission: " . json_encode([
+            writeLog("Suspicious contact form submission: " . json_encode([
                 'ip' => $_SERVER['REMOTE_ADDR'],
                 'name' => $name,
                 'email' => $email,
                 'subject' => $subject,
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-            ]));
+            ]), 'contact');
             
             $this->session->setFlash('error', __('submission_under_review'));
             return;
@@ -269,7 +269,7 @@ class ContactController extends Controller
             $this->db->insert('contact_submissions', $data);
         } catch (Exception $e) {
             // Log error but don't fail the request
-            error_log("Failed to log contact submission: " . $e->getMessage());
+            writeLog("Failed to log contact submission: " . $e->getMessage(), 'contact');
         }
     }
     
@@ -316,7 +316,7 @@ class ContactController extends Controller
             $to = $settings['contact_email'] ?? $settings['email_from_address'];
             
             if (empty($to)) {
-                error_log("Contact form: No recipient email configured");
+                writeLog("Contact form: No recipient email configured", 'contact');
                 return false;
             }
             
@@ -327,7 +327,7 @@ class ContactController extends Controller
             return $emailClass->send($to, "Contact Form: " . $subject, $htmlMessage);
             
         } catch (Exception $e) {
-            error_log("Contact form email error: " . $e->getMessage());
+            writeLog("Contact form email error: " . $e->getMessage(), 'contact');
             return false;
         }
     }

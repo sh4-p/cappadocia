@@ -173,7 +173,7 @@ class AdminSettingsController extends Controller
                 foreach ($existingFiles as $existingFile) {
                     if (file_exists($existingFile)) {
                         unlink($existingFile);
-                        error_log("Deleted old file: " . basename($existingFile));
+                        writeLog("Deleted old file: " . basename($existingFile), 'admin-settings');
                     }
                 }
                 
@@ -182,7 +182,7 @@ class AdminSettingsController extends Controller
                     $settings[$key] = $fileName;
                     
                     // Log successful upload
-                    error_log("File uploaded successfully: " . $fileName . " to " . $uploadPath);
+                    writeLog("File uploaded successfully: " . $fileName . " to " . $uploadPath, 'admin-settings');
                     
                     // Set flash message for successful upload
                     $uploadType = $key === 'logo' ? 'Logo' : 'Favicon';
@@ -236,7 +236,7 @@ class AdminSettingsController extends Controller
                     // Upload file
                     if (move_uploaded_file($homepageImages['tmp_name'][$key], $uploadPath)) {
                         $settings[$key] = $fileName;
-                        error_log("Homepage image uploaded: " . $fileName);
+                        writeLog("Homepage image uploaded: " . $fileName, 'admin-settings');
                     }
                 }
             }
@@ -267,14 +267,14 @@ class AdminSettingsController extends Controller
             
             if ($result) {
                 $this->session->setFlash('success', __('settings_updated'));
-                error_log("Settings saved successfully. Settings count: " . count($settings));
+                writeLog("Settings saved successfully. Settings count: " . count($settings), 'admin-settings');
             } else {
                 $this->session->setFlash('error', __('settings_update_failed'));
-                error_log("Failed to save settings");
+                writeLog("Failed to save settings", 'admin-settings');
             }
         } catch (Exception $e) {
             $this->session->setFlash('error', __('settings_update_failed') . ': ' . $e->getMessage());
-            error_log("Exception saving settings: " . $e->getMessage());
+            writeLog("Exception saving settings: " . $e->getMessage(), 'admin-settings');
         }
         
         // Redirect back to settings page

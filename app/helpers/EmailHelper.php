@@ -21,7 +21,7 @@ function sendEmail($templateKey, $toEmail, $variables = [])
         
         return $email->sendTemplate($templateKey, $toEmail, $variables);
     } catch (Exception $e) {
-        error_log("Email helper error: " . $e->getMessage());
+        writeLog("Email helper error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -40,7 +40,7 @@ function sendBookingConfirmation($booking)
         
         return $email->sendBookingConfirmation($booking);
     } catch (Exception $e) {
-        error_log("Booking confirmation email error: " . $e->getMessage());
+        writeLog("Booking confirmation email error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -59,7 +59,7 @@ function sendContactEmail($contact)
         
         return $email->sendContactEmail($contact);
     } catch (Exception $e) {
-        error_log("Contact form email error: " . $e->getMessage());
+        writeLog("Contact form email error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -78,7 +78,7 @@ function sendTestEmail($toEmail)
         
         return $email->sendTestEmail($toEmail);
     } catch (Exception $e) {
-        error_log("Test email error: " . $e->getMessage());
+        writeLog("Test email error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -98,7 +98,7 @@ function isEmailNotificationEnabled($type)
         $settingKey = 'email_notification_' . $type;
         return $settingsModel->getSetting($settingKey, '0') === '1';
     } catch (Exception $e) {
-        error_log("Email notification check error: " . $e->getMessage());
+        writeLog("Email notification check error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -134,7 +134,7 @@ function getEmailSettings()
             ]
         ];
     } catch (Exception $e) {
-        error_log("Email settings error: " . $e->getMessage());
+        writeLog("Email settings error: " . $e->getMessage(), 'email-helper');
         return [];
     }
 }
@@ -182,7 +182,7 @@ function getEmailTemplates()
         
         return $emailTemplateModel->getAll(['is_active' => 1], 'name ASC');
     } catch (Exception $e) {
-        error_log("Email templates error: " . $e->getMessage());
+        writeLog("Email templates error: " . $e->getMessage(), 'email-helper');
         return [];
     }
 }
@@ -201,7 +201,7 @@ function getEmailTemplate($templateKey)
         
         return $emailTemplateModel->getByKey($templateKey);
     } catch (Exception $e) {
-        error_log("Email template get error: " . $e->getMessage());
+        writeLog("Email template get error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -220,7 +220,7 @@ function isSMTPConfigured()
                !empty($settings['smtp_host']) && 
                !empty($settings['from_email']);
     } catch (Exception $e) {
-        error_log("SMTP configuration check error: " . $e->getMessage());
+        writeLog("SMTP configuration check error: " . $e->getMessage(), 'email-helper');
         return false;
     }
 }
@@ -258,7 +258,7 @@ function logEmailActivity($type, $recipient, $success, $error = '')
         file_put_contents($logFile, date('Y-m-d H:i:s') . " " . $logEntry . PHP_EOL, FILE_APPEND | LOCK_EX);
         
     } catch (Exception $e) {
-        error_log("Email logging error: " . $e->getMessage());
+        writeLog("Email logging error: " . $e->getMessage(), 'email-helper');
     }
 }
 
@@ -296,7 +296,7 @@ function queueEmail($templateKey, $toEmail, $variables = [], $priority = 5)
         ]);
         
     } catch (Exception $e) {
-        error_log("Email queue error: " . $e->getMessage());
+        writeLog("Email queue error: " . $e->getMessage(), 'email-helper');
         // Fallback to immediate sending
         return sendEmail($templateKey, $toEmail, $variables);
     }

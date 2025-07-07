@@ -102,7 +102,7 @@ class Language
         }
         
         // Debug - log loaded translations count
-        error_log("Loaded " . count($this->translations) . " translations for language $langCode (ID: $langId)");
+        writeLog("Loaded " . count($this->translations) . " translations for language $langCode (ID: $langId)", 'language');
     }
     
     /**
@@ -115,8 +115,8 @@ class Language
     public function get($key, $default = null)
     {
         // Debug
-        error_log("Requesting translation for key: {$key}, has translation: " . 
-            (isset($this->translations[$key]) ? 'Yes' : 'No'));
+        writeLog("Requesting translation for key: {$key}, has translation: " . 
+            (isset($this->translations[$key]) ? 'Yes' : 'No'), 'language');
             
         return $this->translations[$key] ?? ($default ?? $key);
     }

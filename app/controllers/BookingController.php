@@ -116,14 +116,14 @@ class BookingController extends Controller
             
             if (!$antibotResult['success']) {
                 // Log the bot attempt with detailed information
-                error_log("Booking form bot attempt blocked: " . json_encode([
+                writeLog("Booking form bot attempt blocked: " . json_encode([
                     'ip' => $_SERVER['REMOTE_ADDR'],
                     'reason' => $antibotResult['blocked_reason'],
                     'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
                     'post_data' => array_keys($_POST),
                     'tour_id' => $this->post('tour_id'),
                     'timestamp' => date('Y-m-d H:i:s')
-                ]));
+                ]), 'booking');
                 
                 $this->session->setFlash('error', implode('<br>', $antibotResult['errors']));
                 
@@ -269,14 +269,14 @@ class BookingController extends Controller
             $errors[] = __('booking_under_review');
             
             // Log suspicious booking attempt
-            error_log("Suspicious booking attempt: " . json_encode([
+            writeLog("Suspicious booking attempt: " . json_encode([
                 'ip' => $_SERVER['REMOTE_ADDR'],
                 'email' => $email,
                 'name' => $firstName . ' ' . $lastName,
                 'phone' => $phone,
                 'tour_id' => $tourId,
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''
-            ]));
+            ]), 'booking');
         }
         
         // Check booking frequency (prevent spam bookings)
@@ -474,7 +474,7 @@ class BookingController extends Controller
             $this->db->insert('booking_attempts', $data);
         } catch (Exception $e) {
             // Log error but don't fail the request
-            error_log("Failed to log booking action: " . $e->getMessage());
+            writeLog("Failed to log booking action: " . $e->getMessage(), 'booking');
         }
     }
     
@@ -542,7 +542,7 @@ class BookingController extends Controller
         
         if (!$booking) {
             // Log invalid tracking attempt
-            error_log("Invalid booking tracking token: " . $token . " from IP: " . $_SERVER['REMOTE_ADDR']);
+            writeLog("Invalid booking tracking token: " . $token . " from IP: " . $_SERVER['REMOTE_ADDR'], 'booking');
             
             // Set error message and redirect
             $this->session->setFlash('error', __('booking_not_found_token'));
@@ -685,21 +685,21 @@ class BookingController extends Controller
             
             // Log email results for debugging
             if ($customerEmailSent) {
-                error_log("Booking #{$bookingId}: Customer confirmation email sent to {$bookingData['email']}");
+                writeLog("Booking #{$bookingId}: Customer confirmation email sent to {$bookingData['email']}", 'booking');
             } else {
-                error_log("Booking #{$bookingId}: Failed to send customer confirmation email to {$bookingData['email']}. Error: " . $email->getError());
+                writeLog("Booking #{$bookingId}: Failed to send customer confirmation email to {$bookingData['email']}. Error: " . $email->getError(), 'booking');
             }
             
             if ($adminEmailSent) {
-                error_log("Booking #{$bookingId}: Admin notification email sent");
+                writeLog("Booking #{$bookingId}: Admin notification email sent", 'booking');
             } else {
-                error_log("Booking #{$bookingId}: Failed to send admin notification email. Error: " . $email->getError());
+                writeLog("Booking #{$bookingId}: Failed to send admin notification email. Error: " . $email->getError(), 'booking');
             }
             
             return $customerEmailSent || $adminEmailSent; // Return true if at least one email was sent
             
         } catch (Exception $e) {
-            error_log("Booking #{$bookingId}: Email sending failed with exception: " . $e->getMessage());
+            writeLog("Booking #{$bookingId}: Email sending failed with exception: " . $e->getMessage(), 'booking');
             return false;
         }
     }
