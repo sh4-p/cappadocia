@@ -259,7 +259,7 @@
         <div class="footer-bottom">
             <div class="container">
                 <div class="copyright">
-                    <p>&copy; <?php echo date('Y'); ?> <?php echo $settings['site_title']; ?>. <?php _e('all_rights_reserved'); ?></p>
+                    <p>&copy; <?php echo date('Y'); ?> <?php echo $settings['site_title']; ?>. <?php _e('all_rights_reserved'); ?> Made by <a href="https://sageinweb.com">SageInWeb</a></p>
                 </div>
             </div>
         </div>

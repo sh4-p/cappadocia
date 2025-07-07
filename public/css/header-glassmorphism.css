@@ -57,7 +57,7 @@
 
 /* Logo Düzeltmeleri */
 .logo .main-logo {
-    height: 48px;
+    height: 40px;
     max-width: 200px;
     width: auto;
     transition: all var(--transition-medium);
@@ -380,7 +380,10 @@
     }
     
     .logo .main-logo {
-        height: 40px;
+        height: 33px;
+    }
+    .scrolled .logo .main-logo {
+        height: 35px;
     }
     
     .logo .logo-text {
