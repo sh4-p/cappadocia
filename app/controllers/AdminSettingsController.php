@@ -379,6 +379,60 @@ class AdminSettingsController extends Controller
     }
     
     /**
+     * Test SMTP connection action
+     */
+    public function testConnection()
+    {
+        // Check if request is POST and Ajax
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$this->isAjax()) {
+            $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
+        
+        // Get JSON data
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$input) {
+            $this->json(['success' => false, 'message' => 'No data received'], 400);
+        }
+        
+        // Check if SMTP is enabled
+        if (empty($input['smtp_enabled']) || $input['smtp_enabled'] != '1') {
+            $this->json(['success' => false, 'message' => 'SMTP is not enabled'], 400);
+        }
+        
+        // Validate required fields
+        if (empty($input['smtp_host']) || empty($input['smtp_port'])) {
+            $this->json(['success' => false, 'message' => 'SMTP host and port are required'], 400);
+        }
+        
+        // Load Email class
+        require_once BASE_PATH . '/core/Email.php';
+        $email = new Email();
+        
+        // Configure SMTP
+        $smtpConfig = [
+            'host' => trim($input['smtp_host']),
+            'port' => intval($input['smtp_port']),
+            'security' => $input['smtp_security'] ?? 'tls',
+            'timeout' => intval($input['smtp_timeout'] ?? 30)
+        ];
+        
+        $email->configureSMTP($smtpConfig);
+        
+        // Test connection
+        try {
+            $result = $email->testSMTPConnection();
+            $this->json($result);
+        } catch (Exception $e) {
+            $this->json([
+                'success' => false, 
+                'message' => 'Connection test failed: ' . $e->getMessage(),
+                'details' => []
+            ]);
+        }
+    }
+    
+    /**
      * Generate default files if they don't exist
      */
     public function generateDefaults()

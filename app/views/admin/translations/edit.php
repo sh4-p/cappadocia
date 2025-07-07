@@ -26,11 +26,29 @@
             <span class="language-code"><?php echo $language['code']; ?></span>
         </div>
         <div class="card-actions">
-            <input type="text" id="search-input" class="form-control" placeholder="<?php _e('search_keys'); ?>">
+            <form method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="<?php _e('search_keys'); ?>" value="<?php echo htmlspecialchars($search); ?>">
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="material-icons">search</i>
+                    </button>
+                    <?php if (!empty($search)): ?>
+                        <a href="<?php echo $adminUrl; ?>/translations/edit/<?php echo $language['code']; ?>" class="btn btn-outline-secondary">
+                            <i class="material-icons">clear</i>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </form>
         </div>
     </div>
     <div class="card-body">
         <form action="<?php echo $adminUrl; ?>/translations/edit/<?php echo $language['code']; ?>" method="post">
+            <?php if (isset($pagination['current_page']) && $pagination['current_page'] > 1): ?>
+                <input type="hidden" name="page" value="<?php echo $pagination['current_page']; ?>">
+            <?php endif; ?>
+            <?php if (!empty($search)): ?>
+                <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
+            <?php endif; ?>
             <?php if (empty($translations)): ?>
                 <div class="empty-state">
                     <div class="empty-state-icon">
@@ -56,6 +74,60 @@
                         </div>
                     <?php endforeach; ?>
                 </div>
+
+                <!-- Pagination -->
+                <?php if (isset($pagination) && $pagination['total_pages'] > 1): ?>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            <?php 
+                            $startItem = ($pagination['current_page'] - 1) * $pagination['per_page'] + 1;
+                            $endItem = min($pagination['current_page'] * $pagination['per_page'], $pagination['total_items']);
+                            echo sprintf(__('showing_results'), $startItem, $endItem, $pagination['total_items']); 
+                            ?>
+                        </div>
+                        <nav class="pagination">
+                            <?php if ($pagination['has_prev']): ?>
+                                <a href="?page=<?php echo $pagination['prev_page']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" class="pagination-link">
+                                    <i class="material-icons">chevron_left</i>
+                                    <?php _e('previous'); ?>
+                                </a>
+                            <?php endif; ?>
+
+                            <?php
+                            $startPage = max(1, $pagination['current_page'] - 2);
+                            $endPage = min($pagination['total_pages'], $pagination['current_page'] + 2);
+                            
+                            if ($startPage > 1): ?>
+                                <a href="?page=1<?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" class="pagination-link">1</a>
+                                <?php if ($startPage > 2): ?>
+                                    <span class="pagination-ellipsis">...</span>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                                <?php if ($i == $pagination['current_page']): ?>
+                                    <span class="pagination-link active"><?php echo $i; ?></span>
+                                <?php else: ?>
+                                    <a href="?page=<?php echo $i; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" class="pagination-link"><?php echo $i; ?></a>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+
+                            <?php if ($endPage < $pagination['total_pages']): ?>
+                                <?php if ($endPage < $pagination['total_pages'] - 1): ?>
+                                    <span class="pagination-ellipsis">...</span>
+                                <?php endif; ?>
+                                <a href="?page=<?php echo $pagination['total_pages']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" class="pagination-link"><?php echo $pagination['total_pages']; ?></a>
+                            <?php endif; ?>
+
+                            <?php if ($pagination['has_next']): ?>
+                                <a href="?page=<?php echo $pagination['next_page']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>" class="pagination-link">
+                                    <?php _e('next'); ?>
+                                    <i class="material-icons">chevron_right</i>
+                                </a>
+                            <?php endif; ?>
+                        </nav>
+                    </div>
+                <?php endif; ?>
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
@@ -133,29 +205,95 @@
     display: flex;
     gap: var(--spacing-md);
 }
+
+/* Pagination styles */
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--gray-200);
+}
+
+.pagination-info {
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.pagination-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    background-color: var(--white-color);
+    border: 1px solid var(--gray-300);
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-sm);
+}
+
+.pagination-link:hover {
+    background-color: var(--gray-100);
+    border-color: var(--gray-400);
+}
+
+.pagination-link.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.pagination-ellipsis {
+    padding: var(--spacing-sm) var(--spacing-xs);
+    color: var(--gray-500);
+}
+
+.search-form {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.input-group {
+    display: flex;
+    align-items: stretch;
+}
+
+.input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+@media (max-width: 768px) {
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: flex-start;
+    }
+    
+    .pagination {
+        overflow-x: auto;
+        width: 100%;
+    }
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('search-input');
-    const translationItems = document.querySelectorAll('.translation-item');
-    
-    if (searchInput && translationItems.length > 0) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            
-            translationItems.forEach(item => {
-                const key = item.dataset.key.toLowerCase();
-                
-                if (key.includes(searchTerm)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-    }
     
     // Auto-resize textareas
     const textareas = document.querySelectorAll('textarea');

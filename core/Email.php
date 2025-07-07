@@ -933,4 +933,164 @@ class Email
     {
         return $this->smtpConfig;
     }
+    
+    /**
+     * Set debug mode
+     * 
+     * @param bool $debug Debug mode
+     */
+    public function setDebug($debug = true)
+    {
+        $this->debug = $debug;
+    }
+    
+    /**
+     * Send test email
+     * 
+     * @param string $testEmail Test recipient email
+     * @return bool Success
+     */
+    public function sendTestEmail($testEmail)
+    {
+        $subject = 'SMTP Test Email - MySoraTravel';
+        $message = $this->buildTestEmailMessage();
+        
+        try {
+            $result = $this->send($testEmail, $subject, $message);
+            
+            if ($this->debug) {
+                writeLog("Test email attempt to {$testEmail}: " . ($result ? 'SUCCESS' : 'FAILED'), 'email-test');
+                if (!$result && $this->error) {
+                    writeLog("Test email error: " . $this->error, 'email-test');
+                }
+            }
+            
+            return $result;
+            
+        } catch (Exception $e) {
+            $this->error = 'Test email exception: ' . $e->getMessage();
+            writeLog("Test email exception: " . $e->getMessage(), 'email-test');
+            return false;
+        }
+    }
+    
+    /**
+     * Build test email message
+     * 
+     * @return string HTML email content
+     */
+    private function buildTestEmailMessage()
+    {
+        $timestamp = date('Y-m-d H:i:s');
+        $smtpInfo = $this->isSMTPConfigured() ? 'SMTP' : 'PHP Mail';
+        
+        return "
+        <html>
+        <head>
+            <title>SMTP Test Email</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+                .content { padding: 20px; background: #f8f9fa; }
+                .info { background: #e9ecef; padding: 15px; margin: 10px 0; border-radius: 5px; }
+                .success { color: #28a745; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>✅ SMTP Test Successful!</h1>
+                    <p>MySoraTravel Email System</p>
+                </div>
+                <div class='content'>
+                    <h2 class='success'>Email Configuration Test</h2>
+                    <p>If you received this email, your SMTP configuration is working correctly!</p>
+                    
+                    <div class='info'>
+                        <strong>Test Details:</strong><br>
+                        • Send Method: {$smtpInfo}<br>
+                        • Test Time: {$timestamp}<br>
+                        • From: {$this->fromEmail}<br>
+                        • System: MySoraTravel Tour Management
+                    </div>
+                    
+                    <h3>What's Next?</h3>
+                    <ul>
+                        <li>✅ Your email configuration is working</li>
+                        <li>✅ Booking confirmations will be sent automatically</li>
+                        <li>✅ Contact form notifications will work</li>
+                        <li>✅ Newsletter campaigns can be sent</li>
+                    </ul>
+                    
+                    <p><strong>Note:</strong> If you received this in your spam folder, please mark it as 'Not Spam' to ensure future emails are delivered properly.</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+    
+    /**
+     * Test SMTP connection
+     * 
+     * @return array Test result with details
+     */
+    public function testSMTPConnection()
+    {
+        if (!$this->isSMTPConfigured()) {
+            return [
+                'success' => false,
+                'message' => 'SMTP not configured',
+                'details' => []
+            ];
+        }
+        
+        $config = $this->smtpConfig;
+        $host = $config['host'];
+        $port = $config['port'];
+        $timeout = $config['timeout'] ?? 30;
+        
+        $details = [];
+        $success = false;
+        
+        try {
+            // Test socket connection
+            $details[] = "Testing connection to {$host}:{$port}...";
+            
+            $socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
+            
+            if (!$socket) {
+                $details[] = "❌ Connection failed: {$errstr} ({$errno})";
+                return [
+                    'success' => false,
+                    'message' => "Cannot connect to SMTP server {$host}:{$port}",
+                    'details' => $details
+                ];
+            }
+            
+            $details[] = "✅ Socket connection successful";
+            
+            // Read initial response
+            $response = fgets($socket, 512);
+            $details[] = "Server response: " . trim($response);
+            
+            if (strpos($response, '220') === 0) {
+                $details[] = "✅ SMTP server is ready";
+                $success = true;
+            } else {
+                $details[] = "❌ Unexpected server response";
+            }
+            
+            fclose($socket);
+            
+        } catch (Exception $e) {
+            $details[] = "❌ Exception: " . $e->getMessage();
+        }
+        
+        return [
+            'success' => $success,
+            'message' => $success ? 'SMTP connection test successful' : 'SMTP connection test failed',
+            'details' => $details
+        ];
+    }
 }

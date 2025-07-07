@@ -714,13 +714,19 @@
                                     
                                     <div class="smtp-test-section">
                                         <div class="form-group">
-                                            <label for="test_email" class="form-label"><?php _e('test_email_address'); ?></label>
-                                            <div class="input-group">
-                                                <input type="email" id="test_email" class="form-control" placeholder="<?php _e('enter_test_email'); ?>">
-                                                <button type="button" class="btn btn-info test-smtp-btn">
-                                                    <i class="material-icons">send</i>
-                                                    <?php _e('send_test_email'); ?>
+                                            <label class="form-label">SMTP Test Options</label>
+                                            <div class="btn-group d-block" role="group">
+                                                <button type="button" class="btn btn-secondary test-connection-btn mb-2">
+                                                    <i class="material-icons">wifi_tethering</i>
+                                                    Test Connection
                                                 </button>
+                                                <div class="input-group">
+                                                    <input type="email" id="test_email" class="form-control" placeholder="<?php _e('enter_test_email'); ?>">
+                                                    <button type="button" class="btn btn-info test-smtp-btn">
+                                                        <i class="material-icons">send</i>
+                                                        <?php _e('send_test_email'); ?>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <small class="form-text"><?php _e('test_email_help'); ?></small>
                                         </div>
@@ -1230,6 +1236,26 @@
 
     .alert-warning i {
         color: #f39c12;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-success i {
+        color: #28a745;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .alert-danger i {
+        color: #dc3545;
     }
 
     .alert strong {
@@ -1807,7 +1833,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                     
                     // Send AJAX request to test email endpoint
-                    fetch(window.location.origin + '/admin/settings/testEmail', {
+                    fetch('<?php echo $adminUrl; ?>/settings/testEmail', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1829,6 +1855,70 @@ document.addEventListener('DOMContentLoaded', function() {
                     .finally(() => {
                         testSmtpBtn.innerHTML = originalText;
                         testSmtpBtn.disabled = false;
+                    });
+                });
+            }
+            
+            // Connection Test Button
+            const testConnectionBtn = document.querySelector('.test-connection-btn');
+            if (testConnectionBtn && testResult) {
+                testConnectionBtn.addEventListener('click', function() {
+                    // Clear previous results
+                    testResult.innerHTML = '<div class="alert alert-info"><i class="material-icons">hourglass_empty</i>Testing SMTP connection...</div>';
+                    
+                    // Disable button during test
+                    const originalText = testConnectionBtn.innerHTML;
+                    testConnectionBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> Testing...';
+                    testConnectionBtn.disabled = true;
+                    
+                    // Get SMTP settings from form
+                    const smtpSettings = {
+                        smtp_enabled: document.getElementById('smtp_enabled').checked ? '1' : '0',
+                        smtp_host: document.getElementById('smtp_host').value,
+                        smtp_port: document.getElementById('smtp_port').value,
+                        smtp_security: document.getElementById('smtp_security').value,
+                        smtp_timeout: document.getElementById('smtp_timeout').value
+                    };
+                    
+                    // Test connection endpoint
+                    fetch('<?php echo $adminUrl; ?>/settings/testConnection', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(smtpSettings)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            let detailsHtml = '';
+                            if (data.details && data.details.length > 0) {
+                                detailsHtml = '<ul class="mt-2">';
+                                data.details.forEach(detail => {
+                                    detailsHtml += '<li>' + detail + '</li>';
+                                });
+                                detailsHtml += '</ul>';
+                            }
+                            testResult.innerHTML = '<div class="alert alert-success"><i class="material-icons">check_circle</i>' + data.message + detailsHtml + '</div>';
+                        } else {
+                            let detailsHtml = '';
+                            if (data.details && data.details.length > 0) {
+                                detailsHtml = '<ul class="mt-2">';
+                                data.details.forEach(detail => {
+                                    detailsHtml += '<li>' + detail + '</li>';
+                                });
+                                detailsHtml += '</ul>';
+                            }
+                            testResult.innerHTML = '<div class="alert alert-danger"><i class="material-icons">error</i>' + data.message + detailsHtml + '</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        testResult.innerHTML = '<div class="alert alert-danger"><i class="material-icons">error</i>Failed to test connection. Please try again.</div>';
+                    })
+                    .finally(() => {
+                        testConnectionBtn.innerHTML = originalText;
+                        testConnectionBtn.disabled = false;
                     });
                 });
             }

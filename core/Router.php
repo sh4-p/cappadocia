@@ -130,7 +130,8 @@ class Router
         // Settings routes
         $this->addRoute($this->adminPrefix . '/settings', 'AdminSettings', 'index');
         $this->addRoute($this->adminPrefix . '/settings/update', 'AdminSettings', 'update');
-        $this->addRoute($this->adminPrefix . '/settings/test-email', 'AdminSettings', 'testEmail');
+        $this->addRoute($this->adminPrefix . '/settings/testEmail', 'AdminSettings', 'testEmail');
+        $this->addRoute($this->adminPrefix . '/settings/testConnection', 'AdminSettings', 'testConnection');
         
         // Language routes
         $this->addRoute($this->adminPrefix . '/languages', 'AdminLanguages', 'index');
@@ -142,6 +143,8 @@ class Router
         
         // Translation routes
         $this->addRoute($this->adminPrefix . '/translations', 'AdminTranslations', 'index');
+        $this->addRoute($this->adminPrefix . '/translations/ajax-load', 'AdminTranslations', 'ajaxLoad');
+        $this->addRoute($this->adminPrefix . '/translations/ajax-update', 'AdminTranslations', 'ajaxUpdate');
         $this->addRoute($this->adminPrefix . '/translations/edit/([a-z]+)', 'AdminTranslations', 'edit', ['lang']);
         $this->addRoute($this->adminPrefix . '/translations/add-key', 'AdminTranslations', 'addKey');
         $this->addRoute($this->adminPrefix . '/translations/delete-key/([0-9]+)', 'AdminTranslations', 'deleteKey', ['keyId']);

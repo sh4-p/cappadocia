@@ -58,17 +58,24 @@ class AdminTranslationsController extends Controller
         // Load language model
         $languageModel = $this->loadModel('LanguageModel');
         
-        // Get all languages
-        $languages = $languageModel->getActiveLanguages();
+        // Get all languages - convert to indexed array for JavaScript
+        $languages = array_values($languageModel->getActiveLanguages());
         
-        // Get all translation keys with values for all languages
-        $translations = $translationModel->getAllTranslations();
+        // Get pagination parameters
+        $page = max(1, (int)($this->get('page', 1)));
+        $perPage = 50; // Items per page
+        $search = trim($this->get('search', ''));
+        
+        // Get paginated translation keys with values for all languages
+        $result = $translationModel->getPaginatedTranslations($page, $perPage, $search);
         
         // Render view
         $this->render('admin/translations/index', [
             'pageTitle' => __('translations'),
             'languages' => $languages,
-            'translations' => $translations
+            'translations' => $result['data'],
+            'pagination' => $result['pagination'],
+            'search' => $search
         ], 'admin');
     }
     
@@ -106,18 +113,34 @@ class AdminTranslationsController extends Controller
             
             $this->session->setFlash('success', __('translations_updated'));
             
-            // Redirect to translations list
-            $this->redirect('admin/translations');
+            // Redirect back to same page with same pagination
+            $page = $this->get('page', 1);
+            $search = $this->get('search', '');
+            $redirectUrl = "admin/translations/edit/$lang";
+            if ($page > 1 || !empty($search)) {
+                $params = [];
+                if ($page > 1) $params[] = "page=$page";
+                if (!empty($search)) $params[] = "search=" . urlencode($search);
+                $redirectUrl .= '?' . implode('&', $params);
+            }
+            $this->redirect($redirectUrl);
         }
         
-        // Get translations for this language
-        $translations = $translationModel->getByLanguage($language['id']);
+        // Get pagination parameters
+        $page = max(1, (int)($this->get('page', 1)));
+        $perPage = 50; // Items per page
+        $search = trim($this->get('search', ''));
+        
+        // Get paginated translations for this language
+        $result = $translationModel->getPaginatedByLanguage($language['id'], $page, $perPage, $search);
         
         // Render view
         $this->render('admin/translations/edit', [
             'pageTitle' => sprintf(__('edit_translations_for'), $language['name']),
             'language' => $language,
-            'translations' => $translations
+            'translations' => $result['data'],
+            'pagination' => $result['pagination'],
+            'search' => $search
         ], 'admin');
     }
     
@@ -240,6 +263,90 @@ class AdminTranslationsController extends Controller
         $this->redirect('admin/translations');
     }
     
+    /**
+     * AJAX Load action - load translations with pagination
+     */
+    public function ajaxLoad()
+    {
+        // Set JSON response headers
+        header('Content-Type: application/json');
+        
+        // Check if request is AJAX
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid request']);
+            exit;
+        }
+        
+        // Load translation model
+        $translationModel = $this->loadModel('Translation');
+        
+        // Load language model
+        $languageModel = $this->loadModel('LanguageModel');
+        
+        // Get all languages - convert to indexed array for JavaScript
+        $languages = array_values($languageModel->getActiveLanguages());
+        
+        // Get pagination parameters
+        $page = max(1, (int)($this->get('page', 1)));
+        $perPage = 50; // Items per page
+        $search = trim($this->get('search', ''));
+        
+        // Get paginated translation keys with values for all languages
+        $result = $translationModel->getPaginatedTranslations($page, $perPage, $search);
+        
+        // Return JSON response
+        echo json_encode([
+            'success' => true,
+            'data' => $result['data'],
+            'pagination' => $result['pagination'],
+            'languages' => $languages
+        ]);
+        exit;
+    }
+    
+    /**
+     * AJAX Update action - update a single translation
+     */
+    public function ajaxUpdate()
+    {
+        // Set JSON response headers
+        header('Content-Type: application/json');
+        
+        // Check if request is AJAX POST
+        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest' || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid request']);
+            exit;
+        }
+        
+        // Load translation model
+        $translationModel = $this->loadModel('Translation');
+        
+        // Get form data
+        $keyId = $this->post('key_id');
+        $languageId = $this->post('language_id');
+        $value = $this->post('value');
+        
+        // Validate inputs
+        if (!$keyId || !$languageId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required parameters']);
+            exit;
+        }
+        
+        // Update translation
+        $result = $translationModel->updateTranslation($keyId, $languageId, $value);
+        
+        if ($result) {
+            echo json_encode(['success' => true, 'message' => __('translation_updated')]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Failed to update translation']);
+        }
+        exit;
+    }
+
     /**
      * Export action - export translations to a file
      * 

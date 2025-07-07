@@ -49,13 +49,6 @@
                                 <td><?php echo $user['id']; ?></td>
                                 <td>
                                     <div class="user-info">
-                                        <div class="user-avatar">
-                                            <?php if ($user['avatar']): ?>
-                                                <img src="<?php echo $uploadsUrl . '/avatars/' . $user['avatar']; ?>" alt="<?php echo $user['first_name'] . ' ' . $user['last_name']; ?>">
-                                            <?php else: ?>
-                                                <div class="avatar-initials"><?php echo substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1); ?></div>
-                                            <?php endif; ?>
-                                        </div>
                                         <div class="user-name">
                                             <a href="<?php echo $adminUrl; ?>/users/edit/<?php echo $user['id']; ?>">
                                                 <?php echo $user['first_name'] . ' ' . $user['last_name']; ?>

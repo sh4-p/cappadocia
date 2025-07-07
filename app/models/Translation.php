@@ -78,6 +78,84 @@ class Translation extends Model
         
         return $result;
     }
+
+    /**
+     * Get paginated translation keys with values for all languages
+     * 
+     * @param int $page Current page
+     * @param int $perPage Items per page
+     * @param string $search Search term
+     * @return array Translation keys with values and pagination info
+     */
+    public function getPaginatedTranslations($page = 1, $perPage = 50, $search = '')
+    {
+        // Get languages
+        $languageModel = new LanguageModel($this->db);
+        $languages = $languageModel->getAllLanguages();
+        
+        // Calculate offset
+        $offset = ($page - 1) * $perPage;
+        
+        // Build search condition
+        $searchCondition = '';
+        $params = [];
+        if (!empty($search)) {
+            $searchCondition = 'WHERE k.key_name LIKE :search';
+            $params['search'] = '%' . $search . '%';
+        }
+        
+        // Get total count
+        $countSql = "SELECT COUNT(*) FROM translation_keys k $searchCondition";
+        $totalItems = $this->db->getValue($countSql, $params);
+        
+        // Get translation keys with pagination
+        $sql = "SELECT k.id, k.key_name FROM translation_keys k 
+                $searchCondition
+                ORDER BY k.key_name ASC 
+                LIMIT :offset, :perPage";
+        
+        $params['offset'] = $offset;
+        $params['perPage'] = $perPage;
+        
+        $keys = $this->db->getRows($sql, $params);
+        
+        // Get translations for each key and language
+        $result = [];
+        
+        foreach ($keys as $key) {
+            $result[$key['id']] = [
+                'key_name' => $key['key_name'],
+                'translations' => []
+            ];
+            
+            foreach ($languages as $language) {
+                $sql = "SELECT value FROM translations WHERE key_id = :keyId AND language_id = :langId";
+                $value = $this->db->getValue($sql, [
+                    'keyId' => $key['id'],
+                    'langId' => $language['id']
+                ]);
+                
+                $result[$key['id']]['translations'][$language['id']] = $value;
+            }
+        }
+        
+        // Calculate pagination info
+        $totalPages = ceil($totalItems / $perPage);
+        
+        return [
+            'data' => $result,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalItems,
+                'total_pages' => $totalPages,
+                'has_prev' => $page > 1,
+                'has_next' => $page < $totalPages,
+                'prev_page' => $page > 1 ? $page - 1 : null,
+                'next_page' => $page < $totalPages ? $page + 1 : null
+            ]
+        ];
+    }
     
     /**
      * Get translations by language
@@ -108,6 +186,77 @@ class Translation extends Model
         }
         
         return $result;
+    }
+
+    /**
+     * Get paginated translations by language
+     * 
+     * @param int $langId Language ID
+     * @param int $page Current page
+     * @param int $perPage Items per page
+     * @param string $search Search term
+     * @return array Translations with pagination info
+     */
+    public function getPaginatedByLanguage($langId, $page = 1, $perPage = 50, $search = '')
+    {
+        // Calculate offset
+        $offset = ($page - 1) * $perPage;
+        
+        // Build search condition
+        $searchCondition = '';
+        $params = [];
+        if (!empty($search)) {
+            $searchCondition = 'WHERE k.key_name LIKE :search';
+            $params['search'] = '%' . $search . '%';
+        }
+        
+        // Get total count
+        $countSql = "SELECT COUNT(*) FROM translation_keys k $searchCondition";
+        $totalItems = $this->db->getValue($countSql, $params);
+        
+        // Get translation keys with pagination
+        $sql = "SELECT k.id, k.key_name FROM translation_keys k 
+                $searchCondition
+                ORDER BY k.key_name ASC 
+                LIMIT :offset, :perPage";
+        
+        $params['offset'] = $offset;
+        $params['perPage'] = $perPage;
+        
+        $keys = $this->db->getRows($sql, $params);
+        
+        // Get translations for each key
+        $result = [];
+        
+        foreach ($keys as $key) {
+            $sql = "SELECT value FROM translations WHERE key_id = :keyId AND language_id = :langId";
+            $value = $this->db->getValue($sql, [
+                'keyId' => $key['id'],
+                'langId' => $langId
+            ]);
+            
+            $result[$key['id']] = [
+                'key_name' => $key['key_name'],
+                'value' => $value
+            ];
+        }
+        
+        // Calculate pagination info
+        $totalPages = ceil($totalItems / $perPage);
+        
+        return [
+            'data' => $result,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalItems,
+                'total_pages' => $totalPages,
+                'has_prev' => $page > 1,
+                'has_next' => $page < $totalPages,
+                'prev_page' => $page > 1 ? $page - 1 : null,
+                'next_page' => $page < $totalPages ? $page + 1 : null
+            ]
+        ];
     }
     
     /**
