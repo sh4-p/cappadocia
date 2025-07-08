@@ -238,15 +238,44 @@ $recommendedTours = isset($featuredTours) ? array_slice($featuredTours, 0, 3) : 
                                         </div>
                                         <?php endif; ?>
                                         
-                                        <?php if (!empty($booking['extras']) && is_array($booking['extras'])): ?>
-                                        <?php foreach ($booking['extras'] as $extra): ?>
-                                        <div class="summary-row">
-                                            <div class="summary-label"><?php echo $extra['name']; ?> (<?php echo $extra['quantity']; ?> × <?php echo $settings['currency_symbol'] . number_format($extra['price'], 2); ?>)</div>
-                                            <div class="summary-value">
-                                                <?php echo $settings['currency_symbol'] . number_format($extra['price'] * $extra['quantity'], 2); ?>
-                                            </div>
-                                        </div>
-                                        <?php endforeach; ?>
+                                        <!-- Extras Section -->
+                                        <?php 
+                                        // Check for new format first (extras_data), then fall back to old format (extras)
+                                        $extrasToDisplay = [];
+                                        if (!empty($booking['extras_data'])) {
+                                            $extrasData = json_decode($booking['extras_data'], true);
+                                            if ($extrasData && is_array($extrasData)) {
+                                                $extrasToDisplay = $extrasData;
+                                            }
+                                        } elseif (!empty($booking['extras']) && is_array($booking['extras'])) {
+                                            $extrasToDisplay = $booking['extras'];
+                                        }
+                                        ?>
+                                        
+                                        <?php if (!empty($extrasToDisplay)): ?>
+                                            <?php foreach ($extrasToDisplay as $extraId => $extra): ?>
+                                                <?php 
+                                                // Handle both new format (from extras_data) and old format (from extras)
+                                                if (isset($extra['quantity'])) {
+                                                    // New format from extras_data
+                                                    $quantity = $extra['quantity'];
+                                                    $extraName = $extra['name'] ?? "Extra #$extraId";
+                                                    $extraPrice = $extra['price'] ?? 0;
+                                                } else {
+                                                    // Old format from extras array
+                                                    $quantity = $extra['quantity'] ?? 1;
+                                                    $extraName = $extra['name'] ?? "Extra";
+                                                    $extraPrice = $extra['price'] ?? 0;
+                                                }
+                                                $extraTotal = $extraPrice * $quantity;
+                                                ?>
+                                                <div class="summary-row">
+                                                    <div class="summary-label"><?php echo htmlspecialchars($extraName); ?> (<?php echo $quantity; ?> × <?php echo $settings['currency_symbol'] . number_format($extraPrice, 2); ?>)</div>
+                                                    <div class="summary-value">
+                                                        <?php echo $settings['currency_symbol'] . number_format($extraTotal, 2); ?>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
                                         <?php endif; ?>
                                         
                                         <?php if (!empty($booking['discount_amount']) && $booking['discount_amount'] > 0): ?>

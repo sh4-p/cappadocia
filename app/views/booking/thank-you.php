@@ -145,6 +145,40 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Extras Section -->
+                                    <?php if (!empty($bookingData['extras_data'])): ?>
+                                        <?php 
+                                        $extrasData = json_decode($bookingData['extras_data'], true);
+                                        if ($extrasData && is_array($extrasData) && count($extrasData) > 0):
+                                        ?>
+                                            <div class="info-item extras-section">
+                                                <div class="info-label"><?php _e('extras'); ?></div>
+                                                <div class="info-value">
+                                                    <div class="extras-list">
+                                                        <?php 
+                                                        $extrasTotal = 0;
+                                                        foreach ($extrasData as $extraId => $extraInfo): 
+                                                            // Load extra details (you might need to get this from database)
+                                                            // For now, we'll use the stored data or display basic info
+                                                            $quantity = $extraInfo['quantity'] ?? 1;
+                                                            $extraName = $extraInfo['name'] ?? "Extra #$extraId";
+                                                            $extraPrice = $extraInfo['price'] ?? 0;
+                                                            $extraTotal = $extraPrice * $quantity;
+                                                            $extrasTotal += $extraTotal;
+                                                        ?>
+                                                            <div class="extra-item">
+                                                                <span class="extra-name"><?php echo htmlspecialchars($extraName); ?></span>
+                                                                <span class="extra-quantity">×<?php echo $quantity; ?></span>
+                                                                <span class="extra-price"><?php echo $settings['currency_symbol'] ?? '€'; ?><?php echo number_format($extraTotal, 2); ?></span>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                    
                                     <div class="info-item total">
                                         <div class="info-label"><?php _e('total_amount'); ?></div>
                                         <div class="info-value price"><?php echo $settings['currency_symbol'] ?? '€'; ?><?php echo number_format($bookingData['total_price'], 2); ?></div>
@@ -917,6 +951,50 @@ $confirmationHeroBg = isset($settings['confirmation_hero_bg']) ? $settings['conf
     
     .payment-method-display {
         justify-content: flex-start;
+    }
+    
+    /* Extras Styling */
+    .extras-section .info-value {
+        width: 100%;
+    }
+    
+    .extras-list {
+        width: 100%;
+    }
+    
+    .extra-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.9rem;
+    }
+    
+    .extra-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .extra-item:first-child {
+        padding-top: 0;
+    }
+    
+    .extra-name {
+        flex: 1;
+        font-weight: 500;
+    }
+    
+    .extra-quantity {
+        margin-left: 0.5rem;
+        color: var(--gray-600);
+        font-size: 0.85rem;
+    }
+    
+    .extra-price {
+        margin-left: 0.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
     }
 }
 </style>

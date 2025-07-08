@@ -186,6 +186,35 @@ $trackingHeroBg = isset($settings['tracking_hero_bg']) ? $settings['tracking_her
                                                 <?php endif; ?>
                                             </span>
                                         </div>
+                                        
+                                        <!-- Extras Section -->
+                                        <?php if (!empty($booking['extras_data'])): ?>
+                                            <?php 
+                                            $extrasData = json_decode($booking['extras_data'], true);
+                                            if ($extrasData && is_array($extrasData) && count($extrasData) > 0):
+                                            ?>
+                                                <div class="detail-row extras-section">
+                                                    <span class="label"><?php _e('extras'); ?>:</span>
+                                                    <span class="value">
+                                                        <div class="extras-list">
+                                                            <?php 
+                                                            foreach ($extrasData as $extraId => $extraInfo): 
+                                                                $quantity = $extraInfo['quantity'] ?? 1;
+                                                                $extraName = $extraInfo['name'] ?? "Extra #$extraId";
+                                                                $extraPrice = $extraInfo['price'] ?? 0;
+                                                                $extraTotal = $extraPrice * $quantity;
+                                                            ?>
+                                                                <div class="extra-item">
+                                                                    <span class="extra-name"><?php echo htmlspecialchars($extraName); ?></span>
+                                                                    <span class="extra-details">×<?php echo $quantity; ?> - <?php echo $settings['currency_symbol']; ?><?php echo number_format($extraTotal, 2); ?></span>
+                                                                </div>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                    </span>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                        
                                         <div class="detail-row">
                                             <span class="label"><?php _e('total_price'); ?>:</span>
                                             <span class="value price"><?php echo $settings['currency_symbol']; ?><?php echo number_format($booking['total_price'], 2); ?></span>
@@ -952,6 +981,36 @@ $trackingHeroBg = isset($settings['tracking_hero_bg']) ? $settings['tracking_her
     100% {
         box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
     }
+}
+
+/* Extras Styling */
+.extras-section .value {
+    width: 100%;
+}
+
+.extras-list {
+    margin-top: 0.5rem;
+}
+
+.extra-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.extra-item:first-child {
+    padding-top: 0;
+}
+
+.extra-name {
+    font-weight: 500;
+}
+
+.extra-details {
+    color: var(--gray-600);
+    font-size: 0.85rem;
 }
 </style>
 

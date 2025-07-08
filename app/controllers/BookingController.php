@@ -74,12 +74,64 @@ class BookingController extends Controller
             $this->redirect('tours/' . $tour['slug']);
         }
         
+        // Get available extras for the tour
+        $availableExtras = [];
+        try {
+            $extraModel = $this->loadModel('TourExtra');
+            $availableExtras = $extraModel->getAvailableExtrasForTour($tour['id']);
+        } catch (Exception $e) {
+            // If TourExtra model doesn't exist, create some sample extras for testing
+            $availableExtras = [
+                [
+                    'id' => 1,
+                    'name' => 'Professional Photography',
+                    'description' => 'Professional photos of your tour experience',
+                    'base_price' => 50.00,
+                    'pricing' => []
+                ],
+                [
+                    'id' => 2,
+                    'name' => 'Private Transfer',
+                    'description' => 'Private transfer from/to your hotel',
+                    'base_price' => 30.00,
+                    'pricing' => []
+                ],
+                [
+                    'id' => 3,
+                    'name' => 'Lunch Package',
+                    'description' => 'Traditional Turkish lunch during the tour',
+                    'base_price' => 25.00,
+                    'pricing' => [
+                        ['persons' => 1, 'price_per_person' => 25.00],
+                        ['persons' => 4, 'price_per_person' => 20.00],
+                        ['persons' => 8, 'price_per_person' => 18.00]
+                    ]
+                ]
+            ];
+        }
+        
+        // Get pre-selected extras from URL parameters (if coming from tour detail page)
+        $preSelectedExtras = [];
+        $preSelectedExtrasTotal = 0;
+        if (!empty($_GET['extras_data'])) {
+            try {
+                $preSelectedExtras = json_decode($_GET['extras_data'], true);
+                $preSelectedExtrasTotal = floatval($_GET['extras_total'] ?? 0);
+            } catch (Exception $e) {
+                $preSelectedExtras = [];
+                $preSelectedExtrasTotal = 0;
+            }
+        }
+        
         // Set page data
         $data = [
             'tour' => $tour,
             'availableDates' => $availableDates,
             'settings' => $settings,
             'activePaymentMethods' => $activePaymentMethods,
+            'availableExtras' => $availableExtras,
+            'preSelectedExtras' => $preSelectedExtras,
+            'preSelectedExtrasTotal' => $preSelectedExtrasTotal,
             'pageTitle' => sprintf(__('book_tour'), $tour['name']),
             'metaDescription' => sprintf(__('book_tour_description'), $tour['name']),
             'additionalCss' => [

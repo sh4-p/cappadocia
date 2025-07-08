@@ -678,18 +678,31 @@
                     <?php foreach ($availableExtras as $extra): ?>
                         <div class="extra-item">
                             <div class="extra-checkbox">
-                                <input type="checkbox" id="extra_<?php echo $extra['id']; ?>" name="extras[]" value="<?php echo $extra['id']; ?>" onchange="updateBookingSummary()">
+                                <input type="checkbox" id="extra_<?php echo $extra['id']; ?>" name="extras[]" value="<?php echo $extra['id']; ?>" onchange="toggleExtraQuantity(<?php echo $extra['id']; ?>)">
                                 <label for="extra_<?php echo $extra['id']; ?>" class="extra-label">
                                     <div class="extra-info">
                                         <div class="extra-name"><?php echo htmlspecialchars($extra['name']); ?></div>
                                         <?php if (!empty($extra['description'])): ?>
                                             <div class="extra-description"><?php echo htmlspecialchars($extra['description']); ?></div>
                                         <?php endif; ?>
+                                        <div class="extra-quantity" id="extra-quantity-<?php echo $extra['id']; ?>" style="display: none;">
+                                            <div class="extra-quantity-label"><?php _e('quantity'); ?>:</div>
+                                            <div class="guest-counter">
+                                                <button type="button" class="counter-btn" onclick="updateExtraQuantity(<?php echo $extra['id']; ?>, -1)">
+                                                    <i class="material-icons">remove</i>
+                                                </button>
+                                                <span class="counter-value" id="extra-quantity-value-<?php echo $extra['id']; ?>">1</span>
+                                                <button type="button" class="counter-btn" onclick="updateExtraQuantity(<?php echo $extra['id']; ?>, 1)">
+                                                    <i class="material-icons">add</i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="extra-price" id="extra-price-<?php echo $extra['id']; ?>">
                                         <!-- Price will be calculated by JS based on group size -->
                                     </div>
                                 </label>
+                                <input type="hidden" id="extra-quantity-input-<?php echo $extra['id']; ?>" name="extra_quantities[<?php echo $extra['id']; ?>]" value="1">
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -712,6 +725,10 @@
                 </div>
             </div>
 
+            <!-- Hidden inputs for extras data -->
+            <input type="hidden" id="extras-data" name="extras_data" value="">
+            <input type="hidden" id="extras-total" name="extras_total" value="0">
+            
             <button type="submit" class="booking-submit">
                 <?php _e('continue_to_booking'); ?>
             </button>
@@ -2240,8 +2257,10 @@
         border-radius: 20px 20px 0 0;
         padding: 1.5rem;
         position: relative;
-        overflow: visible !important; /* overflow-y: auto yerine visible */
+        overflow-y: auto;
         animation: slideUp 0.3s ease;
+        display: flex;
+        flex-direction: column;
     }
 
     @keyframes slideUp {
@@ -2276,6 +2295,13 @@
     }
     .booking-form {
         overflow: visible !important;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .booking-submit {
+        margin-top: auto;
     }
 
     .booking-form .form-group {
@@ -2401,6 +2427,104 @@
 
     .booking-submit:active {
         transform: scale(0.98);
+    }
+
+    /* Extras Section */
+    .extras-selector {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .extra-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        transition: var(--transition);
+    }
+
+    .extra-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+    }
+
+    .extra-checkbox {
+        position: relative;
+    }
+
+    .extra-checkbox input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .extra-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        cursor: pointer;
+        margin-bottom: 0 !important;
+        font-weight: 400 !important;
+        transition: var(--transition);
+    }
+
+    .extra-checkbox input[type="checkbox"]:checked + .extra-label {
+        background: rgba(255, 107, 53, 0.05);
+        border-radius: 8px;
+    }
+
+    .extra-info {
+        flex: 1;
+    }
+
+    .extra-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .extra-description {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        line-height: 1.4;
+    }
+
+    .extra-price {
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 1rem;
+        margin-left: 1rem;
+    }
+
+    .extra-quantity {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .extra-quantity-label {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        min-width: 80px;
+    }
+
+    .extra-quantity .guest-counter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .extra-quantity .counter-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.875rem;
+    }
+
+    .extra-quantity .counter-value {
+        width: 32px;
+        font-size: 0.875rem;
     }
 
     /* Help Section */
@@ -2954,8 +3078,10 @@
         selectedExtras.forEach(extraCheckbox => {
             const extraId = extraCheckbox.value;
             const extra = availableExtrasData.find(e => e.id == extraId);
+            const quantityInput = document.getElementById('extra-quantity-input-' + extraId);
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
             
-            if (extra) {
+            if (extra && quantity > 0) {
                 // Check if extra has group pricing
                 if (extra.pricing && extra.pricing.length > 0) {
                     let applicableTier = null;
@@ -2968,22 +3094,24 @@
                     }
                     
                     const pricePerPerson = applicableTier ? parseFloat(applicableTier.price_per_person) : parseFloat(extra.base_price || 0);
-                    extrasTotal += pricePerPerson * totalPersons;
+                    const totalExtraPrice = pricePerPerson * totalPersons * quantity;
+                    extrasTotal += totalExtraPrice;
                     
                     // Update extra price display
                     const priceDisplay = document.getElementById('extra-price-' + extraId);
                     if (priceDisplay) {
-                        priceDisplay.textContent = currencySymbol + (pricePerPerson * totalPersons).toFixed(2);
+                        priceDisplay.textContent = currencySymbol + totalExtraPrice.toFixed(2);
                     }
                 } else {
-                    // Fixed price for the entire group
+                    // Fixed price per item
                     const fixedPrice = parseFloat(extra.base_price || 0);
-                    extrasTotal += fixedPrice;
+                    const totalExtraPrice = fixedPrice * quantity;
+                    extrasTotal += totalExtraPrice;
                     
                     // Update extra price display
                     const priceDisplay = document.getElementById('extra-price-' + extraId);
                     if (priceDisplay) {
-                        priceDisplay.textContent = currencySymbol + fixedPrice.toFixed(2);
+                        priceDisplay.textContent = currencySymbol + totalExtraPrice.toFixed(2);
                     }
                 }
             }
@@ -3018,6 +3146,93 @@
         });
         
         return extrasTotal;
+    }
+
+    function toggleExtraQuantity(extraId) {
+        const checkbox = document.getElementById('extra_' + extraId);
+        const quantityDiv = document.getElementById('extra-quantity-' + extraId);
+        const quantityInput = document.getElementById('extra-quantity-input-' + extraId);
+        
+        if (checkbox.checked) {
+            quantityDiv.style.display = 'flex';
+            quantityInput.value = document.getElementById('extra-quantity-value-' + extraId).textContent;
+        } else {
+            quantityDiv.style.display = 'none';
+            quantityInput.value = '0';
+        }
+        
+        updateBookingSummary();
+    }
+
+    function updateExtraQuantity(extraId, change) {
+        const quantityElement = document.getElementById('extra-quantity-value-' + extraId);
+        const quantityInput = document.getElementById('extra-quantity-input-' + extraId);
+        const currentQuantity = parseInt(quantityElement.textContent);
+        const newQuantity = Math.max(1, currentQuantity + change);
+        
+        quantityElement.textContent = newQuantity;
+        quantityInput.value = newQuantity;
+        
+        updateBookingSummary();
+    }
+
+    function updateHiddenExtrasInputs() {
+        const extrasDataInput = document.getElementById('extras-data');
+        const extrasTotalInput = document.getElementById('extras-total');
+        
+        // Get selected extras with detailed information
+        const selectedExtrasData = {};
+        const selectedExtras = document.querySelectorAll('input[name="extras[]"]:checked');
+        
+        selectedExtras.forEach(extraCheckbox => {
+            const extraId = extraCheckbox.value;
+            const extra = availableExtrasData.find(e => e.id == extraId);
+            const quantityInput = document.getElementById('extra-quantity-input-' + extraId);
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+            
+            if (extra && quantity > 0) {
+                selectedExtrasData[extraId] = {
+                    id: extraId,
+                    name: extra.name,
+                    description: extra.description || '',
+                    base_price: extra.base_price,
+                    quantity: quantity,
+                    pricing: extra.pricing || []
+                };
+            }
+        });
+        
+        // Calculate total extras price
+        const adults = parseInt(document.getElementById('adults-count').textContent);
+        const children = parseInt(document.getElementById('children-count').textContent);
+        const totalPersons = adults + children;
+        let extrasTotal = 0;
+        
+        Object.values(selectedExtrasData).forEach(extra => {
+            if (extra.pricing && extra.pricing.length > 0) {
+                let applicableTier = null;
+                for (let tier of extra.pricing) {
+                    if (totalPersons >= tier.persons) {
+                        applicableTier = tier;
+                    } else {
+                        break;
+                    }
+                }
+                const pricePerPerson = applicableTier ? parseFloat(applicableTier.price_per_person) : parseFloat(extra.base_price || 0);
+                extrasTotal += (pricePerPerson * totalPersons * extra.quantity);
+            } else {
+                const fixedPrice = parseFloat(extra.base_price || 0);
+                extrasTotal += (fixedPrice * extra.quantity);
+            }
+        });
+        
+        // Update hidden inputs
+        if (extrasDataInput) {
+            extrasDataInput.value = JSON.stringify(selectedExtrasData);
+        }
+        if (extrasTotalInput) {
+            extrasTotalInput.value = extrasTotal.toFixed(2);
+        }
     }
 
     function updateBookingSummary() {
@@ -3066,6 +3281,9 @@
         // Calculate final total
         const finalTotal = tourTotal + extrasTotal;
         document.getElementById('total-price').textContent = currencySymbol + finalTotal.toFixed(2);
+        
+        // Update hidden inputs for form submission
+        updateHiddenExtrasInputs();
         
         // Show group discount info if applicable
         if (groupPricingEnabled && groupPricingData && groupPricingData.length > 0) {
