@@ -290,6 +290,71 @@
                         <small class="form-text"><?php _e('discount_price_help'); ?></small>
                     </div>
                     
+                    <!-- Group Pricing Section -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="group_pricing_enabled" name="group_pricing_enabled" value="1" class="form-check-input" <?php echo (!empty($tour['group_pricing_enabled']) ? 'checked' : ''); ?>>
+                            <label for="group_pricing_enabled" class="form-check-label"><?php _e('enable_group_pricing'); ?></label>
+                        </div>
+                        <small class="form-text"><?php _e('group_pricing_help'); ?></small>
+                    </div>
+                    
+                    <div id="group-pricing-section" class="group-pricing-section" <?php echo (empty($tour['group_pricing_enabled']) ? 'style="display: none;"' : ''); ?>>
+                        <div class="form-group">
+                            <label class="form-label"><?php _e('group_pricing_tiers'); ?></label>
+                            <div id="pricing-tiers">
+                                <?php
+                                // Parse existing group pricing data
+                                $groupPricing = [];
+                                if (!empty($tour['group_pricing_tiers'])) {
+                                    $groupPricing = json_decode($tour['group_pricing_tiers'], true);
+                                    if (json_last_error() !== JSON_ERROR_NONE) {
+                                        $groupPricing = [];
+                                    }
+                                }
+                                
+                                // Default pricing tiers structure
+                                $defaultTiers = [
+                                    ['min_persons' => 1, 'max_persons' => 1, 'price_per_person' => ''],
+                                    ['min_persons' => 2, 'max_persons' => 2, 'price_per_person' => ''],
+                                    ['min_persons' => 3, 'max_persons' => 3, 'price_per_person' => ''],
+                                    ['min_persons' => 4, 'max_persons' => 4, 'price_per_person' => ''],
+                                    ['min_persons' => 5, 'max_persons' => '', 'price_per_person' => '']
+                                ];
+                                
+                                // Merge existing data with defaults
+                                for ($i = 0; $i < 5; $i++) {
+                                    $tierData = $groupPricing[$i] ?? $defaultTiers[$i];
+                                    ?>
+                                    <div class="pricing-tier">
+                                        <div class="row g-2">
+                                            <div class="col-4">
+                                                <input type="number" name="group_pricing_tiers[<?php echo $i; ?>][min_persons]" class="form-control" placeholder="Min" min="1" value="<?php echo htmlspecialchars($tierData['min_persons'] ?? $defaultTiers[$i]['min_persons']); ?>">
+                                            </div>
+                                            <div class="col-4">
+                                                <?php if ($i === 4): // Last tier (5+ persons) ?>
+                                                    <input type="text" class="form-control" placeholder="5+ kişi" readonly>
+                                                    <input type="hidden" name="group_pricing_tiers[<?php echo $i; ?>][max_persons]" value="">
+                                                <?php else: ?>
+                                                    <input type="number" name="group_pricing_tiers[<?php echo $i; ?>][max_persons]" class="form-control" placeholder="Max" min="1" value="<?php echo htmlspecialchars($tierData['max_persons'] ?? $defaultTiers[$i]['max_persons']); ?>">
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="input-group">
+                                                    <input type="number" name="group_pricing_tiers[<?php echo $i; ?>][price_per_person]" class="form-control" placeholder="Fiyat" min="0" step="0.01" value="<?php echo htmlspecialchars($tierData['price_per_person'] ?? ''); ?>">
+                                                    <span class="input-group-text"><?php echo $settings['currency_symbol']; ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                            <small class="form-text"><?php _e('group_pricing_tiers_help'); ?></small>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <div class="form-check">
                             <input type="checkbox" id="is_featured" name="is_featured" value="1" class="form-check-input" <?php echo $tour['is_featured'] ? 'checked' : ''; ?>>
@@ -839,6 +904,36 @@ input[readonly] {
     gap: var(--spacing-md);
 }
 
+/* Group Pricing Styles */
+.group-pricing-section {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    background-color: var(--gray-50);
+    margin-top: var(--spacing-sm);
+}
+
+.pricing-tier {
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background-color: var(--white-color);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--gray-200);
+}
+
+.pricing-tier:last-child {
+    margin-bottom: 0;
+}
+
+.pricing-tier .row {
+    align-items: center;
+}
+
+.pricing-tier input[readonly] {
+    background-color: var(--gray-100);
+    border-color: var(--gray-300);
+}
+
 @media (max-width: 768px) {
     .existing-gallery-grid,
     .preview-grid {
@@ -852,6 +947,39 @@ input[readonly] {
     .day-content {
         padding: 1rem;
     }
+    
+    .pricing-tier .row > .col-4 {
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .pricing-tier .row > .col-4:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* TinyMCE customizations */
+.tox-tinymce {
+    border-radius: var(--border-radius-md) !important;
+    border-color: var(--gray-300) !important;
+}
+
+.tox-toolbar {
+    background-color: var(--gray-50) !important;
+    border-bottom-color: var(--gray-300) !important;
+}
+
+.tox-edit-area__iframe {
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md) !important;
+}
+
+.tox-statusbar {
+    border-top-color: var(--gray-300) !important;
+    background-color: var(--gray-50) !important;
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md) !important;
+}
+
+.tox-toolbar__group:not(:last-of-type) {
+    border-right-color: var(--gray-300) !important;
 }
 </style>
 
@@ -1405,16 +1533,48 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // =============================================================================
-    // RICH TEXT EDITORS INITIALIZATION
+    // GROUP PRICING TOGGLE FUNCTIONALITY
     // =============================================================================
-    const editors = document.querySelectorAll('.editor');
+    const groupPricingCheckbox = document.getElementById('group_pricing_enabled');
+    const groupPricingSection = document.getElementById('group-pricing-section');
+    const basicPriceField = document.getElementById('price');
     
-    if (editors.length > 0 && typeof ClassicEditor !== 'undefined') {
-        editors.forEach(editor => {
-            ClassicEditor.create(editor)
-                .catch(error => {
-                    console.error(error);
-                });
+    if (groupPricingCheckbox) {
+        groupPricingCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                groupPricingSection.style.display = 'block';
+                basicPriceField.required = false;
+            } else {
+                groupPricingSection.style.display = 'none';
+                basicPriceField.required = true;
+            }
+        });
+    }
+    
+    // =============================================================================
+    // RICH TEXT EDITORS INITIALIZATION (TinyMCE)
+    // =============================================================================
+    // Initialize TinyMCE rich text editors
+    if (typeof tinymce !== 'undefined') {
+        tinymce.init({
+            selector: '.editor',
+            height: 400,
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic underline strikethrough | forecolor backcolor | ' +
+                    'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
+                    'removeformat | link image media table | code preview fullscreen help',
+            content_style: 'body { font-family: "Poppins", sans-serif; font-size: 14px; }',
+            paste_data_images: true,
+            relative_urls: false,
+            remove_script_host: false,
+            document_base_url: window.location.origin + '/',
+            branding: false,
+            promotion: false
         });
     }
 });

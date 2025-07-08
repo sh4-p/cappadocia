@@ -220,6 +220,106 @@
                         <small class="form-text"><?php _e('discount_price_help'); ?></small>
                     </div>
                     
+                    <!-- Group Pricing Section -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="group_pricing_enabled" name="group_pricing_enabled" value="1" class="form-check-input">
+                            <label for="group_pricing_enabled" class="form-check-label"><?php _e('enable_group_pricing'); ?></label>
+                        </div>
+                        <small class="form-text"><?php _e('group_pricing_help'); ?></small>
+                    </div>
+                    
+                    <div id="group-pricing-section" class="group-pricing-section" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label"><?php _e('group_pricing_tiers'); ?></label>
+                            <div id="pricing-tiers">
+                                <!-- Default pricing tiers -->
+                                <div class="pricing-tier">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[0][min_persons]" class="form-control" placeholder="Min" min="1" value="1">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[0][max_persons]" class="form-control" placeholder="Max" min="1" value="1">
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="input-group">
+                                                <input type="number" name="group_pricing_tiers[0][price_per_person]" class="form-control" placeholder="Fiyat" min="0" step="0.01">
+                                                <span class="input-group-text"><?php echo $settings['currency_symbol']; ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pricing-tier">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[1][min_persons]" class="form-control" placeholder="Min" min="1" value="2">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[1][max_persons]" class="form-control" placeholder="Max" min="1" value="2">
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="input-group">
+                                                <input type="number" name="group_pricing_tiers[1][price_per_person]" class="form-control" placeholder="Fiyat" min="0" step="0.01">
+                                                <span class="input-group-text"><?php echo $settings['currency_symbol']; ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pricing-tier">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[2][min_persons]" class="form-control" placeholder="Min" min="1" value="3">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[2][max_persons]" class="form-control" placeholder="Max" min="1" value="3">
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="input-group">
+                                                <input type="number" name="group_pricing_tiers[2][price_per_person]" class="form-control" placeholder="Fiyat" min="0" step="0.01">
+                                                <span class="input-group-text"><?php echo $settings['currency_symbol']; ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pricing-tier">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[3][min_persons]" class="form-control" placeholder="Min" min="1" value="4">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[3][max_persons]" class="form-control" placeholder="Max" min="1" value="4">
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="input-group">
+                                                <input type="number" name="group_pricing_tiers[3][price_per_person]" class="form-control" placeholder="Fiyat" min="0" step="0.01">
+                                                <span class="input-group-text"><?php echo $settings['currency_symbol']; ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pricing-tier">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <input type="number" name="group_pricing_tiers[4][min_persons]" class="form-control" placeholder="Min" min="1" value="5">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="text" class="form-control" placeholder="5+ kişi" readonly>
+                                            <input type="hidden" name="group_pricing_tiers[4][max_persons]" value="">
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="input-group">
+                                                <input type="number" name="group_pricing_tiers[4][price_per_person]" class="form-control" placeholder="Fiyat" min="0" step="0.01">
+                                                <span class="input-group-text"><?php echo $settings['currency_symbol']; ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="form-text"><?php _e('group_pricing_tiers_help'); ?></small>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <div class="form-check">
                             <input type="checkbox" id="is_featured" name="is_featured" value="1" class="form-check-input">
@@ -235,6 +335,34 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Tour Extras -->
+            <?php if (!empty($availableExtras)): ?>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><?php _e('tour_extras'); ?></h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label"><?php _e('available_extras'); ?></label>
+                        <div class="extras-list">
+                            <?php foreach ($availableExtras as $extra): ?>
+                                <div class="form-check">
+                                    <input type="checkbox" id="extra_<?php echo $extra['id']; ?>" name="selected_extras[]" value="<?php echo $extra['id']; ?>" class="form-check-input">
+                                    <label for="extra_<?php echo $extra['id']; ?>" class="form-check-label">
+                                        <strong><?php echo htmlspecialchars($extra['name']); ?></strong>
+                                        <?php if (!empty($extra['description'])): ?>
+                                            <br><small class="text-muted"><?php echo htmlspecialchars($extra['description']); ?></small>
+                                        <?php endif; ?>
+                                    </label>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <small class="form-text"><?php _e('select_extras_help'); ?></small>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <!-- Featured Image -->
             <div class="card">
@@ -991,16 +1119,142 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize rich text editors
-    const editors = document.querySelectorAll('.editor');
+    // Initialize TinyMCE rich text editors
+    if (typeof tinymce !== 'undefined') {
+        tinymce.init({
+            selector: '.editor',
+            height: 400,
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic underline strikethrough | forecolor backcolor | ' +
+                    'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
+                    'removeformat | link image media table | code fullscreen preview | help',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px }',
+            branding: false,
+            promotion: false,
+            valid_elements: '*[*]',
+            valid_children: '+body[style]',
+            extended_valid_elements: 'script[language|type|src]',
+            paste_as_text: false,
+            paste_word_valid_elements: "b,strong,i,em,h1,h2,h3,h4,h5,h6,p,ol,ul,li,a[href],span,div,br",
+            images_upload_url: '<?php echo $adminUrl; ?>/upload-image',
+            images_upload_handler: function (blobInfo, success, failure) {
+                var xhr, formData;
+                xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.open('POST', '<?php echo $adminUrl; ?>/upload-image');
+                xhr.onload = function() {
+                    var json;
+                    if (xhr.status != 200) {
+                        failure('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+                    json = JSON.parse(xhr.responseText);
+                    if (!json || typeof json.location != 'string') {
+                        failure('Invalid JSON: ' + xhr.responseText);
+                        return;
+                    }
+                    success(json.location);
+                };
+                formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                xhr.send(formData);
+            }
+        });
+    }
     
-    if (editors.length > 0 && typeof ClassicEditor !== 'undefined') {
-        editors.forEach(editor => {
-            ClassicEditor.create(editor)
-                .catch(error => {
-                    console.error(error);
-                });
+    // Group pricing toggle functionality
+    const groupPricingCheckbox = document.getElementById('group_pricing_enabled');
+    const groupPricingSection = document.getElementById('group-pricing-section');
+    const basicPriceField = document.getElementById('price');
+    
+    if (groupPricingCheckbox) {
+        groupPricingCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                groupPricingSection.style.display = 'block';
+                basicPriceField.required = false;
+            } else {
+                groupPricingSection.style.display = 'none';
+                basicPriceField.required = true;
+            }
         });
     }
 });
 </script>
+
+<style>
+/* Group Pricing Styles */
+.group-pricing-section {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    background-color: var(--gray-50);
+    margin-top: var(--spacing-sm);
+}
+
+.pricing-tier {
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background-color: var(--white-color);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--gray-200);
+}
+
+.pricing-tier:last-child {
+    margin-bottom: 0;
+}
+
+.pricing-tier .row {
+    align-items: center;
+}
+
+.pricing-tier input[readonly] {
+    background-color: var(--gray-100);
+    border-color: var(--gray-300);
+}
+
+/* TinyMCE customizations */
+.tox-tinymce {
+    border-radius: var(--border-radius-md) !important;
+    border-color: var(--gray-300) !important;
+}
+
+.tox-toolbar {
+    background-color: var(--gray-50) !important;
+    border-bottom-color: var(--gray-300) !important;
+}
+
+.tox-edit-area__iframe {
+    background-color: var(--white-color) !important;
+}
+
+/* Form enhancements */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-text {
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+/* Responsive pricing tiers */
+@media (max-width: 768px) {
+    .pricing-tier .row > .col-4 {
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .pricing-tier .row > .col-4:last-child {
+        margin-bottom: 0;
+    }
+}
+</style>

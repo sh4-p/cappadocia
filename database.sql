@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1:3306
--- Üretim Zamanı: 26 Haz 2025, 01:55:59
+-- Üretim Zamanı: 08 Tem 2025, 02:08:58
 -- Sunucu sürümü: 9.1.0
 -- PHP Sürümü: 8.3.14
 
@@ -39,6 +39,9 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   `adults` int NOT NULL DEFAULT '1',
   `children` int NOT NULL DEFAULT '0',
   `total_price` decimal(10,2) NOT NULL,
+  `base_price` decimal(10,2) DEFAULT NULL,
+  `extras_price` decimal(10,2) DEFAULT '0.00',
+  `discount_applied` decimal(10,2) DEFAULT '0.00',
   `special_requests` text COLLATE utf8mb4_unicode_ci,
   `notes` text COLLATE utf8mb4_unicode_ci COMMENT 'Admin notes for the booking',
   `created_by_admin` tinyint(1) DEFAULT '0' COMMENT 'Whether booking was created by admin (1) or customer (0)',
@@ -47,11 +50,17 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `payment_method` enum('card','paypal','bank','cash') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'card',
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'IP address of the person making the booking',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'User agent string of the browser',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_tracking_token` (`tracking_token`),
   KEY `tour_id` (`tour_id`),
-  KEY `idx_created_by_admin` (`created_by_admin`)
-) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `idx_created_by_admin` (`created_by_admin`),
+  KEY `idx_ip_address` (`ip_address`),
+  KEY `idx_booking_date` (`booking_date`),
+  KEY `idx_email` (`email`),
+  KEY `idx_status` (`status`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Tetikleyiciler `bookings`
@@ -84,6 +93,95 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `booking_attempts`
+--
+
+DROP TABLE IF EXISTS `booking_attempts`;
+CREATE TABLE IF NOT EXISTS `booking_attempts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `action` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'İşlem türü: create, update, status_change, etc.',
+  `booking_id` int DEFAULT NULL COMMENT 'Booking ID (eğer başarılıysa)',
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Kullanıcı email adresi',
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 veya IPv6 adresi',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'Tarayıcı bilgisi',
+  `success` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1: başarılı, 0: başarısız',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_action` (`action`),
+  KEY `idx_booking_id` (`booking_id`),
+  KEY `idx_email` (`email`),
+  KEY `idx_ip_address` (`ip_address`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_email_time` (`email`,`created_at`),
+  KEY `idx_ip_time` (`ip_address`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Booking işlemlerini takip eder (spam ve fraud koruması için)';
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `booking_extras`
+--
+
+DROP TABLE IF EXISTS `booking_extras`;
+CREATE TABLE IF NOT EXISTS `booking_extras` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `booking_id` int NOT NULL,
+  `extra_id` int NOT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `price_per_person` decimal(10,2) NOT NULL,
+  `total_price` decimal(10,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `booking_id` (`booking_id`),
+  KEY `extra_id` (`extra_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `booking_status_history`
+--
+
+DROP TABLE IF EXISTS `booking_status_history`;
+CREATE TABLE IF NOT EXISTS `booking_status_history` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `booking_id` int NOT NULL COMMENT 'Booking ID',
+  `old_status` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Eski durum',
+  `new_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Yeni durum',
+  `changed_by` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Değiştiren kişi/sistem',
+  `notes` text COLLATE utf8mb4_unicode_ci COMMENT 'Ek notlar',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_booking_id` (`booking_id`),
+  KEY `idx_new_status` (`new_status`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Booking durum değişikliklerini takip eder';
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `bot_attempts`
+--
+
+DROP TABLE IF EXISTS `bot_attempts`;
+CREATE TABLE IF NOT EXISTS `bot_attempts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `protection_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Bot koruması türü: honeypot, recaptcha_v2, recaptcha_v3, turnstile',
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 veya IPv6 adresi',
+  `form_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Form türü: contact, newsletter, booking, etc.',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'Tarayıcı bilgisi',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_protection_type` (`protection_type`),
+  KEY `idx_ip_address` (`ip_address`),
+  KEY `idx_form_type` (`form_type`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_ip_time` (`ip_address`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bot saldırı denemelerini loglar';
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `categories`
 --
 
@@ -98,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `parent_id` (`parent_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -121,7 +219,32 @@ CREATE TABLE IF NOT EXISTS `category_details` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_category_lang` (`category_id`,`language_id`),
   UNIQUE KEY `unique_category_slug` (`language_id`,`slug`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `contact_submissions`
+--
+
+DROP TABLE IF EXISTS `contact_submissions`;
+CREATE TABLE IF NOT EXISTS `contact_submissions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Gönderen adı',
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Gönderen email adresi',
+  `subject` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mesaj konusu',
+  `message_hash` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mesaj içeriğinin MD5 hash değeri (spam kontrolü için)',
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 veya IPv6 adresi',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'Tarayıcı bilgisi',
+  `success` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1: başarılı, 0: başarısız',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_email` (`email`),
+  KEY `idx_message_hash` (`message_hash`),
+  KEY `idx_ip_address` (`ip_address`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_hash_time` (`message_hash`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contact form gönderimlerini takip eder (duplicate ve spam kontrolü için)';
 
 -- --------------------------------------------------------
 
@@ -143,7 +266,28 @@ CREATE TABLE IF NOT EXISTS `email_templates` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `template_key` (`template_key`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `form_attempts`
+--
+
+DROP TABLE IF EXISTS `form_attempts`;
+CREATE TABLE IF NOT EXISTS `form_attempts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `form_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Form türü: contact, newsletter, booking, etc.',
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 veya IPv6 adresi',
+  `success` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1: başarılı, 0: başarısız',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'Tarayıcı bilgisi',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_form_type` (`form_type`),
+  KEY `idx_ip_address` (`ip_address`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_form_ip_time` (`form_type`,`ip_address`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Form gönderim denemelerini takip eder (rate limiting için)';
 
 -- --------------------------------------------------------
 
@@ -162,7 +306,7 @@ CREATE TABLE IF NOT EXISTS `gallery` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `tour_id` (`tour_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -182,7 +326,27 @@ CREATE TABLE IF NOT EXISTS `gallery_details` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_gallery_lang` (`gallery_id`,`language_id`),
   KEY `language_id` (`language_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `ip_blocks`
+--
+
+DROP TABLE IF EXISTS `ip_blocks`;
+CREATE TABLE IF NOT EXISTS `ip_blocks` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 veya IPv6 adresi',
+  `reason` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Engelleme sebebi: auto_block, manual_block, spam, etc.',
+  `expires_at` timestamp NULL DEFAULT NULL COMMENT 'Engelleme bitiş tarihi (NULL ise kalıcı)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_ip_unique` (`ip_address`),
+  KEY `idx_expires_at` (`expires_at`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Engellenmiş IP adreslerini saklar';
 
 -- --------------------------------------------------------
 
@@ -202,7 +366,32 @@ CREATE TABLE IF NOT EXISTS `languages` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `newsletter_attempts`
+--
+
+DROP TABLE IF EXISTS `newsletter_attempts`;
+CREATE TABLE IF NOT EXISTS `newsletter_attempts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `action` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'İşlem türü: subscribe, unsubscribe, confirm, etc.',
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Email adresi',
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Kullanıcı adı',
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'IPv4 veya IPv6 adresi',
+  `user_agent` text COLLATE utf8mb4_unicode_ci COMMENT 'Tarayıcı bilgisi',
+  `success` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1: başarılı, 0: başarısız',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_action` (`action`),
+  KEY `idx_email` (`email`),
+  KEY `idx_ip_address` (`ip_address`),
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_email_time` (`email`,`created_at`),
+  KEY `idx_ip_time` (`ip_address`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Newsletter abonelik işlemlerini takip eder (spam koruması için)';
 
 -- --------------------------------------------------------
 
@@ -295,18 +484,9 @@ CREATE TABLE IF NOT EXISTS `newsletter_subscribers` (
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `token` (`token`),
   KEY `status` (`status`),
-  KEY `idx_token` (`tracking_token`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Tablo döküm verisi `newsletter_subscribers`
---
-
-INSERT INTO `newsletter_subscribers` (`id`, `email`, `name`, `status`, `token`, `subscribed_at`, `unsubscribed_at`, `created_at`, `updated_at`, `tracking_token`) VALUES
-(2, 'sh4rkwav3@gmail.com', '', 'pending', 'a0912f948064eed874dea8631dd8fdf214fa9925f35b06b50b7a8711b7ed0873', NULL, NULL, '2025-06-25 20:22:58', '2025-06-26 00:16:12', 'cb5e5a6771247ea337f84307bd49e15a'),
-(4, 'qweqwe@gmail.com', '', 'pending', '1a780b1b5977f7661ef1993f8e07c5050210c61f75e8ccc35a892e0c807ff396', NULL, NULL, '2025-06-26 00:13:03', '2025-06-26 00:16:12', '26f7bcd25e5a4f1907e3233654e5e2fd'),
-(5, 'tesart@gmail.com', '', 'pending', '69762883e190fe028deebfaec763bffb2e3a9cfc45db21171541f2801645651b', NULL, NULL, '2025-06-26 00:16:32', '2025-06-26 00:16:32', NULL),
-(6, 'asdhjgasjdjas@gmail.com', '', 'pending', '121fafc15d72d69365d8242f78b51e6ae8fd586e9bf4b4241b867d79a170d8c6', NULL, NULL, '2025-06-26 00:17:27', '2025-06-26 00:17:27', NULL);
+  KEY `idx_token` (`tracking_token`),
+  KEY `idx_tracking_token` (`tracking_token`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -323,7 +503,7 @@ CREATE TABLE IF NOT EXISTS `pages` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -346,7 +526,7 @@ CREATE TABLE IF NOT EXISTS `page_details` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_page_lang` (`page_id`,`language_id`),
   UNIQUE KEY `unique_page_slug` (`language_id`,`slug`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -363,7 +543,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `setting_key` (`setting_key`)
-) ENGINE=MyISAM AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -382,7 +562,7 @@ CREATE TABLE IF NOT EXISTS `testimonials` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -401,7 +581,7 @@ CREATE TABLE IF NOT EXISTS `testimonial_details` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_testimonial_lang` (`testimonial_id`,`language_id`),
   KEY `language_id` (`language_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -415,6 +595,7 @@ CREATE TABLE IF NOT EXISTS `tours` (
   `category_id` int DEFAULT NULL,
   `featured_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
+  `group_pricing_enabled` tinyint(1) DEFAULT '0',
   `discount_price` decimal(10,2) DEFAULT NULL,
   `duration` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `duration_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'full-day',
@@ -425,7 +606,27 @@ CREATE TABLE IF NOT EXISTS `tours` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `category_id` (`category_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `tour_available_extras`
+--
+
+DROP TABLE IF EXISTS `tour_available_extras`;
+CREATE TABLE IF NOT EXISTS `tour_available_extras` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tour_id` int NOT NULL,
+  `extra_id` int NOT NULL,
+  `is_featured` tinyint(1) DEFAULT '0',
+  `order_number` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tour_extra` (`tour_id`,`extra_id`),
+  KEY `tour_id` (`tour_id`),
+  KEY `extra_id` (`extra_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -452,7 +653,87 @@ CREATE TABLE IF NOT EXISTS `tour_details` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_tour_lang` (`tour_id`,`language_id`),
   UNIQUE KEY `unique_tour_slug` (`language_id`,`slug`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `tour_extras`
+--
+
+DROP TABLE IF EXISTS `tour_extras`;
+CREATE TABLE IF NOT EXISTS `tour_extras` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `order_number` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `tour_extra_details`
+--
+
+DROP TABLE IF EXISTS `tour_extra_details`;
+CREATE TABLE IF NOT EXISTS `tour_extra_details` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `extra_id` int NOT NULL,
+  `language_id` int NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `extra_language` (`extra_id`,`language_id`),
+  KEY `extra_id` (`extra_id`),
+  KEY `language_id` (`language_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `tour_extra_pricing`
+--
+
+DROP TABLE IF EXISTS `tour_extra_pricing`;
+CREATE TABLE IF NOT EXISTS `tour_extra_pricing` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `extra_id` int NOT NULL,
+  `min_persons` int NOT NULL,
+  `max_persons` int DEFAULT NULL,
+  `price_per_person` decimal(10,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `extra_id` (`extra_id`),
+  KEY `persons_range` (`min_persons`,`max_persons`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `tour_group_pricing`
+--
+
+DROP TABLE IF EXISTS `tour_group_pricing`;
+CREATE TABLE IF NOT EXISTS `tour_group_pricing` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tour_id` int NOT NULL,
+  `min_persons` int NOT NULL,
+  `max_persons` int DEFAULT NULL,
+  `price_per_person` decimal(10,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `tour_id` (`tour_id`),
+  KEY `persons_range` (`min_persons`,`max_persons`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -471,7 +752,7 @@ CREATE TABLE IF NOT EXISTS `translations` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_translation` (`key_id`,`language_id`),
   KEY `language_id` (`language_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1419 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -487,7 +768,7 @@ CREATE TABLE IF NOT EXISTS `translation_keys` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `key_name` (`key_name`)
-) ENGINE=MyISAM AUTO_INCREMENT=711 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -510,7 +791,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -473,15 +473,34 @@
         <!-- Sidebar Content (Desktop) -->
         <div class="sidebar-content">
             <div class="price-booking-section">
-                <div class="price-display">
-                    <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
-                        <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-                        <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
-                    <?php else: ?>
-                        <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-                    <?php endif; ?>
-                    <span class="price-per">/ <?php _e('per_person'); ?></span>
-                </div>
+                <?php if (!empty($tour['group_pricing_enabled']) && !empty($groupPricing)): ?>
+                    <!-- Group Pricing Display -->
+                    <div class="group-pricing-display">
+                        <h4 class="pricing-title"><?php _e('group_pricing'); ?></h4>
+                        <div class="pricing-tiers">
+                            <?php foreach ($groupPricing as $tier): ?>
+                                <div class="pricing-tier">
+                                    <span class="tier-persons"><?php echo $tier['persons']; ?></span>
+                                    <span class="tier-price"><?php echo $settings['currency_symbol'] . $tier['formatted_price']; ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="pricing-note">
+                            <small><?php _e('group_pricing_note'); ?></small>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <!-- Regular Pricing Display -->
+                    <div class="price-display">
+                        <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
+                            <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+                            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
+                        <?php else: ?>
+                            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+                        <?php endif; ?>
+                        <span class="price-per">/ <?php _e('per_person'); ?></span>
+                    </div>
+                <?php endif; ?>
                 <button class="book-now-btn" onclick="openBookingModal()">
                     <i class="material-icons">shopping_cart</i>
                     <?php _e('book_now'); ?>
@@ -512,15 +531,27 @@
 
 <!-- Mobile Fixed Booking Bar -->
 <div class="price-booking-section" id="mobile-booking-bar">
-    <div class="price-display">
-        <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
-            <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
-        <?php else: ?>
-            <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
-        <?php endif; ?>
-        <span class="price-per">/ <?php _e('per_person'); ?></span>
-    </div>
+    <?php if (!empty($tour['group_pricing_enabled']) && !empty($groupPricing)): ?>
+        <!-- Mobile Group Pricing Display -->
+        <div class="mobile-group-pricing">
+            <div class="pricing-info">
+                <span class="pricing-label"><?php _e('from'); ?></span>
+                <span class="pricing-from"><?php echo $settings['currency_symbol'] . end($groupPricing)['formatted_price']; ?></span>
+                <small><?php _e('per_person'); ?></small>
+            </div>
+        </div>
+    <?php else: ?>
+        <!-- Regular Mobile Pricing -->
+        <div class="price-display">
+            <?php if (isset($tour['discount_price']) && $tour['discount_price']): ?>
+                <span class="price-original"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+                <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['discount_price'], 2); ?></span>
+            <?php else: ?>
+                <span class="price-current"><?php echo $settings['currency_symbol'] . number_format($tour['price'], 2); ?></span>
+            <?php endif; ?>
+            <span class="price-per">/ <?php _e('per_person'); ?></span>
+        </div>
+    <?php endif; ?>
     <button class="book-now-btn" onclick="openBookingModal()">
         <i class="material-icons">shopping_cart</i>
         <?php _e('book_now'); ?>
@@ -638,6 +669,33 @@
                 <input type="hidden" name="adults" id="adults-input" value="2">
                 <input type="hidden" name="children" id="children-input" value="0">
             </div>
+
+            <!-- Extras Selection -->
+            <?php if (!empty($availableExtras)): ?>
+            <div class="form-group">
+                <label><?php _e('add_extras'); ?></label>
+                <div class="extras-selector">
+                    <?php foreach ($availableExtras as $extra): ?>
+                        <div class="extra-item">
+                            <div class="extra-checkbox">
+                                <input type="checkbox" id="extra_<?php echo $extra['id']; ?>" name="extras[]" value="<?php echo $extra['id']; ?>" onchange="updateBookingSummary()">
+                                <label for="extra_<?php echo $extra['id']; ?>" class="extra-label">
+                                    <div class="extra-info">
+                                        <div class="extra-name"><?php echo htmlspecialchars($extra['name']); ?></div>
+                                        <?php if (!empty($extra['description'])): ?>
+                                            <div class="extra-description"><?php echo htmlspecialchars($extra['description']); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="extra-price" id="extra-price-<?php echo $extra['id']; ?>">
+                                        <!-- Price will be calculated by JS based on group size -->
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <div class="booking-summary">
                 <div class="summary-row">
@@ -2845,10 +2903,13 @@
         document.body.style.overflow = '';
     }
 
-    // Guest Counter Functions
-    let pricePerAdult = 0; // Will be set once DOM is loaded
-    let pricePerChild = 0;
+    // Pricing data - will be set once DOM is loaded
+    let basePricePerAdult = 0;
+    let basePricePerChild = 0;
     let currencySymbol = '';
+    let groupPricingData = <?php echo json_encode($groupPricing ?? []); ?>;
+    let availableExtrasData = <?php echo json_encode($availableExtras ?? []); ?>;
+    let groupPricingEnabled = <?php echo !empty($tour['group_pricing_enabled']) ? 'true' : 'false'; ?>;
 
     function updateGuests(type, change) {
         const countElement = document.getElementById(type + '-count');
@@ -2868,26 +2929,167 @@
         updateBookingSummary();
     }
 
+    function getGroupPricePerPerson(totalPersons) {
+        if (!groupPricingEnabled || !groupPricingData || groupPricingData.length === 0) {
+            return basePricePerAdult;
+        }
+        
+        // Find the appropriate pricing tier
+        let applicableTier = null;
+        for (let tier of groupPricingData) {
+            if (totalPersons >= tier.persons) {
+                applicableTier = tier;
+            } else {
+                break;
+            }
+        }
+        
+        return applicableTier ? parseFloat(applicableTier.price_per_person) : basePricePerAdult;
+    }
+
+    function calculateExtrasPricing(totalPersons) {
+        let extrasTotal = 0;
+        const selectedExtras = document.querySelectorAll('input[name="extras[]"]:checked');
+        
+        selectedExtras.forEach(extraCheckbox => {
+            const extraId = extraCheckbox.value;
+            const extra = availableExtrasData.find(e => e.id == extraId);
+            
+            if (extra) {
+                // Check if extra has group pricing
+                if (extra.pricing && extra.pricing.length > 0) {
+                    let applicableTier = null;
+                    for (let tier of extra.pricing) {
+                        if (totalPersons >= tier.persons) {
+                            applicableTier = tier;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    const pricePerPerson = applicableTier ? parseFloat(applicableTier.price_per_person) : parseFloat(extra.base_price || 0);
+                    extrasTotal += pricePerPerson * totalPersons;
+                    
+                    // Update extra price display
+                    const priceDisplay = document.getElementById('extra-price-' + extraId);
+                    if (priceDisplay) {
+                        priceDisplay.textContent = currencySymbol + (pricePerPerson * totalPersons).toFixed(2);
+                    }
+                } else {
+                    // Fixed price for the entire group
+                    const fixedPrice = parseFloat(extra.base_price || 0);
+                    extrasTotal += fixedPrice;
+                    
+                    // Update extra price display
+                    const priceDisplay = document.getElementById('extra-price-' + extraId);
+                    if (priceDisplay) {
+                        priceDisplay.textContent = currencySymbol + fixedPrice.toFixed(2);
+                    }
+                }
+            }
+        });
+        
+        // Update unselected extras price displays
+        const unselectedExtras = document.querySelectorAll('input[name="extras[]"]:not(:checked)');
+        unselectedExtras.forEach(extraCheckbox => {
+            const extraId = extraCheckbox.value;
+            const extra = availableExtrasData.find(e => e.id == extraId);
+            
+            if (extra) {
+                const priceDisplay = document.getElementById('extra-price-' + extraId);
+                if (priceDisplay) {
+                    if (extra.pricing && extra.pricing.length > 0) {
+                        let applicableTier = null;
+                        for (let tier of extra.pricing) {
+                            if (totalPersons >= tier.persons) {
+                                applicableTier = tier;
+                            } else {
+                                break;
+                            }
+                        }
+                        const pricePerPerson = applicableTier ? parseFloat(applicableTier.price_per_person) : parseFloat(extra.base_price || 0);
+                        priceDisplay.textContent = currencySymbol + (pricePerPerson * totalPersons).toFixed(2);
+                    } else {
+                        const fixedPrice = parseFloat(extra.base_price || 0);
+                        priceDisplay.textContent = currencySymbol + fixedPrice.toFixed(2);
+                    }
+                }
+            }
+        });
+        
+        return extrasTotal;
+    }
+
     function updateBookingSummary() {
         const adults = parseInt(document.getElementById('adults-count').textContent);
         const children = parseInt(document.getElementById('children-count').textContent);
+        const totalPersons = adults + children;
+        
+        // Get current price per person based on group size
+        const currentPricePerAdult = getGroupPricePerPerson(totalPersons);
+        const currentPricePerChild = currentPricePerAdult * 0.5; // Children pay 50%
         
         // Update summary
         document.getElementById('adults-summary').textContent = 
-            adults + ' × ' + currencySymbol + pricePerAdult.toFixed(2);
+            adults + ' × ' + currencySymbol + currentPricePerAdult.toFixed(2);
         
         if (children > 0) {
             document.getElementById('children-summary-row').style.display = 'flex';
             document.getElementById('children-summary').textContent = 
-                children + ' × ' + currencySymbol + pricePerChild.toFixed(2);
+                children + ' × ' + currencySymbol + currentPricePerChild.toFixed(2);
         } else {
             document.getElementById('children-summary-row').style.display = 'none';
         }
         
-        // Calculate total
-        const total = (adults * pricePerAdult) + (children * pricePerChild);
-        document.getElementById('total-price').textContent = 
-            currencySymbol + total.toFixed(2);
+        // Calculate tour total
+        const tourTotal = (adults * currentPricePerAdult) + (children * currentPricePerChild);
+        
+        // Calculate extras total
+        const extrasTotal = calculateExtrasPricing(totalPersons);
+        
+        // Add extras summary if any selected
+        let existingExtrasRow = document.getElementById('extras-summary-row');
+        if (extrasTotal > 0) {
+            if (!existingExtrasRow) {
+                existingExtrasRow = document.createElement('div');
+                existingExtrasRow.id = 'extras-summary-row';
+                existingExtrasRow.className = 'summary-row';
+                existingExtrasRow.innerHTML = '<span><?php _e('extras'); ?></span><span id="extras-summary"></span>';
+                document.querySelector('.summary-row.total').before(existingExtrasRow);
+            }
+            existingExtrasRow.style.display = 'flex';
+            document.getElementById('extras-summary').textContent = currencySymbol + extrasTotal.toFixed(2);
+        } else if (existingExtrasRow) {
+            existingExtrasRow.style.display = 'none';
+        }
+        
+        // Calculate final total
+        const finalTotal = tourTotal + extrasTotal;
+        document.getElementById('total-price').textContent = currencySymbol + finalTotal.toFixed(2);
+        
+        // Show group discount info if applicable
+        if (groupPricingEnabled && groupPricingData && groupPricingData.length > 0) {
+            const singlePersonPrice = basePricePerAdult;
+            const fullPrice = singlePersonPrice * totalPersons;
+            const savings = fullPrice - tourTotal;
+            
+            let discountRow = document.getElementById('group-discount-row');
+            if (savings > 0) {
+                if (!discountRow) {
+                    discountRow = document.createElement('div');
+                    discountRow.id = 'group-discount-row';
+                    discountRow.className = 'summary-row discount';
+                    discountRow.style.color = '#28a745';
+                    discountRow.style.fontSize = '0.875rem';
+                    discountRow.innerHTML = '<span><?php _e('group_discount'); ?></span><span id="group-discount-amount"></span>';
+                    document.querySelector('.summary-row.total').before(discountRow);
+                }
+                discountRow.style.display = 'flex';
+                document.getElementById('group-discount-amount').textContent = '-' + currencySymbol + savings.toFixed(2);
+            } else if (discountRow) {
+                discountRow.style.display = 'none';
+            }
+        }
     }
 
     // Booking bar visibility function
@@ -2961,9 +3163,12 @@
     // Wait for DOM to be fully loaded before initializing
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize price variables
-        pricePerAdult = parseFloat(document.querySelector('.price-current').textContent.replace(/[^0-9.]/g, '')) || 0;
-        pricePerChild = pricePerAdult * 0.5;
+        basePricePerAdult = parseFloat(document.querySelector('.price-current').textContent.replace(/[^0-9.]/g, '')) || 0;
+        basePricePerChild = basePricePerAdult * 0.5;
         currencySymbol = document.querySelector('.price-current').textContent.replace(/[0-9.,]/g, '').trim();
+        
+        // Initialize pricing display on page load
+        updateBookingSummary();
         
         // Initialize Swiper Gallery
         const gallerySwiper = new Swiper('.gallery-swiper', {

@@ -338,6 +338,23 @@ button {
     align-items: center;
 }
 
+.sidebar-toggle-desktop {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--border-radius-circle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dark-color);
+    background-color: var(--gray-200);
+    margin-right: var(--spacing-md);
+    transition: background-color var(--transition-fast);
+}
+
+.sidebar-toggle-desktop:hover {
+    background-color: var(--gray-300);
+}
+
 .sidebar-toggle-mobile {
     width: 36px;
     height: 36px;
@@ -1146,9 +1163,10 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination li.paginate_button:
 }
 
 .dropdown-toggle img {
-    width: 24px;
-    height: 24px;
-    border-radius: var(--border-radius-circle);
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+    object-fit: cover;
 }
 
 .dropdown-menu {
@@ -1191,6 +1209,13 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination li.paginate_button:
 .dropdown-menu li a i {
     font-size: var(--font-size-lg);
     color: var(--gray-600);
+}
+
+.dropdown-menu li a img {
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+    object-fit: cover;
 }
 
 .user-avatar {
@@ -1608,6 +1633,13 @@ input:checked + .toggle-slider:before {
     }
 }
 
+/* Desktop only styles - hide mobile toggle */
+@media (min-width: 993px) {
+    .sidebar-toggle-mobile {
+        display: none !important;
+    }
+}
+
 @media (max-width: 992px) {
     :root {
         --sidebar-width: 260px;
@@ -1625,6 +1657,10 @@ input:checked + .toggle-slider:before {
     
     .sidebar.sidebar-mobile-open {
         left: 0;
+    }
+    
+    .sidebar-toggle-desktop {
+        display: none;
     }
     
     .sidebar-toggle-mobile {

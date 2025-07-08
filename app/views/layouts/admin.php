@@ -79,9 +79,6 @@
                 <a href="<?php echo $adminUrl; ?>/dashboard">
                     <img src="<?php echo $imgUrl; ?>/logo-white.png" alt="<?php echo $settings['site_title']; ?>" class="sidebar-logo">
                 </a>
-                <button class="sidebar-toggle">
-                    <i class="material-icons">menu</i>
-                </button>
             </div>
             <div class="sidebar-content">
                 <nav class="sidebar-nav">
@@ -96,6 +93,12 @@
                             <a href="<?php echo $adminUrl; ?>/tours" class="<?php echo $controllerName == 'AdminTours' ? 'active' : ''; ?>">
                                 <i class="material-icons">explore</i>
                                 <span><?php _e('tours'); ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo $adminUrl; ?>/extras" class="<?php echo $controllerName == 'AdminExtras' ? 'active' : ''; ?>">
+                                <i class="material-icons">add_circle</i>
+                                <span><?php _e('tour_extras'); ?></span>
                             </a>
                         </li>
                         <li>
@@ -180,6 +183,9 @@
             <!-- Header -->
             <header class="admin-header">
                 <div class="header-left">
+                    <button class="sidebar-toggle-desktop">
+                        <i class="material-icons">menu</i>
+                    </button>
                     <button class="sidebar-toggle-mobile">
                         <i class="material-icons">menu</i>
                     </button>
@@ -314,6 +320,7 @@
     <!-- JS Files -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tiny.cloud/1/ufsmxd4yxjc0lp4ilt4e2s3865ezo6rpe06ln8dxgcuj0hms/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script src="<?php echo $jsUrl; ?>/admin.js"></script>
     
     <!-- Add any additional JS files -->

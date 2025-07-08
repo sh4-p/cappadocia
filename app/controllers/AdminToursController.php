@@ -105,12 +105,17 @@ class AdminToursController extends Controller
         $tourModel = $this->loadModel('Tour');
         $categoryModel = $this->loadModel('Category');
         $languageModel = $this->loadModel('LanguageModel');
+        $groupPricingModel = $this->loadModel('TourGroupPricing');
+        $tourExtraModel = $this->loadModel('TourExtra');
         
         // Get categories
         $categories = $categoryModel->getAllWithDetails($langCode, ['c.is_active' => 1], 'cd.name ASC');
         
         // Get languages
         $languages = $languageModel->getActiveLanguages();
+        
+        // Get available extras
+        $availableExtras = $tourExtraModel->getActiveExtras();
         
         // Check if request is POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -193,6 +198,7 @@ class AdminToursController extends Controller
                     'pageTitle' => __('add_tour'),
                     'languages' => $languages,
                     'categories' => $categories,
+                    'availableExtras' => $availableExtras,
                     'details' => $details,
                     'categoryId' => $categoryId,
                     'price' => $price,
@@ -202,6 +208,9 @@ class AdminToursController extends Controller
                     'customDuration' => $customDuration,
                     'isFeatured' => $isFeatured,
                     'isActive' => $isActive,
+                    'groupPricingEnabled' => $groupPricingEnabled,
+                    'groupPricingTiers' => $groupPricingTiers,
+                    'selectedExtras' => $selectedExtras,
                     'currentLang' => $langCode
                 ], 'admin');
                 
@@ -236,10 +245,25 @@ class AdminToursController extends Controller
                 }
             }
             
+            // Add group pricing enabled flag to tour data
+            $tourData['group_pricing_enabled'] = $groupPricingEnabled ? 1 : 0;
+            
             // Create tour
             $tourId = $tourModel->addWithDetails($tourData, $details);
             
             if ($tourId) {
+                // Handle group pricing if enabled
+                if ($groupPricingEnabled && !empty($groupPricingTiers)) {
+                    $groupPricingModel->savePricingTiers($tourId, $groupPricingTiers);
+                }
+                
+                // Handle selected extras
+                if (!empty($selectedExtras)) {
+                    foreach ($selectedExtras as $extraId) {
+                        $tourExtraModel->addExtraToTour($tourId, $extraId, false, 0);
+                    }
+                }
+                
                 // Handle gallery uploads
                 $galleryImages = $this->file('gallery_images');
                 
@@ -263,6 +287,7 @@ class AdminToursController extends Controller
             'pageTitle' => __('add_tour'),
             'languages' => $languages,
             'categories' => $categories,
+            'availableExtras' => $availableExtras,
             'currentLang' => $langCode
         ], 'admin');
     }
@@ -331,6 +356,8 @@ class AdminToursController extends Controller
         $categoryModel = $this->loadModel('Category');
         $languageModel = $this->loadModel('LanguageModel');
         $galleryModel = $this->loadModel('Gallery');
+        $groupPricingModel = $this->loadModel('TourGroupPricing');
+        $tourExtraModel = $this->loadModel('TourExtra');
         
         // Get tour
         $tour = $tourModel->getWithDetails($id, $langCode);
@@ -349,6 +376,14 @@ class AdminToursController extends Controller
         
         // Get gallery items
         $galleryItems = $galleryModel->getByTour($id, $langCode);
+        
+        // Get group pricing data
+        $groupPricingTiers = $groupPricingModel->getPricingTiers($id);
+        $groupPricingEnabled = !empty($groupPricingTiers) || ($tour['group_pricing_enabled'] ?? false);
+        
+        // Get available extras and selected extras for this tour
+        $availableExtras = $tourExtraModel->getActiveExtras();
+        $selectedExtras = $tourExtraModel->getAvailableExtrasForTour($id);
         
         // Get tour details for all languages
         $tourDetails = [];
@@ -392,6 +427,13 @@ class AdminToursController extends Controller
             // Handle featured image upload
             $featuredImage = $this->file('featured_image');
             $featuredImageName = $tour['featured_image'];
+
+            // Get group pricing data
+            $newGroupPricingEnabled = $this->post('group_pricing_enabled', 0);
+            $newGroupPricingTiers = $this->post('group_pricing_tiers', []);
+            
+            // Get extras data
+            $newSelectedExtras = $this->post('selected_extras', []);
             
             if ($featuredImage && $featuredImage['error'] === UPLOAD_ERR_OK) {
                 $featuredImageName = $this->uploadImage($featuredImage, 'tours');
@@ -477,7 +519,8 @@ class AdminToursController extends Controller
                 'duration_type' => $durationType,
                 'duration_days' => $durationDays,
                 'is_featured' => $isFeatured ? 1 : 0,
-                'is_active' => $isActive ? 1 : 0
+                'is_active' => $isActive ? 1 : 0,
+                'group_pricing_enabled' => $newGroupPricingEnabled ? 1 : 0
             ];
             
             // Generate slugs and process itinerary
@@ -492,6 +535,24 @@ class AdminToursController extends Controller
                 // NEW: Process itinerary data
                 if (isset($langDetails['itinerary']) && is_array($langDetails['itinerary'])) {
                     $langDetails['itinerary'] = $this->processItineraryData($langDetails['itinerary']);
+                }
+            }
+
+            // Handle group pricing
+            if ($newGroupPricingEnabled && !empty($newGroupPricingTiers)) {
+                $groupPricingModel->savePricingTiers($id, $newGroupPricingTiers);
+            } else {
+                // Clear pricing tiers if group pricing is disabled
+                $groupPricingModel->deleteTiersForTour($id);
+            }
+            
+            // Handle selected extras
+            // First, clear existing extras for this tour
+            $this->db->delete('tour_available_extras', ['tour_id' => $id]);
+            // Then add selected extras
+            if (!empty($newSelectedExtras)) {
+                foreach ($newSelectedExtras as $extraId) {
+                    $tourExtraModel->addExtraToTour($id, $extraId, false, 0);
                 }
             }
             
@@ -525,6 +586,10 @@ class AdminToursController extends Controller
             'languages' => $languages,
             'categories' => $categories,
             'galleryItems' => $galleryItems,
+            'groupPricingTiers' => $groupPricingTiers,
+            'groupPricingEnabled' => $groupPricingEnabled,
+            'availableExtras' => $availableExtras,
+            'selectedExtras' => $selectedExtras,
             'currentLang' => $langCode
         ], 'admin');
     }

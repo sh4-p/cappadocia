@@ -151,6 +151,13 @@ class Router
         $this->addRoute($this->adminPrefix . '/translations/import', 'AdminTranslations', 'import');
         $this->addRoute($this->adminPrefix . '/translations/export/([0-9]+)', 'AdminTranslations', 'export', ['languageId']);
 
+        // Extras routes
+        $this->addRoute($this->adminPrefix . '/extras', 'AdminExtras', 'index');
+        $this->addRoute($this->adminPrefix . '/extras/create', 'AdminExtras', 'create');
+        $this->addRoute($this->adminPrefix . '/extras/edit/([0-9]+)', 'AdminExtras', 'edit', ['id']);
+        $this->addRoute($this->adminPrefix . '/extras/delete/([0-9]+)', 'AdminExtras', 'delete', ['id']);
+        $this->addRoute($this->adminPrefix . '/extras/toggle-status/([0-9]+)', 'AdminExtras', 'toggleStatus', ['id']);
+
         // Admin email templates routes
         $this->addRoute($this->adminPrefix . '/email-templates', 'AdminEmailTemplates', 'index');
         $this->addRoute($this->adminPrefix . '/email-templates/create', 'AdminEmailTemplates', 'create');

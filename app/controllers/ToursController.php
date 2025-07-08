@@ -98,6 +98,18 @@ class ToursController extends Controller
         // Get tour gallery
         $gallery = $this->tourModel->getGallery($tour['id'], $langCode);
         
+        // Get group pricing data if enabled
+        $groupPricing = [];
+        $availableExtras = [];
+        if (!empty($tour['group_pricing_enabled'])) {
+            $groupPricingModel = $this->loadModel('TourGroupPricing');
+            $groupPricing = $groupPricingModel->getPricingBreakdown($tour['id']);
+        }
+        
+        // Get available extras for this tour
+        $tourExtraModel = $this->loadModel('TourExtra');
+        $availableExtras = $tourExtraModel->getAvailableExtrasForTour($tour['id']);
+        
         // Get related tours
         $relatedTours = $this->tourModel->getAllWithDetails(
             $langCode, 
@@ -114,6 +126,8 @@ class ToursController extends Controller
         $data = [
             'tour' => $tour,
             'gallery' => $gallery,
+            'groupPricing' => $groupPricing,
+            'availableExtras' => $availableExtras,
             'relatedTours' => $relatedTours,
             'pageTitle' => $tour['name'],
             'metaDescription' => $tour['meta_description'] ?: substr(strip_tags($tour['short_description']), 0, 160)

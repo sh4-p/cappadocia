@@ -1,0 +1,65 @@
+AdminToursController edit() method için gerekli güncellemeler:
+
+1. LINE 430 civarında (POST form data handling kısmında) şunu ekleyin:
+
+EKLENECEK KOD (line 430'dan sonra):
+```php
+            // Get group pricing data
+            $newGroupPricingEnabled = $this->post('group_pricing_enabled', 0);
+            $newGroupPricingTiers = $this->post('group_pricing_tiers', []);
+            
+            // Get extras data
+            $newSelectedExtras = $this->post('selected_extras', []);
+```
+
+2. Tour data preparation kısmında (yaklaşık line 515) şunu ekleyin:
+
+EKLENECEK KOD:
+```php
+            // Add group pricing enabled flag to tour data
+            $tourData['group_pricing_enabled'] = $newGroupPricingEnabled ? 1 : 0;
+```
+
+3. Tour update success kısmında (line 536'dan sonra, gallery handling'den önce) şunu ekleyin:
+
+EKLENECEK KOD:
+```php
+            // Handle group pricing
+            if ($newGroupPricingEnabled && !empty($newGroupPricingTiers)) {
+                $groupPricingModel->savePricingTiers($id, $newGroupPricingTiers);
+            } else {
+                // Clear pricing tiers if group pricing is disabled
+                $groupPricingModel->deleteTiersForTour($id);
+            }
+            
+            // Handle selected extras
+            // First, clear existing extras for this tour
+            $this->db->delete('tour_available_extras', ['tour_id' => $id]);
+            // Then add selected extras
+            if (!empty($newSelectedExtras)) {
+                foreach ($newSelectedExtras as $extraId) {
+                    $tourExtraModel->addExtraToTour($id, $extraId, false, 0);
+                }
+            }
+```
+
+4. View render kısmında (en sonda) şu parametreleri ekleyin:
+
+GÜNCELLENECEK KOD (line 555 civarı):
+```php
+        $this->render('admin/tours/edit', [
+            'pageTitle' => __('edit_tour'),
+            'tour' => $tour,
+            'tourDetails' => $tourDetails,
+            'languages' => $languages,
+            'categories' => $categories,
+            'galleryItems' => $galleryItems,
+            'groupPricingTiers' => $groupPricingTiers,
+            'groupPricingEnabled' => $groupPricingEnabled,
+            'availableExtras' => $availableExtras,
+            'selectedExtras' => $selectedExtras,
+            'currentLang' => $langCode
+        ], 'admin');
+```
+
+Bu değişiklikleri elle uygulamanız gerekiyor çünkü dosya çok büyük ve birden fazla match var.
