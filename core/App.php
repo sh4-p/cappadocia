@@ -243,7 +243,7 @@ class App
                 // Only redirect if not in admin area
                 if (empty($url) || $url[0] !== 'admin') {
                     $requestUri = $_SERVER['REQUEST_URI'];
-                    $redirectUrl = rtrim(APP_URL, '/') . '/' . $lang . $requestUri;
+                    $redirectUrl = rtrim(APP_URL, '/') . '/' . $lang ;
                     header('Location: ' . $redirectUrl);
                     exit;
                 }
